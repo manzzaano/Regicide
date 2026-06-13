@@ -1,5 +1,6 @@
 package com.regicide.controller;
 
+import com.regicide.dto.AuthLoginRequest;
 import com.regicide.dto.AuthRequest;
 import com.regicide.dto.AuthResponse;
 import com.regicide.entity.User;
@@ -43,7 +44,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthLoginRequest request) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
