@@ -32,20 +32,30 @@ regicide/
 
 ## 📖 Desarrollo Local
 
-### Backend
+### Setup BD + Backend
+
+1. **Iniciar PostgreSQL (docker-compose)**
+```bash
+docker-compose up -d postgres
+# Espera a que esté healthy (~10s)
+```
+
+2. **Compilar backend**
 ```bash
 cd backend
-mvn clean install
+mvn clean install -DskipTests
+```
+
+3. **Correr backend (con profile local)**
+```bash
+export SPRING_PROFILES_ACTIVE=local
 mvn spring-boot:run
 ```
 
-BD: PostgreSQL en Docker
-```bash
-docker run --name regicide-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=regicide -p 5432:5432 -d postgres:15
-```
+Backend disponible en `http://localhost:8080/api`
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -53,6 +63,11 @@ npm start
 ```
 
 Abre http://localhost:4200
+
+**Endpoints para probar:**
+- `POST /api/auth/register` — crear usuario
+- `POST /api/auth/login` — login
+- `GET /api/leaderboard` — ranking (sin auth)
 
 ## 📦 Deploy
 
