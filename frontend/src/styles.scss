@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #1a1a1a;
+  color: #fff;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+  width: 100%;
+}

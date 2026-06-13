@@ -1,0 +1,38 @@
+# Backend (Maven)
+backend/target/
+backend/.mvn/wrapper/*.jar
+backend/.idea/
+backend/*.iml
+backend/*.iws
+backend/.vscode/
+
+# Frontend (Angular)
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/out-tsc/
+frontend/.vscode/
+
+# IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+*.log
+
+# Build artifacts
+*.class
+*.jar
+*.war
+
+# Legacy (JavaFX)
+legacy/target/
+legacy/out/
+legacy/.mvn/wrapper/*.jar
