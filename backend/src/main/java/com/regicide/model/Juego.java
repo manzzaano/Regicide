@@ -7,7 +7,7 @@ import java.util.*;
 public class Juego {
     private List<Carta> mano;
     private List<Carta> castillo; // Queue de enemigos (J, Q, K)
-    private Queue<Carta> mazoPosada; // Tavern deck
+    private List<Carta> mazoPosada; // Tavern deck
     private List<Carta> mazoCartasJugadas; // Cards played this turn
     private List<Carta> mazoCartasDescartadas; // Discard pile
     private Baraja baraja;
@@ -16,7 +16,7 @@ public class Juego {
         this.baraja = baraja;
         this.mano = new ArrayList<>();
         this.castillo = new ArrayList<>();
-        this.mazoPosada = new LinkedList<>();
+        this.mazoPosada = new ArrayList<>();
         this.mazoCartasJugadas = new ArrayList<>();
         this.mazoCartasDescartadas = new ArrayList<>();
         iniciar();
@@ -56,7 +56,7 @@ public class Juego {
         for (Carta c : allCards) {
             if ((c.getNumero() > 10 || c.getNumero() > mano.size()) &&
                 !castillo.contains(c)) {
-                mazoPosada.offer(c);
+                mazoPosada.add(c);
             }
         }
     }
