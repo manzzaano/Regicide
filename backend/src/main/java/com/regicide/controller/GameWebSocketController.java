@@ -31,7 +31,16 @@ public class GameWebSocketController {
         if (gameId == null) {
             return GameState.builder().error("No hay juego activo").build();
         }
-        return sessionManager.playCard(gameId, message.getCardIndex() != null ? message.getCardIndex() : 0);
+
+        if ("ATTACK".equals(message.getType())) {
+            return sessionManager.attack(gameId, (java.util.List<Integer>) message.getPayload());
+        } else if ("DEFEND".equals(message.getType())) {
+            return sessionManager.playCard(gameId, message.getCardIndex() != null ? message.getCardIndex() : 0);
+        } else if ("JOKER".equals(message.getType())) {
+            return sessionManager.useJoker(gameId);
+        }
+
+        return GameState.builder().error("Mensaje inválido").build();
     }
 
     @MessageMapping("/game/state")

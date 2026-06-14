@@ -16,6 +16,14 @@ public class Carta {
     }
 
     public Integer getVida() {
-        return 0;
+        return numero; // Vida = numero para enemigos
+    }
+
+    public Integer getDano() {
+        return numero; // Daño = numero
+    }
+
+    public void setDano(Integer daño) {
+        this.numero = daño;
     }
 }
