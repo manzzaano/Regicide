@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RxStomp, RxStompState } from '@stomp/rx-stomp';
+import { RxStomp } from '@stomp/rx-stomp';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@app/environments/environment';
@@ -41,7 +41,7 @@ export class GameWebSocketService {
     this.rxStomp.activate();
 
     this.rxStomp.connectionState$
-      .pipe(map(state => state === RxStompState.CONNECTED))
+      .pipe(map(state => state?.toString() === '1'))
       .subscribe((connected) => {
         this.connected$.next(connected);
       });
