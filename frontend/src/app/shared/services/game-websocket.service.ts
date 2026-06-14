@@ -37,10 +37,10 @@ export class GameWebSocketService {
       heartbeatOutgoing: 4000
     });
 
-    this.rxStomp.activate().then(() => {
-      this.connected$.next(true);
-    }).catch(() => {
-      this.connected$.next(false);
+    this.rxStomp.activate();
+
+    this.rxStomp.connected$.subscribe((connected) => {
+      this.connected$.next(connected);
     });
   }
 
