@@ -1,6 +1,5 @@
 package com.regicide.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,8 +22,6 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -45,19 +42,8 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
-        http.csrf(csrf -> csrf.disable())
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/leaderboard").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .authenticationProvider(authenticationProvider(userDetailsService))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
-
-        return http.build();
+    public JwtAuthenticationFilter jwtAuthenticationFilter() {
+        return new JwtAuthenticationFilter();
     }
 
     @Bean
@@ -67,7 +53,7 @@ public class SecurityConfiguration {
                 "http://localhost:4200",
                 "http://localhost:3000",
                 "https://localhost:4200",
-                "${CORS_ORIGIN:http://localhost:4200}"
+                "http://localhost:*"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
@@ -75,5 +61,22 @@ public class SecurityConfiguration {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/leaderboard").permitAll()
+                .anyRequest().authenticated()
+            )
+            .authenticationProvider(authenticationProvider(userDetailsService))
+            .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 }
