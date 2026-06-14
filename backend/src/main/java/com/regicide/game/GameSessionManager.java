@@ -41,6 +41,26 @@ public class GameSessionManager {
         return game.playCard(cardIndex);
     }
 
+    public GameState attack(String gameId, List<Integer> cardIndices) {
+        RegicideGame game = activeSessions.get(gameId);
+        if (game == null) {
+            return GameState.builder()
+                    .error("Juego no encontrado")
+                    .build();
+        }
+        return game.attack(cardIndices);
+    }
+
+    public GameState useJoker(String gameId) {
+        RegicideGame game = activeSessions.get(gameId);
+        if (game == null) {
+            return GameState.builder()
+                    .error("Juego no encontrado")
+                    .build();
+        }
+        return game.useJoker();
+    }
+
     public GameState finishGame(String gameId) {
         RegicideGame game = activeSessions.remove(gameId);
         if (game == null) {
