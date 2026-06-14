@@ -13,7 +13,14 @@ import { AuthService } from '../../shared/services/auth.service';
       <div class="stars"></div>
       <div class="auth-box">
         <div class="card-header">
-          <h1>⚔️ REGICIDE</h1>
+          <svg class="crown-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 60 L20 30 L35 45 L50 15 L65 45 L80 30 L90 60 Z" fill="#d4a574" stroke="#8b4513" stroke-width="2"/>
+            <rect x="10" y="60" width="80" height="25" fill="#8b4513" stroke="#d4a574" stroke-width="2"/>
+            <circle cx="30" cy="50" r="6" fill="#d4a574"/>
+            <circle cx="50" cy="35" r="6" fill="#d4a574"/>
+            <circle cx="70" cy="50" r="6" fill="#d4a574"/>
+          </svg>
+          <h1>REGICIDE</h1>
           <p class="subtitle">Únete a la batalla</p>
         </div>
 
@@ -56,6 +63,9 @@ import { AuthService } from '../../shared/services/auth.service';
             [disabled]="!registerForm.valid"
             class="btn-register"
           >
+            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="currentColor"/>
+            </svg>
             CREAR CUENTA
           </button>
 
@@ -129,6 +139,14 @@ import { AuthService } from '../../shared/services/auth.service';
       margin-bottom: 30px;
     }
 
+    .crown-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 15px;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    }
+
     .card-header h1 {
       margin: 0;
       font-size: 2.5em;
@@ -186,6 +204,14 @@ import { AuthService } from '../../shared/services/auth.service';
       color: #777;
     }
 
+    .btn-icon {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
     .btn-register {
       padding: 14px;
       background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
@@ -200,6 +226,9 @@ import { AuthService } from '../../shared/services/auth.service';
       text-transform: uppercase;
       margin-top: 10px;
       box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .btn-register:hover:not(:disabled) {
