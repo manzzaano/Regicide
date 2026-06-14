@@ -13,9 +13,7 @@ import { AuthService } from '../../shared/services/auth.service';
       <div class="stars"></div>
       <div class="auth-box">
         <div class="card-header">
-          <svg class="crown-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#d4a574">
-            <path d="M12 2L4 8V10H2V12H4V20H20V12H22V10H20V8L12 2M12 4L19 8H17L14 11L17 14H12L10 16H14L12 20L10 16H5L8 14L5 11H3L12 4Z"/>
-          </svg>
+          <img src="/assets/icons/crown.svg" alt="Crown" class="crown-icon">
           <h1>REGICIDE</h1>
           <p class="subtitle">Únete a la batalla</p>
         </div>
@@ -59,9 +57,7 @@ import { AuthService } from '../../shared/services/auth.service';
             [disabled]="!registerForm.valid"
             class="btn-register"
           >
-            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-              <path d="M15 14C12.67 14 8 15.17 8 17.5V19H22V17.5C22 15.17 17.33 14 15 14M9 12C10.66 12 12 10.66 12 9C12 7.34 10.66 6 9 6C7.34 6 6 7.34 6 9C6 10.66 7.34 12 9 12M15 12V9H12V7H15V4H17V7H20V9H17V12H15Z"/>
-            </svg>
+            <img src="/assets/icons/user-plus.svg" alt="Sign Up" class="btn-icon">
             CREAR CUENTA
           </button>
 
@@ -140,6 +136,7 @@ import { AuthService } from '../../shared/services/auth.service';
       height: 60px;
       margin: 0 auto 15px;
       display: block;
+      color: #d4af37;
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
     }
 
