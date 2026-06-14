@@ -3,18 +3,19 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
-import { LucideAngularModule, Crown, UserPlus } from '@lucide/angular';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="auth-page">
       <div class="stars"></div>
       <div class="auth-box">
         <div class="card-header">
-          <lucide-icon name="crown" class="crown-icon" size="60"></lucide-icon>
+          <svg class="crown-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#d4a574">
+            <path d="M12 2L4 8V10H2V12H4V20H20V12H22V10H20V8L12 2M12 4L19 8H17L14 11L17 14H12L10 16H14L12 20L10 16H5L8 14L5 11H3L12 4Z"/>
+          </svg>
           <h1>REGICIDE</h1>
           <p class="subtitle">Únete a la batalla</p>
         </div>
@@ -58,7 +59,9 @@ import { LucideAngularModule, Crown, UserPlus } from '@lucide/angular';
             [disabled]="!registerForm.valid"
             class="btn-register"
           >
-            <lucide-icon name="user-plus" size="20"></lucide-icon>
+            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+              <path d="M15 14C12.67 14 8 15.17 8 17.5V19H22V17.5C22 15.17 17.33 14 15 14M9 12C10.66 12 12 10.66 12 9C12 7.34 10.66 6 9 6C7.34 6 6 7.34 6 9C6 10.66 7.34 12 9 12M15 12V9H12V7H15V4H17V7H20V9H17V12H15Z"/>
+            </svg>
             CREAR CUENTA
           </button>
 

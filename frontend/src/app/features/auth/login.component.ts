@@ -3,18 +3,19 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
-import { LucideAngularModule, Crown, LogIn, UserCheck } from '@lucide/angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
     <div class="auth-page" [style.backgroundImage]="'url(/assets/imgs/background.png)'">
       <div class="overlay"></div>
       <div class="auth-box">
         <div class="card-header">
-          <lucide-icon name="crown" class="crown-icon" size="60"></lucide-icon>
+          <svg class="crown-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#d4a574">
+            <path d="M12 2L4 8V10H2V12H4V20H20V12H22V10H20V8L12 2M12 4L19 8H17L14 11L17 14H12L10 16H14L12 20L10 16H5L8 14L5 11H3L12 4Z"/>
+          </svg>
           <h1>REGICIDE</h1>
           <p class="subtitle">Desafía a la Realeza</p>
         </div>
@@ -53,7 +54,9 @@ import { LucideAngularModule, Crown, LogIn, UserCheck } from '@lucide/angular';
             [disabled]="!loginForm.valid"
             class="btn-login"
           >
-            <lucide-icon name="log-in" size="20"></lucide-icon>
+            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+              <path d="M10 17V14H3V10H10V7L16 12L10 17Z"/>
+            </svg>
             ENTRAR
           </button>
 
@@ -65,7 +68,9 @@ import { LucideAngularModule, Crown, LogIn, UserCheck } from '@lucide/angular';
         <div class="divider">O</div>
 
         <button (click)="playAsGuest()" class="btn-guest">
-          <lucide-icon name="user-check" size="20"></lucide-icon>
+          <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
+            <path d="M12 12C13.657 12 15 10.657 15 9C15 7.343 13.657 6 12 6C10.343 6 9 7.343 9 9C9 10.657 10.343 12 12 12M12 14C10.34 14 7 14.92 7 16.5V18H17V16.5C17 14.92 13.66 14 12 14M9 18L14 23L21 16H18V13H15V16H9V18Z"/>
+          </svg>
           JUGAR SIN CUENTA
         </button>
 
