@@ -17,6 +17,10 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'juego-invitado',
+    loadComponent: () => import('./features/game/game.component').then(m => m.GameComponent)
+  },
+  {
     path: 'clasificacion',
     loadComponent: () => import('./features/leaderboard/leaderboard.component').then(m => m.LeaderboardComponent)
   },
