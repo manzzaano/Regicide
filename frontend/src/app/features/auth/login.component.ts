@@ -3,23 +3,18 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../shared/services/auth.service';
+import { LucideAngularModule, Crown, LogIn, UserCheck } from '@lucide/angular';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, LucideAngularModule],
   template: `
     <div class="auth-page" [style.backgroundImage]="'url(/assets/imgs/background.png)'">
       <div class="overlay"></div>
       <div class="auth-box">
         <div class="card-header">
-          <svg class="crown-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 60 L20 30 L35 45 L50 15 L65 45 L80 30 L90 60 Z" fill="#d4a574" stroke="#8b4513" stroke-width="2"/>
-            <rect x="10" y="60" width="80" height="25" fill="#8b4513" stroke="#d4a574" stroke-width="2"/>
-            <circle cx="30" cy="50" r="6" fill="#d4a574"/>
-            <circle cx="50" cy="35" r="6" fill="#d4a574"/>
-            <circle cx="70" cy="50" r="6" fill="#d4a574"/>
-          </svg>
+          <lucide-icon name="crown" class="crown-icon" size="60"></lucide-icon>
           <h1>REGICIDE</h1>
           <p class="subtitle">Desafía a la Realeza</p>
         </div>
@@ -58,9 +53,7 @@ import { AuthService } from '../../shared/services/auth.service';
             [disabled]="!loginForm.valid"
             class="btn-login"
           >
-            <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2L7 8L6 15L12 18L18 15L17 8Z" fill="currentColor"/>
-            </svg>
+            <lucide-icon name="log-in" size="20"></lucide-icon>
             ENTRAR
           </button>
 
@@ -72,9 +65,7 @@ import { AuthService } from '../../shared/services/auth.service';
         <div class="divider">O</div>
 
         <button (click)="playAsGuest()" class="btn-guest">
-          <svg class="btn-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="currentColor"/>
-          </svg>
+          <lucide-icon name="user-check" size="20"></lucide-icon>
           JUGAR SIN CUENTA
         </button>
 
@@ -358,6 +349,6 @@ export class LoginComponent {
   }
 
   playAsGuest(): void {
-    this.router.navigate(['/juego-invitado']);
+    this.router.navigate(['/juego-invitado'], { queryParams: { guest: true } });
   }
 }

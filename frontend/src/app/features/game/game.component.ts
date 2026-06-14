@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { GameWebSocketService, GameState } from '@app/shared/services/game-websocket.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -46,9 +47,14 @@ import { takeUntil } from 'rxjs/operators';
           </div>
         </div>
 
+        <div class="guest-banner" *ngIf="isGuest">
+          <strong>Jugando como invitado</strong> — <a href="#" (click)="goToAuth($event)">Crea una cuenta para guardar tu progreso</a>
+        </div>
+
         <div class="actions">
           <button (click)="startNewGame()" class="btn-primary">Nueva partida</button>
           <button (click)="finishGame()" class="btn-danger">Terminar</button>
+          <button *ngIf="isGuest" (click)="goToAuth()" class="btn-secondary">Crear cuenta</button>
         </div>
       </div>
 
@@ -145,16 +151,50 @@ import { takeUntil } from 'rxjs/operators';
       align-items: center;
       min-height: 400px;
     }
+    .guest-banner {
+      background: rgba(255, 193, 7, 0.2);
+      border: 2px solid #ffc107;
+      color: #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .guest-banner a {
+      color: #fff;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .btn-secondary {
+      padding: 12px 24px;
+      background: #ffc107;
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
   `]
 })
 export class GameComponent implements OnInit, OnDestroy {
   gameState$ = this.wsService.getGameState$();
   connected$ = this.wsService.isConnected$();
+  isGuest = false;
   private destroy$ = new Subject<void>();
 
-  constructor(private wsService: GameWebSocketService) {}
+  constructor(
+    private wsService: GameWebSocketService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        this.isGuest = params['guest'] === 'true';
+      });
+
     this.gameState$
       .pipe(takeUntil(this.destroy$))
       .subscribe(state => {
@@ -179,5 +219,10 @@ export class GameComponent implements OnInit, OnDestroy {
 
   finishGame(): void {
     this.wsService.finishGame();
+  }
+
+  goToAuth(event?: Event): void {
+    if (event) event.preventDefault();
+    this.router.navigate(['/registro']);
   }
 }
