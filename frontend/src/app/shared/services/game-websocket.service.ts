@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { RxStomp } from '@stomp/rx-stomp';
-import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@app/environments/environment';
@@ -36,8 +35,7 @@ export class GameWebSocketService {
       brokerURL: wsUrl,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
-      heartbeatOutgoing: 4000,
-      webSocketFactory: () => new SockJS(wsUrl) as any
+      heartbeatOutgoing: 4000
     });
 
     this.rxStomp.activate();
