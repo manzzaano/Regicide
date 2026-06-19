@@ -1,21 +1,85 @@
-version: '3.8'
+version: '3.9'
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:16-alpine
+    container_name: regicide-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: regicide
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USER:-regicide}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+      POSTGRES_DB: ${DB_NAME:-regicide}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT:-5432}:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-regicide}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - regicide-net
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: regicide-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-regicide}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER:-regicide}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secure_password}
+      SPRING_PROFILES_ACTIVE: prod
+      JAVA_OPTS: -Xmx512m -Xms256m
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - regicide-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: regicide-frontend
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    networks:
+      - regicide-net
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  regicide-net:
+    driver: bridge
 
 volumes:
   postgres_data:
+    driver: local
