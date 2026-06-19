@@ -1,4 +1,6 @@
 backend/
+*.pom
+*.jar
 docker-compose.yml
 Dockerfile
 nginx.conf
@@ -7,9 +9,7 @@ nginx.conf
 .env.*.local
 .git
 .gitignore
-node_modules/
 .npm
-dist/
 build/
 README.md
 *.md
@@ -20,3 +20,6 @@ README.md
 *~
 .DS_Store
 Thumbs.db
+.angular/
+frontend/node_modules/
+legacy/

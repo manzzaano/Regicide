@@ -1,8 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm ci && npm run build:prod",
   "outputDirectory": "frontend/dist/regicide-frontend/browser",
   "devCommand": "cd frontend && npm start",
+  "installCommand": "cd frontend && npm ci",
   "env": {
     "BACKEND_URL": "@backend-url",
     "API_URL": "@api-url"
