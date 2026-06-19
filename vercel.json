@@ -4,10 +4,6 @@
   "outputDirectory": "frontend/dist/regicide-frontend/browser",
   "devCommand": "cd frontend && npm start",
   "installCommand": "cd frontend && npm ci",
-  "env": {
-    "BACKEND_URL": "@backend-url",
-    "API_URL": "@api-url"
-  },
   "regions": ["sfo1"],
   "rewrites": [
     {
