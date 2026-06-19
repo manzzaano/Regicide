@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "cd frontend && npm ci && npm run build:prod",
-  "outputDirectory": "frontend/dist/regicide-frontend/browser",
+  "outputDirectory": "frontend/dist/regicide-frontend",
   "devCommand": "cd frontend && npm start",
   "installCommand": "cd frontend && npm ci",
   "regions": ["sfo1"],
