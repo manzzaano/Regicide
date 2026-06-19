@@ -5,9 +5,9 @@ services:
     image: postgres:16-alpine
     container_name: regicide-postgres
     environment:
-      POSTGRES_USER: ${DB_USER:-regicide}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
-      POSTGRES_DB: ${DB_NAME:-regicide}
+      POSTGRES_USER: ${DB_USER:?DB_USER is required}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: ${DB_NAME:?DB_NAME is required}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
