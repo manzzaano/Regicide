@@ -5,17 +5,22 @@ import { map } from 'rxjs/operators';
 import { environment } from '@app/environments/environment';
 
 export interface GameState {
-  gameId: string;
-  phase: string; // ATTACK, DEFENSE, GAME_OVER
+  gameId?: string;
+  sessionId?: string;
+  phase: string;
   hand: number[];
   enemyHP: number;
+  enemyMaxHP: number;
   currentEnemy: string;
+  currentEnemyRank: string;
   currentDamage: number;
   turnCount: number;
   cardsPlayed: number;
   gameWon: boolean;
-  message: string;
-  error: string | null;
+  message?: string;
+  error?: string | null;
+  playerName?: string;
+  playerLevel?: number;
 }
 
 @Injectable({ providedIn: 'root' })
