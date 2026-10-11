@@ -3,8 +3,13 @@
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
+    "tw": "tailwindcss -i src/styles.css -o src/styles.build.css",
+    "tw:watch": "tailwindcss -i src/styles.css -o src/styles.build.css --watch",
+    "prestart": "npm run tw",
     "start": "ng serve",
+    "prebuild": "npm run tw",
     "build": "ng build",
+    "prebuild:prod": "npm run tw",
     "build:prod": "ng build --configuration production",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
@@ -14,6 +19,7 @@
   "private": true,
   "dependencies": {
     "@angular/animations": "^18.0.0",
+    "@angular/cdk": "^18.2.14",
     "@angular/common": "^18.0.0",
     "@angular/compiler": "^18.0.0",
     "@angular/core": "^18.0.0",
@@ -33,6 +39,8 @@
     "@angular-devkit/build-angular": "^18.0.0",
     "@angular/cli": "^18.0.0",
     "@angular/compiler-cli": "^18.0.0",
+    "@tailwindcss/cli": "^4.3.1",
+    "@tailwindcss/postcss": "^4.3.1",
     "@types/jasmine": "~5.1.0",
     "@types/sockjs-client": "^1.5.4",
     "jasmine-core": "~5.1.0",
@@ -41,6 +49,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.15",
+    "tailwindcss": "^4.3.1",
     "typescript": "~5.5.2"
   }
 }

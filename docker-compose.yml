@@ -32,17 +32,19 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-secure_password}
       SPRING_PROFILES_ACTIVE: prod
       JAVA_OPTS: -Xmx512m -Xms256m
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key_min_32_chars_test}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${BACKEND_PORT:-8080}:8080"
+      - "3000:8080"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 45s
     networks:
       - regicide-net
     restart: unless-stopped

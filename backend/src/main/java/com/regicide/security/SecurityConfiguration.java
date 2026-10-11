@@ -51,6 +51,7 @@ public class SecurityConfiguration {
         config.setAllowCredentials(false);
         config.addAllowedOrigin("http://localhost:4200");
         config.addAllowedOrigin("http://localhost:3000");
+        config.addAllowedOrigin("http://localhost");
         config.addAllowedMethod("GET");
         config.addAllowedMethod("POST");
         config.addAllowedMethod("PUT");
