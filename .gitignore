@@ -36,3 +36,13 @@ Thumbs.db
 legacy/target/
 legacy/out/
 legacy/.mvn/wrapper/*.jar
+
+.vercel
+
+# Material de referencia (vídeos/scans, no versionar)
+refs/
+
+# Capturas de trabajo en la raíz y artefactos de Playwright
+/*.png
+!/screenshot-game.png
+!/screenshot-login.png

@@ -2,6 +2,9 @@
 
 # Compiled output
 /dist
+
+# Tailwind generated stylesheet (built from src/styles.css)
+/src/styles.build.css
 /tmp
 /out-tsc
 /bazel-out
@@ -44,3 +47,5 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+.vercel
