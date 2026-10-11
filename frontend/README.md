@@ -1,67 +1,15 @@
-# Regicide Frontend
+# Regicide · frontend
 
-Frontend Angular 18 para el juego Regicide online.
+Angular 18 con componentes standalone y rutas con carga diferida: inicio, partida, reglas y estadísticas. Tailwind CSS 4 (se compila antes de `start` y `build`) y RxStomp para el WebSocket.
 
-## Stack
+- `features/`: una carpeta por pantalla.
+- `shared/services/`: conexión WebSocket con la partida, cartas, jugador (nombre y récord en el navegador) y autenticación.
+- `shared/ui/` y `shared/animations/`: la carta y sus animaciones.
 
-- **Angular 18**
-- **TypeScript 5.5**
-- **SCSS**
-- **GSAP** para animaciones
-- **Standalone Components**
-
-## Instalación
+La URL del backend está en `src/app/environments/`. El arranque está en el [README principal](../README.md).
 
 ```bash
-cd regicide-frontend
 npm install
+npm start          # http://localhost:4200
+npm run build      # build en dist/
 ```
-
-## Desarrollo
-
-```bash
-npm start
-```
-
-Abre `http://localhost:4200/` en el navegador.
-
-## Build
-
-```bash
-npm run build
-```
-
-Los artefactos compilados se guardan en `dist/`.
-
-## Estructura
-
-```
-src/
-├── app/
-│   ├── features/           # Módulos por funcionalidad
-│   │   ├── auth/          # Login y registro
-│   │   ├── game/          # Gameplay
-│   │   └── leaderboard/   # Ranking
-│   ├── shared/            # Servicios, guards, interceptores
-│   ├── environments/      # Config por ambiente
-│   ├── app.routes.ts      # Routing
-│   └── app.config.ts      # Configuración global
-├── assets/                # Imágenes, card PNG
-└── index.html
-```
-
-## Características por implementar
-
-1. **Auth** — Login/registro funcional con JWT
-2. **Game** — Componentes de cartas, tablero, lógica
-3. **Animaciones** — Flip cards, GSAP para ataques
-4. **Leaderboard** — Tabla de top jugadores
-5. **Responsive** — Funciona en mobile
-
-## Deploy a Vercel
-
-```bash
-vercel
-```
-
-O conectar el repo de GitHub directamente a Vercel.
