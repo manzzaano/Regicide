@@ -50,7 +50,7 @@ public class Partida {
         robar(MANO_MAXIMA);
     }
 
-    /** Para los tests: una partida con las cartas colocadas a mano. La primera de la posada es la de arriba. */
+    /** Una partida con las cartas ya colocadas, para los tests y para retomar una guardada. La primera de la posada es la de arriba. */
     Partida(List<Carta> mano, List<Carta> posada, List<Carta> descarte, List<Enemigo> castillo, int comodines, Random random) {
         this.random = random;
         this.comodines = comodines;
@@ -58,6 +58,25 @@ public class Partida {
         this.posada.addAll(posada);
         this.descarte.addAll(descarte);
         this.castillo.addAll(castillo);
+    }
+
+    public static Partida desde(Instantanea guardada, Random random) {
+        List<Enemigo> castillo = guardada.castillo().stream()
+                .map(enemigo -> new Enemigo(enemigo.carta(), enemigo.vida(), enemigo.ataque()))
+                .toList();
+        Partida partida = new Partida(guardada.mano(), guardada.posada(), guardada.descarte(), castillo,
+                guardada.comodines(), random);
+        partida.jugadas.addAll(guardada.jugadas());
+        partida.fase = guardada.fase();
+        return partida;
+    }
+
+    public Instantanea instantanea() {
+        List<Instantanea.EnemigoGuardado> enemigos = castillo.stream()
+                .map(enemigo -> new Instantanea.EnemigoGuardado(enemigo.carta(), enemigo.vida(), enemigo.ataque()))
+                .toList();
+        return new Instantanea(List.copyOf(mano), List.copyOf(posada), List.copyOf(descarte), List.copyOf(jugadas),
+                enemigos, comodines, fase);
     }
 
     /** Paso 1 a 3: juega las cartas de esas posiciones de la mano contra el enemigo. */
