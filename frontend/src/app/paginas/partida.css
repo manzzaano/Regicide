@@ -362,6 +362,14 @@ dd {
   font-size: 15px;
 }
 
+/* Sin cartas elegidas, en contorno como el botón rojo secundario en vez de un relleno apagado. */
+.confirmar:disabled {
+  border-color: rgb(239 68 68 / 0.25);
+  background: rgb(239 68 68 / 0.06);
+  color: rgb(239 68 68 / 0.6);
+  opacity: 1;
+}
+
 .cuantas {
   font-family: var(--mono);
   font-weight: 700;
@@ -527,7 +535,7 @@ dd {
 }
 
 /* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo.
-   Velo rojo oscuro y su palo tachado en una esquina. */
+   Velo rojo oscuro y su palo tachado en la esquina izquierda, la que no tapa la carta siguiente. */
 .sin-poder .cara::before {
   content: '';
   position: absolute;
@@ -542,20 +550,21 @@ dd {
 .sin-poder::after {
   content: attr(data-palo);
   position: absolute;
-  top: -10px;
-  right: -8px;
+  top: -12px;
+  left: -10px;
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid rgb(239 68 68 / 0.5);
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--rojo);
   border-radius: 50%;
   background:
-    linear-gradient(135deg, transparent 46%, var(--rojo) 46% 54%, transparent 54%),
-    var(--fondo);
-  color: var(--texto-suave);
-  font-size: 14px;
+    linear-gradient(135deg, transparent 44%, var(--rojo) 44% 56%, transparent 56%),
+    var(--negro);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.7);
+  color: var(--texto);
+  font-size: 17px;
   line-height: 1;
 }
 
@@ -624,8 +633,8 @@ dd {
   }
 }
 
-/* En ordenador la partida cabe en la pantalla sin scroll: la mesa se centra en el alto que queda
-   y la mano se queda abajo del todo, con la parte de abajo de las cartas escondida. */
+/* En ordenador la partida cabe en la pantalla sin scroll: mesa y mano se centran juntas en el alto
+   y, si la pantalla es baja, lo que no cabe es el pie de las cartas de la mano. */
 @media (min-width: 1341px) {
   :host {
     height: 100dvh;
@@ -633,20 +642,17 @@ dd {
   }
   .mesa {
     min-height: 0;
-    grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
     grid-template-areas:
       '. . .'
       'mazos enemigo comodines'
       'mazos centro comodines'
-      '. . .'
-      'mano mano mano';
+      'mano mano mano'
+      '. . .';
     padding-bottom: 0;
   }
   .carta-enemigo {
     width: clamp(120px, 23vh, 250px);
-  }
-  .abanico-mano {
-    margin-bottom: calc(var(--ancho) * -0.12);
   }
 }
 
