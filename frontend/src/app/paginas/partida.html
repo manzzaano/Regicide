@@ -90,33 +90,7 @@
         }
         <span class="cursor" aria-hidden="true">▌</span>
       </p>
-      <button
-        type="button"
-        class="boton-principal confirmar"
-        [disabled]="terminada(estado) || !elegidas().length || !juego.conectado()"
-        (click)="estado.fase === 'DEFENSA' ? defender() : atacar()"
-      >
-        {{ estado.fase === 'DEFENSA' ? 'Confirmar Defensa' : 'Confirmar Ataque' }}
-        @if (elegidas().length) {
-          <span class="cuantas">· {{ elegidas().length }}</span>
-        }
-      </button>
     </div>
-
-    <section class="caja seleccion" aria-labelledby="titulo-seleccion">
-      <h2 class="etiqueta" id="titulo-seleccion">Selección</h2>
-      <div class="huecos">
-        @for (hueco of huecosDeSeleccion; track hueco) {
-          @if (elegidas()[hueco] !== undefined) {
-            <button type="button" class="carta-sel" (click)="alternar(elegidas()[hueco])">
-              <app-carta [carta]="estado.mano[elegidas()[hueco]]" />
-            </button>
-          } @else {
-            <span class="carta-sel vacia"></span>
-          }
-        }
-      </div>
-    </section>
 
     <section class="caja comodines" aria-labelledby="titulo-comodines">
       <h2 class="etiqueta" id="titulo-comodines">Comodines</h2>
@@ -136,37 +110,51 @@
       </div>
     </section>
 
-    <section class="caja mano" aria-labelledby="titulo-mano">
-      <h2 class="etiqueta" id="titulo-mano">
-        Tu mano · {{ estado.mano.length }}/8
+    <!-- Sin caja: la mano sale del borde de abajo, como en un juego de cartas. -->
+    <section class="mano" aria-labelledby="titulo-mano">
+      <div class="info">
+        <h2 class="etiqueta" id="titulo-mano">
+          {{ estado.mano.length }}/8 cartas
+          @if (elegidas().length) {
+            <span class="suma">· {{ puntosElegidos(estado) }} puntos</span>
+          }
+        </h2>
         @if (elegidas().length) {
-          <span class="suma">· {{ puntosElegidos(estado) }} puntos</span>
+          <button type="button" class="boton" (click)="cancelarSeleccion()">Cancelar</button>
         }
-      </h2>
-      <div class="fila">
+        <button
+          type="button"
+          class="boton-principal confirmar"
+          [disabled]="terminada(estado) || !elegidas().length || !juego.conectado()"
+          (click)="estado.fase === 'DEFENSA' ? defender() : atacar()"
+        >
+          {{ estado.fase === 'DEFENSA' ? 'Confirmar Defensa' : 'Confirmar Ataque' }}
+          @if (elegidas().length) {
+            <span class="cuantas">· {{ elegidas().length }}</span>
+          }
+        </button>
+      </div>
+      <div class="abanico-mano">
         @for (carta of estado.mano; track carta.palo + carta.numero; let i = $index) {
           <button
             type="button"
             class="carta"
             [style.--i]="i"
-            [style.--giro]="(i - (estado.mano.length - 1) / 2) * 2 + 'deg'"
-            [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 1.5 + 'px'"
+            [style.--giro]="(i - (estado.mano.length - 1) / 2) * 5 + 'deg'"
+            [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 6 + 'px'"
             [class.sin-poder]="sinPoder(carta, estado)"
+            [attr.data-palo]="simbolos[carta.palo]"
             [attr.aria-pressed]="elegidas().includes(i)"
             [disabled]="terminada(estado)"
             (click)="alternar(i)"
+            (pointermove)="inclinar($event)"
+            (pointerleave)="enderezar($event)"
           >
-            <app-carta [carta]="carta" />
+            <span class="cara"><app-carta [carta]="carta" /></span>
           </button>
         }
       </div>
     </section>
-
-    <div class="cancelar">
-      <button type="button" class="boton" [disabled]="!elegidas().length" (click)="cancelarSeleccion()">
-        Cancelar Selección
-      </button>
-    </div>
   } @else {
     <p class="caja conectando" aria-live="polite"><span class="punto"></span>Conectando con el servidor…</p>
   }

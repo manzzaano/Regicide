@@ -54,7 +54,7 @@ describe('Partida', () => {
   }
 
   function cartaDeLaMano(posicion: number): HTMLButtonElement {
-    return pantalla.querySelectorAll<HTMLButtonElement>('.mano button')[posicion];
+    return pantalla.querySelectorAll<HTMLButtonElement>('.abanico-mano button')[posicion];
   }
 
   beforeEach(() => {
@@ -125,16 +125,15 @@ describe('Partida', () => {
     expect(juego.defender).toHaveBeenCalledWith([0, 1]);
   });
 
-  it('las cartas elegidas pasan a la caja de selección y Cancelar Selección las suelta', async () => {
+  it('Cancelar suelta las cartas elegidas', async () => {
     await mostrar(EN_ATAQUE);
 
     cartaDeLaMano(1).click();
     fixture.detectChanges();
-    expect(pantalla.querySelector('.seleccion img')!.getAttribute('alt')).toBe(nombreCarta(EN_ATAQUE.mano[1]));
+    expect(cartaDeLaMano(1).getAttribute('aria-pressed')).toBe('true');
 
-    boton('Cancelar Selección').click();
+    boton('Cancelar').click();
     fixture.detectChanges();
-    expect(pantalla.querySelector('.seleccion img')).toBeNull();
     expect(cartaDeLaMano(1).getAttribute('aria-pressed')).toBe('false');
   });
 

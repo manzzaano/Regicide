@@ -1,5 +1,5 @@
-/* El mismo reparto que la ventana de 1500×705 de v1: mazos a la izquierda, enemigo en el centro,
-   selección a la derecha y, abajo, comodines, mano y cancelar. */
+/* El reparto de la ventana de v1: mazos a la izquierda, enemigo en el centro y comodines a la derecha.
+   La selección ya se ve en la propia mano, así que su caja sobra; la mano ocupa todo el ancho abajo. */
 /* La barra arriba y la mesa ocupando el resto del alto, con las filas centradas en vertical. */
 :host {
   display: flex;
@@ -14,15 +14,18 @@
   width: 100%;
   /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  /* Las dos filas de 1fr reparten el alto sobrante: la mesa queda centrada y la mano pegada abajo. */
+  grid-template-rows: 1fr auto auto 1fr;
   grid-template-areas:
-    'mazos enemigo seleccion'
-    'mazos centro seleccion'
-    'comodines mano cancelar';
+    '. . .'
+    'mazos enemigo comodines'
+    'mazos centro comodines'
+    'mano mano mano';
   align-items: center;
   gap: 18px 24px;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 0 16px 24px;
+  padding: 0 16px 8px;
 }
 
 .mazos {
@@ -367,69 +370,16 @@ dd {
   font-weight: 700;
 }
 
-/* Selección */
-
-.seleccion {
-  grid-area: seleccion;
-  justify-self: end;
-}
-
-.huecos {
-  display: grid;
-  grid-template-columns: repeat(4, 48px);
-  gap: 8px;
-}
-
-.carta-sel {
-  display: block;
-  width: 48px;
-  aspect-ratio: 236 / 330;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-}
-
-button.carta-sel {
-  cursor: pointer;
-  animation: entrar 220ms var(--curva);
-}
-
-button.carta-sel:hover {
-  opacity: 0.8;
-}
-
-.vacia {
-  border: 1.5px dashed var(--linea);
-}
-
-/* Comodines, mano y cancelar */
+/* Comodines */
 
 .comodines {
   grid-area: comodines;
-  justify-self: start;
-}
-
-.mano {
-  grid-area: mano;
-  justify-self: center;
-  min-width: 0;
-}
-
-.cancelar {
-  grid-area: cancelar;
   justify-self: end;
 }
 
 .fila {
   display: flex;
   gap: 10px;
-}
-
-.mano .fila {
-  min-width: calc(8 * 84px + 7 * 10px);
-  min-height: 126px;
-  padding-top: 18px;
 }
 
 .carta {
@@ -443,20 +393,8 @@ button.carta-sel:hover {
   cursor: pointer;
   transition:
     transform 180ms var(--curva),
+    translate 220ms var(--curva),
     opacity 180ms;
-}
-
-.suma {
-  color: var(--rojo);
-}
-
-/* Abanico ligero: cada carta gira 2° y baja un poco según lo lejos que esté del centro. */
-.mano .carta {
-  --alza: 0px;
-  transform: translateY(calc(var(--arco, 0px) - var(--alza))) rotate(var(--giro, 0deg));
-  transform-origin: 50% 100%;
-  animation: repartir 420ms var(--curva) backwards;
-  animation-delay: calc(var(--i, 0) * 45ms);
 }
 
 .carta img {
@@ -472,23 +410,8 @@ button.carta-sel:hover {
   transform: translateY(-10px);
 }
 
-.mano .carta:hover:not(:disabled) {
-  --alza: 10px;
-}
-
-/* La carta elegida sube y se marca en rojo, en vez de apagarse como en v1: así sigue a la vista. */
-.mano .carta[aria-pressed='true'] {
-  --alza: 16px;
-  box-shadow:
-    0 0 0 2px var(--rojo),
-    0 0 24px rgb(239 68 68 / 0.5);
-}
-
 .carta:disabled {
   opacity: 0.4;
-}
-
-.carta:disabled {
   cursor: default;
 }
 
@@ -496,33 +419,154 @@ button.carta-sel:hover {
   filter: grayscale(1);
 }
 
-/* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo. */
-.sin-poder::after {
+/* Mano */
+
+.mano {
+  grid-area: mano;
+  align-self: end;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+}
+
+.info .etiqueta {
+  margin: 0;
+  font-size: 13px;
+}
+
+.suma {
+  color: var(--rojo);
+}
+
+/* Abanico de verdad: cartas grandes solapadas que giran 5° y bajan en arco según lo lejos que estén del centro. */
+.abanico-mano {
+  --ancho: clamp(64px, min(17vh, 15vw), 150px);
+  display: flex;
+  justify-content: center;
+  padding: 40px calc(var(--ancho) * 0.2) 12px;
+}
+
+.abanico-mano .carta {
+  --alza: 0px;
+  width: var(--ancho);
+  margin-inline: calc(var(--ancho) * -0.2);
+  transform: translateY(calc(var(--arco, 0px) - var(--alza))) rotate(var(--giro, 0deg));
+  transform-origin: 50% 100%;
+  animation: repartir 420ms var(--curva) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* La que está bajo el ratón se endereza, crece y pasa por encima; las vecinas se apartan para dejarla ver. */
+.abanico-mano .carta:hover:not(:disabled) {
+  z-index: 20;
+  transform: translateY(calc(var(--ancho) * -0.22)) scale(1.2);
+}
+
+.abanico-mano .carta:hover:not(:disabled) + .carta {
+  translate: calc(var(--ancho) * 0.18) 0;
+}
+
+.abanico-mano .carta:hover:not(:disabled) + .carta + .carta {
+  translate: calc(var(--ancho) * 0.08) 0;
+}
+
+.abanico-mano .carta:has(+ .carta:hover:not(:disabled)) {
+  translate: calc(var(--ancho) * -0.18) 0;
+}
+
+.abanico-mano .carta:has(+ .carta + .carta:hover:not(:disabled)) {
+  translate: calc(var(--ancho) * -0.08) 0;
+}
+
+.abanico-mano .carta:disabled {
+  opacity: 1;
+}
+
+.cara {
+  position: relative;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.8);
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 120ms ease-out,
+    box-shadow 200ms;
+}
+
+/* Reflejo de luz que sigue al puntero. */
+.cara::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 8px;
-  box-shadow: inset 0 0 12px 4px darkred;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.45), transparent 55%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms;
+}
+
+.carta:hover:not(:disabled) .cara::after {
+  opacity: 1;
+}
+
+/* La carta elegida sube y se marca en rojo, en vez de apagarse como en v1: así sigue a la vista. */
+.abanico-mano .carta[aria-pressed='true'] {
+  --alza: calc(var(--ancho) * 0.2);
+}
+
+.carta[aria-pressed='true'] .cara {
+  box-shadow:
+    0 0 0 3px var(--rojo),
+    0 0 32px 4px rgb(239 68 68 / 0.55);
+}
+
+/* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo.
+   Velo rojo oscuro y su palo tachado en una esquina. */
+.sin-poder .cara::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 8px;
+  background: rgb(69 10 10 / 0.45);
+  box-shadow: inset 0 0 14px 4px darkred;
   pointer-events: none;
 }
 
-.sin-poder::before {
-  content: 'sin poder';
+.sin-poder::after {
+  content: attr(data-palo);
   position: absolute;
-  bottom: -9px;
-  left: 50%;
-  z-index: 1;
-  padding: 1px 6px;
-  border: 1px solid rgb(239 68 68 / 0.4);
-  border-radius: 3px;
-  background: var(--fondo);
-  color: var(--rojo);
-  font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transform: translateX(-50%);
+  top: -10px;
+  right: -8px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgb(239 68 68 / 0.5);
+  border-radius: 50%;
+  background:
+    linear-gradient(135deg, transparent 46%, var(--rojo) 46% 54%, transparent 54%),
+    var(--fondo);
+  color: var(--texto-suave);
+  font-size: 14px;
+  line-height: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cara {
+    transform: none;
+  }
 }
 
 @keyframes repartir {
@@ -588,24 +632,16 @@ button.carta-sel:hover {
 @media (max-width: 1340px) {
   .mesa {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: none;
     grid-template-areas:
       'enemigo enemigo'
       'centro centro'
       'mano mano'
-      'seleccion comodines'
-      'mazos cancelar';
+      'mazos comodines';
     gap: 16px;
   }
   .mesa > * {
     justify-self: center;
-  }
-  .mano {
-    max-width: 100%;
-  }
-  .mano .fila {
-    flex-wrap: wrap;
-    justify-content: center;
-    min-width: 0;
   }
   .enemigo {
     gap: 12px;
@@ -623,18 +659,12 @@ button.carta-sel:hover {
   .carta {
     width: clamp(58px, 18vw, 84px);
   }
-  .huecos {
-    grid-template-columns: repeat(4, 48px);
-  }
-  .carta-sel {
-    width: 48px;
-  }
 }
 
 @media (max-width: 560px) {
   .mesa {
     grid-template-columns: 1fr;
-    grid-template-areas: 'enemigo' 'centro' 'mano' 'cancelar' 'seleccion' 'comodines' 'mazos';
+    grid-template-areas: 'enemigo' 'centro' 'mano' 'comodines' 'mazos';
   }
   .castillo li {
     width: 20px;

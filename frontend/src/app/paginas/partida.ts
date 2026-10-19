@@ -33,7 +33,7 @@ export class Partida implements OnInit {
   /** Los avisos pendientes; se muestran de uno en uno, como los Alert de v1. */
   protected readonly avisos = signal<Mensaje[]>([]);
 
-  protected readonly huecosDeSeleccion = Array.from({ length: 8 }, (_, i) => i);
+  protected readonly simbolos = { PICAS: '♠', CORAZONES: '♥', TREBOLES: '♣', DIAMANTES: '♦' };
   protected readonly castillo = ['J', 'J', 'J', 'J', 'Q', 'Q', 'Q', 'Q', 'K', 'K', 'K', 'K'];
   protected readonly terminada = terminada;
   protected readonly nombreCarta = nombreCarta;
@@ -96,6 +96,25 @@ export class Partida implements OnInit {
   protected puntosElegidos(estado: EstadoPartida): number {
     const valor = (numero: number) => ({ 11: 10, 12: 15, 13: 20 })[numero] ?? numero;
     return this.elegidas().reduce((suma, i) => suma + valor(estado.mano[i].numero), 0);
+  }
+
+  // La inclinación 3D y el reflejo siguen al puntero; con transform en CSS, sin volver a pintar la vista.
+  protected inclinar(evento: PointerEvent): void {
+    const carta = evento.currentTarget as HTMLElement;
+    const { left, top, width, height } = carta.getBoundingClientRect();
+    const x = (evento.clientX - left) / width;
+    const y = (evento.clientY - top) / height;
+    carta.style.setProperty('--rx', `${(0.5 - y) * 18}deg`);
+    carta.style.setProperty('--ry', `${(x - 0.5) * 18}deg`);
+    carta.style.setProperty('--gx', `${x * 100}%`);
+    carta.style.setProperty('--gy', `${y * 100}%`);
+  }
+
+  protected enderezar(evento: PointerEvent): void {
+    const carta = evento.currentTarget as HTMLElement;
+    for (const propiedad of ['--rx', '--ry', '--gx', '--gy']) {
+      carta.style.removeProperty(propiedad);
+    }
   }
 
   protected cancelarSeleccion(): void {
