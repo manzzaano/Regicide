@@ -93,7 +93,9 @@
     </div>
 
     <section class="caja comodines" aria-labelledby="titulo-comodines">
-      <h2 class="etiqueta" id="titulo-comodines">Comodines</h2>
+      <h2 class="etiqueta" id="titulo-comodines">
+        Comodines <span class="quedan">{{ estado.comodines }}/2</span>
+      </h2>
       <div class="fila">
         @for (n of [1, 2]; track n) {
           <button
@@ -102,12 +104,18 @@
             [class.usado]="2 - estado.comodines >= n"
             [disabled]="2 - estado.comodines >= n || terminada(estado) || !juego.conectado()"
             [attr.aria-label]="'Comodín ' + n + (2 - estado.comodines >= n ? ' (usado)' : '')"
+            aria-describedby="pista-comodin"
             (click)="juego.usarComodin()"
           >
-            <img src="cartas/comodin.webp" alt="" width="236" height="330" />
+            <!-- Al usarlo se da la vuelta y queda boca abajo. -->
+            <span class="giro">
+              <img src="cartas/comodin.webp" alt="" width="236" height="330" />
+              <span class="dorso"></span>
+            </span>
           </button>
         }
       </div>
+      <p class="pista" id="pista-comodin">Descarta tu mano y roba 8 cartas</p>
     </section>
 
     <!-- Sin caja: la mano sale del borde de abajo, como en un juego de cartas. -->

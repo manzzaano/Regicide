@@ -378,8 +378,93 @@ dd {
 /* Comodines */
 
 .comodines {
+  position: relative;
   grid-area: comodines;
   justify-self: end;
+}
+
+.comodines .etiqueta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quedan {
+  padding: 0 6px;
+  border: 1px solid rgb(239 68 68 / 0.3);
+  border-radius: 3px;
+  background: rgb(239 68 68 / 0.06);
+  color: var(--rojo);
+  letter-spacing: 0.05em;
+}
+
+.comodines .fila {
+  gap: 14px;
+  padding: 4px 6px 0;
+}
+
+/* Las dos cartas algo torcidas, como dejadas sobre la mesa. */
+.comodines .carta:first-child {
+  rotate: -6deg;
+}
+
+.comodines .carta:last-child {
+  rotate: 5deg;
+}
+
+.comodines .carta:hover:not(:disabled) {
+  rotate: 0deg;
+  transform: translateY(-10px) scale(1.06);
+}
+
+.giro {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 600ms var(--curva);
+}
+
+.giro > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+
+.dorso {
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.05) 0 6px, transparent 6px 12px),
+    #1a1a1a;
+  transform: rotateY(180deg);
+}
+
+.usado .giro {
+  transform: rotateY(180deg);
+}
+
+/* Lo que hace el comodín, al pasar el ratón por uno que se puede usar. */
+.pista {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid rgb(239 68 68 / 0.3);
+  border-radius: 6px;
+  background: var(--negro);
+  color: var(--texto);
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0;
+  translate: 0 -4px;
+  pointer-events: none;
+  transition:
+    opacity 150ms,
+    translate 150ms;
+}
+
+.comodines:has(.carta:hover:not(:disabled), .carta:focus-visible) .pista {
+  opacity: 1;
+  translate: 0 0;
 }
 
 .fila {
@@ -399,6 +484,7 @@ dd {
   transition:
     transform 180ms var(--curva),
     translate 220ms var(--curva),
+    rotate 180ms var(--curva),
     opacity 180ms;
 }
 
@@ -411,17 +497,13 @@ dd {
   box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
 }
 
-.comodines .carta:hover:not(:disabled) {
-  transform: translateY(-10px);
-}
-
 .carta:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.usado {
-  filter: grayscale(1);
+.usado:disabled {
+  opacity: 1;
 }
 
 /* Mano */
