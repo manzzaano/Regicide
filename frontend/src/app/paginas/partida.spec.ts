@@ -204,7 +204,7 @@ describe('Partida', () => {
 
   it('avisa del error del servidor y el aviso se cierra con su botón', async () => {
     await mostrar(EN_ATAQUE);
-    juego.error.set('Solo puedes combinar cartas del mismo número que sumen 10 o menos');
+    juego.error.set('Combina cartas del mismo número que sumen 10 o menos, o un as con otra carta');
     fixture.detectChanges();
     await fixture.whenStable();
 
