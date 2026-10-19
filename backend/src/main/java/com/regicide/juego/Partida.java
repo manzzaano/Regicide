@@ -113,6 +113,19 @@ public class Partida {
         }
     }
 
+    /** Paso 4: descarta cartas de la mano que sumen al menos el ataque del enemigo. */
+    public void defender(List<Integer> posiciones) {
+        exigirFase(Fase.DEFENSA);
+        List<Carta> cartas = cartasEn(posiciones);
+        int ataque = enemigo().ataque();
+        if (cartas.stream().mapToInt(Carta::valor).sum() < ataque) {
+            throw new JugadaNoValida("Tienes que descartar al menos " + ataque + " puntos");
+        }
+        mano.removeAll(cartas);
+        descarte.addAll(cartas);
+        fase = Fase.ATAQUE;
+    }
+
     private void exigirFase(Fase esperada) {
         if (fase != esperada) {
             throw new JugadaNoValida("Ahora no toca " + (esperada == Fase.ATAQUE ? "atacar" : "defenderse"));
