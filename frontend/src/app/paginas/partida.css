@@ -1,7 +1,17 @@
 /* El mismo reparto que la ventana de 1500×705 de v1: mazos a la izquierda, enemigo en el centro,
    selección a la derecha y, abajo, comodines, mano y cancelar. */
+/* La barra arriba y la mesa ocupando el resto del alto, con las filas centradas en vertical. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
 .mesa {
+  flex: 1;
   display: grid;
+  align-content: center;
+  width: 100%;
   /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas:
