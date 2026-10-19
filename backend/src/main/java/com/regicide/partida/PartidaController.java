@@ -5,6 +5,7 @@ import org.springframework.messaging.converter.MessageConversionException;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
@@ -56,9 +57,9 @@ class PartidaController {
         return new MensajeDeError(error.getMessage());
     }
 
-    @MessageExceptionHandler
+    @MessageExceptionHandler({MessageConversionException.class, MethodArgumentNotValidException.class})
     @SendToUser(destinations = "/queue/errores", broadcast = false)
-    MensajeDeError mensajeMalFormado(MessageConversionException error) {
+    MensajeDeError mensajeMalFormado() {
         return new MensajeDeError("Mensaje no válido");
     }
 }

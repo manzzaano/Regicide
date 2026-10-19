@@ -108,6 +108,30 @@ class PartidaWebSocketTest {
     }
 
     @Test
+    void unaPosicionVaciaDevuelveUnError() throws Exception {
+        try (ClienteStomp jugador = new ClienteStomp(puerto)) {
+            jugador.enviar("empezar");
+            jugador.estado();
+
+            jugador.enviar("atacar", "{\"cartas\":[null]}");
+
+            assertThat(jugador.error()).isEqualTo("Mensaje no válido");
+        }
+    }
+
+    @Test
+    void unAtaqueSinCuerpoDevuelveUnError() throws Exception {
+        try (ClienteStomp jugador = new ClienteStomp(puerto)) {
+            jugador.enviar("empezar");
+            jugador.estado();
+
+            jugador.enviar("atacar", "");
+
+            assertThat(jugador.error()).isEqualTo("Mensaje no válido");
+        }
+    }
+
+    @Test
     void sinPartidaEmpezadaNoSePuedeJugar() throws Exception {
         try (ClienteStomp jugador = new ClienteStomp(puerto)) {
             jugador.enviar("atacar", "{\"cartas\":[0]}");

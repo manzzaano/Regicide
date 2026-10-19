@@ -7,5 +7,8 @@ record Jugada(List<Integer> cartas) {
 
     Jugada {
         cartas = cartas == null ? List.of() : cartas;
+        if (cartas.contains(null)) {
+            throw new IllegalArgumentException("Posición de carta vacía");
+        }
     }
 }
