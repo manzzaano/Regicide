@@ -35,21 +35,27 @@ import { Sesion } from '../sesion';
         </ul>
       </div>
 
-      <section class="panel" aria-labelledby="titulo-panel">
-        <h2 class="etiqueta" id="titulo-panel">Jugando como</h2>
-        <p class="jugador">{{ sesion.nombre() ?? 'invitado' }}</p>
-        <div class="botones">
-          <a class="boton-principal" routerLink="/partida">Jugar</a>
-          <a class="boton" routerLink="/reglas">¿Cómo jugar?</a>
+<section class="panel" aria-labelledby="titulo-panel">
+        <div class="ficha">
+          <span class="avatar" aria-hidden="true">{{ sesion.nombre()?.charAt(0)?.toUpperCase() ?? '?' }}</span>
+          <div>
+            <h2 class="jugador" id="titulo-panel">{{ sesion.nombre() ?? 'Invitado' }}</h2>
+            <p class="estado">{{ sesion.nombre() ? 'Cuenta · partida guardada' : 'Invitado · sin guardar' }}</p>
+          </div>
         </div>
-        <nav class="enlaces" aria-label="Más">
-          <a routerLink="/clasificacion">Estadísticas <span aria-hidden="true">→</span></a>
+        <a class="boton-principal jugar" routerLink="/partida">Jugar <span aria-hidden="true">→</span></a>
+        <div class="secundarios">
+          <a class="boton" routerLink="/reglas">¿Cómo jugar?</a>
+          <a class="boton" routerLink="/clasificacion">Estadísticas</a>
+        </div>
+        <div class="pie">
           @if (sesion.nombre()) {
-            <button type="button" (click)="sesion.salir()">Salir <span aria-hidden="true">→</span></button>
+            <button type="button" class="enlace" (click)="sesion.salir()">Salir <span aria-hidden="true">→</span></button>
           } @else {
-            <a routerLink="/entrar">Entrar o crear cuenta <span aria-hidden="true">→</span></a>
+            <p>Guarda tu partida y entra en la clasificación.</p>
+            <a class="enlace" routerLink="/entrar">Entrar o crear cuenta <span aria-hidden="true">→</span></a>
           }
-        </nav>
+        </div>
       </section>
     </main>
   `,
@@ -188,64 +194,94 @@ import { Sesion } from '../sesion';
       gap: 1em;
       padding: 1.4em;
       border: 1px solid var(--borde-caja);
+      border-top: 2px solid var(--rojo);
       border-radius: 0.7em;
       background: rgb(18 18 18 / 0.85);
       box-shadow: var(--sombra);
       backdrop-filter: blur(12px);
     }
-    .panel .etiqueta {
-      margin: 0 0 -0.6em;
-      font-size: 0.6em;
+    .ficha {
+      display: flex;
+      align-items: center;
+      gap: 0.8em;
+      margin-bottom: 0.3em;
+    }
+    .avatar {
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 2.6em;
+      height: 2.6em;
+      border: 1px solid rgb(239 68 68 / 0.3);
+      border-radius: 0.4em;
+      background: rgb(239 68 68 / 0.1);
+      color: var(--rojo);
+      font-family: var(--display);
+      font-size: 1.1em;
+      font-weight: 800;
     }
     .jugador {
       margin: 0;
-      font-family: var(--display);
-      font-size: 1.5em;
+      font-size: 1.4em;
       font-weight: 700;
-      letter-spacing: -0.02em;
+      line-height: 1.15;
       overflow-wrap: anywhere;
     }
-    .botones {
+    .estado {
+      margin: 0.2em 0 0;
+      color: var(--texto-suave);
+      font-family: var(--mono);
+      font-size: 0.55em;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .panel a,
+    .panel button {
+      font-size: 0.8em;
+    }
+    .jugar {
+      justify-content: space-between;
+      min-height: 3.6em;
+      padding-inline: 1.4em;
+      font-size: 0.95em !important;
+    }
+    .jugar span,
+    .enlace span {
+      transition: transform 200ms var(--curva);
+    }
+    .jugar:hover span,
+    .enlace:hover span {
+      transform: translateX(4px);
+    }
+    .secundarios {
       display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 0.5em;
     }
-    .botones a {
-      min-height: 2.9em;
-      font-size: 0.85em;
+    .secundarios .boton {
+      min-height: 3em;
+      padding-inline: 0.6em;
     }
-    .enlaces {
+    .pie {
       display: grid;
+      gap: 0.4em;
+      padding-top: 1em;
       border-top: 1px solid var(--linea);
     }
-    .enlaces a,
-    .enlaces button {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.75em 0;
-      border: 0;
-      border-bottom: 1px solid var(--linea);
-      background: none;
+    .pie p {
+      margin: 0;
       color: var(--texto-suave);
-      font-size: 0.8em;
-      text-align: left;
+      font-size: 0.75em;
+    }
+    .enlace {
+      justify-self: start;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--rojo);
+      font-weight: 600;
       text-decoration: none;
       cursor: pointer;
-      transition: color 150ms;
-    }
-    .enlaces :last-child {
-      border-bottom: 0;
-      padding-bottom: 0;
-    }
-    .enlaces a:hover,
-    .enlaces button:hover {
-      color: var(--texto);
-    }
-    .enlaces span {
-      transition: transform 150ms var(--curva);
-    }
-    .enlaces a:hover span,
-    .enlaces button:hover span {
-      transform: translateX(3px);
     }
     @media (max-width: 860px) {
       .inicio {
