@@ -53,7 +53,8 @@ flowchart LR
 | Cada jugador recibe su estado en `/user/queue/partida` | Nadie ve la partida de otro | Un tema compartido (`/topic/game`), el fallo de la primera versión |
 | El estado que se envía no incluye el orden de la posada | El cliente no puede saber qué carta viene | Enviar el objeto del juego entero |
 | El servidor guarda la partida al terminar | Es quien sabe el resultado | Un endpoint donde el cliente diga "he ganado" |
-| Se puede jugar sin cuenta | La cuenta solo hace falta para aparecer en la clasificación | Obligar a registrarse para probar el juego |
+| Se puede jugar sin cuenta | La cuenta solo hace falta para aparecer en la clasificación y retomar partidas | Obligar a registrarse para probar el juego |
+| Con cuenta, la partida a medias se guarda en PostgreSQL tras cada jugada | v1 permitía guardar y cargar una partida (lo pedía la entrega 2); así el juego sigue siendo el mismo | Perder la partida al cerrar el navegador, o un botón de guardar que el jugador puede olvidar |
 | Esquema de base de datos con migraciones de Flyway | Cada cambio de tablas queda versionado | `ddl-auto: update` |
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
 
@@ -116,11 +117,12 @@ Terminada cuando una partida se juega entera con un cliente de test y dos jugado
 2. Registro e inicio de sesión con contraseñas cifradas con BCrypt y JWT.
 3. El JWT también en la conexión STOMP.
 4. Partida guardada por el servidor al terminar, si el jugador tiene sesión.
-5. API REST: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/leaderboard` y `GET /api/games/me`.
-6. Orígenes permitidos (CORS y WebSocket) leídos de la configuración.
-7. Tests de seguridad: rutas protegidas sin token, token caducado y registro duplicado.
+5. Partida a medias: con sesión, el estado completo (mano, posada en su orden, descarte, castillo, comodines y fase) se guarda tras cada jugada y se retoma al volver a conectarse. Sin cuenta, se pierde al cerrar la conexión.
+6. API REST: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/leaderboard` y `GET /api/games/me`.
+7. Orígenes permitidos (CORS y WebSocket) leídos de la configuración.
+8. Tests de seguridad: rutas protegidas sin token, token caducado y registro duplicado.
 
-Terminada cuando una partida jugada con sesión aparece en la clasificación.
+Terminada cuando una partida jugada con sesión aparece en la clasificación y una partida a medias se retoma después de desconectarse.
 
 ### Fase 4. Frontend en Angular
 
