@@ -9,7 +9,7 @@ import { Sesion } from '../sesion';
   imports: [Carta, RouterLink],
   template: `
     <main class="inicio">
-      <img class="castillo" src="castillo.svg" alt="" width="900" height="600" />
+      <img class="castillo" src="castillo.svg" alt="" width="1000" height="1000" />
 
       <div class="portada">
         <div class="abanico" aria-hidden="true">
@@ -65,14 +65,15 @@ import { Sesion } from '../sesion';
       padding: clamp(32px, 5vh, 72px) clamp(20px, 5vw, 96px);
       font-size: clamp(15px, calc(0.55vw + 0.6vh + 4px), 24px);
     }
-    /* Fondo: sube en diagonal desde el centro de la pantalla hasta la esquina de arriba a la izquierda. */
+    /* Fondo: la ladera sube desde abajo, a media pantalla, hasta la esquina de arriba a la izquierda.
+       El SVG recorta lo que sobra (slice) para cubrir siempre todo el alto. */
     .castillo {
       position: fixed;
       top: 0;
       left: 0;
       z-index: -1;
-      width: max(72vw, 110vh);
-      height: auto;
+      width: 60vw;
+      height: 100dvh;
       pointer-events: none;
       animation: alzarse 1200ms var(--curva) backwards;
     }
@@ -224,6 +225,9 @@ import { Sesion } from '../sesion';
       }
       .titulo {
         font-size: min(7.5em, 20vw);
+      }
+      .castillo {
+        width: 100vw;
       }
     }
     @keyframes abrir {
