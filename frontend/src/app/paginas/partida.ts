@@ -4,7 +4,7 @@ import { Aviso } from '../aviso';
 import { Carta } from '../carta';
 import { Juego } from '../juego';
 import { Menu } from '../menu';
-import { Carta as DatosCarta, EstadoPartida, nombreCarta, terminada } from '../modelo';
+import { Carta as DatosCarta, EstadoPartida, nombreCarta, nombrePalo, terminada } from '../modelo';
 import { Sesion } from '../sesion';
 
 interface Mensaje {
@@ -37,6 +37,7 @@ export class Partida implements OnInit {
   protected readonly castillo = ['J', 'J', 'J', 'J', 'Q', 'Q', 'Q', 'Q', 'K', 'K', 'K', 'K'];
   protected readonly terminada = terminada;
   protected readonly nombreCarta = nombreCarta;
+  protected readonly nombrePalo = nombrePalo;
 
   constructor() {
     let anterior: EstadoPartida | null = null;

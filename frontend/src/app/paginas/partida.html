@@ -151,14 +151,21 @@
             [style.--giro]="(i - (estado.mano.length - 1) / 2) * 5 + 'deg'"
             [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 3 + 'px'"
             [class.sin-poder]="sinPoder(carta, estado)"
-            [attr.data-palo]="simbolos[carta.palo]"
             [attr.aria-pressed]="elegidas().includes(i)"
             [disabled]="terminada(estado)"
             (click)="alternar(i)"
             (pointermove)="inclinar($event)"
             (pointerleave)="enderezar($event)"
           >
-            <span class="cara"><app-carta [carta]="carta" /></span>
+            <span class="cara">
+              <app-carta [carta]="carta" />
+              @if (sinPoder(carta, estado)) {
+                <span class="cinta">
+                  {{ simbolos[carta.palo] }} sin poder
+                  <span class="motivo">el enemigo es de {{ nombrePalo(carta.palo).toLowerCase() }}</span>
+                </span>
+              }
+            </span>
           </button>
         }
       </div>
