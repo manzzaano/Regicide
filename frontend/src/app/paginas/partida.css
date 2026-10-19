@@ -2,7 +2,8 @@
    selección a la derecha y, abajo, comodines, mano y cancelar. */
 .mesa {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   grid-template-areas:
     'mazos enemigo seleccion'
     'mazos centro seleccion'
@@ -17,7 +18,7 @@
 .mazos {
   grid-area: mazos;
   justify-self: start;
-  min-width: 240px;
+  min-width: 230px;
 }
 
 dl {
@@ -96,6 +97,7 @@ dd {
 
 .conectando {
   grid-area: enemigo;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -115,6 +117,7 @@ dd {
 
 .enemigo {
   grid-area: enemigo;
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 28px;
@@ -249,13 +252,13 @@ dd {
 
 .huecos {
   display: grid;
-  grid-template-columns: repeat(4, 56px);
+  grid-template-columns: repeat(4, 48px);
   gap: 8px;
 }
 
 .carta-sel {
   display: block;
-  width: 56px;
+  width: 48px;
   aspect-ratio: 236 / 330;
   padding: 0;
   border: 0;
@@ -414,22 +417,12 @@ button.carta-sel:hover {
       'enemigo enemigo'
       'centro centro'
       'mano mano'
-      'seleccion cancelar'
-      'comodines mazos';
+      'seleccion comodines'
+      'mazos cancelar';
     gap: 16px;
   }
-  .enemigo,
-  .mano,
-  .centro {
+  .mesa > * {
     justify-self: center;
-  }
-  .seleccion,
-  .comodines {
-    justify-self: start;
-  }
-  .mazos,
-  .cancelar {
-    justify-self: end;
   }
   .mano {
     max-width: 100%;
@@ -467,12 +460,6 @@ button.carta-sel:hover {
   .mesa {
     grid-template-columns: 1fr;
     grid-template-areas: 'enemigo' 'centro' 'mano' 'cancelar' 'seleccion' 'comodines' 'mazos';
-  }
-  .seleccion,
-  .cancelar,
-  .comodines,
-  .mazos {
-    justify-self: center;
   }
   .castillo li {
     width: 18px;
