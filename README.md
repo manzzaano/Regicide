@@ -49,7 +49,7 @@ src/main/resources/
 
 ## Estado
 
-El código es el de la versión que entregué. La migración a la web, con Spring Boot en el servidor y Angular en el navegador, se hace sobre esta base en la rama `dev` y llega a `master` por pull request.
+El código es el de la versión que entregué. La migración a la web, con Spring Boot en el servidor y Angular en el navegador, se hace sobre esta base en la rama `dev` y llega a `master` por pull request. Las fases, las decisiones y el estado de cada una están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
 ---
 
