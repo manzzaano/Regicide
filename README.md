@@ -1,80 +1,55 @@
 # Regicide
 
-Juego de cartas Regicide en el navegador. Empezó como mi proyecto final de Programación en JavaFX y lo estoy llevando a la web: el servidor, en Spring Boot, resuelve cada jugada; Angular la muestra y WebSocket la sincroniza en tiempo real.
+Juego de cartas Regicide en modo solitario, hecho en Java con JavaFX como proyecto final del módulo de Programación de DAM. Es el punto de partida de la migración a la web; la versión entregada se conserva en la rama [`v1`](https://github.com/manzzaano/Regicide/tree/v1).
 
-Caso de estudio: [leosoftware.dev/sistemas/regicide](https://leosoftware.dev/sistemas/regicide). La versión de JavaFX que entregué está en la rama [`javafx`](https://github.com/manzzaano/Regicide/tree/javafx).
+## Cómo se juega
 
-## Cómo funciona
+Se juega con una baraja francesa de 52 cartas (Picas, Corazones, Tréboles y Diamantes) y el objetivo es derrotar a los 12 enemigos del castillo.
 
-- **La partida vive en el servidor.** El navegador envía la jugada y el servidor la valida, la resuelve y devuelve el estado nuevo. Las reglas están en un solo sitio (`backend/src/main/java/com/regicide/game/RegicideGame.java`) y no se puede hacer trampa desde el cliente.
-- **Cada turno es una máquina de estados:** atacar, defenderse y fin de partida. Los palos tienen sus poderes, que no funcionan contra un enemigo del mismo palo, y hay dos comodines para cambiar la mano.
-- **Tiempo real con WebSocket y STOMP:** la conexión queda abierta y el estado llega al momento.
-- **Interfaz en Angular 18:** inicio con el nombre del jugador y su récord personal (guardado en el navegador), partida, reglas y estadísticas, con animaciones de cartas.
-- **El backend incluye cuentas con JWT y Spring Security** y guarda partidas en PostgreSQL, con una clasificación por victorias.
+- **El castillo:** las 4 jotas (vida 20, ataque 10), después las 4 reinas (vida 30, ataque 15) y por último los 4 reyes (vida 40, ataque 20), barajados dentro de cada grupo.
+- **La mano:** empiezas con 8 cartas del 1 al 10. El resto forma la posada, de donde se roba.
+- **Atacar:** juegas una carta, varias del mismo número y distinto palo que sumen 10 como máximo, o un as (el compañero, que vale 1) junto a otra carta.
+- **Poderes de los palos:** Tréboles duplica el daño, Picas reduce el ataque del enemigo, Diamantes roba cartas de la posada y Corazones devuelve cartas del descarte a la posada. Picas, Diamantes y Corazones no funcionan contra un enemigo de su mismo palo.
+- **Defenderse:** si el enemigo sobrevive, te ataca y descartas cartas de la mano hasta cubrir su ataque.
+- **Comodines:** hay dos. Cada uno descarta la mano entera y roba 8 cartas nuevas.
+- **Final:** ganas al derrotar al último rey. Pierdes si, sin comodines, te quedas sin cartas o no puedes cubrir un ataque.
 
-## Estado
+Si dejas a un enemigo con la vida justa a 0, pasa a la posada y lo puedes robar como carta.
 
-Funciona en local con Docker: la partida completa contra el servidor, el récord personal y las reglas.
+## Guardado y estadísticas
 
-Pendiente para la versión web completa:
+- **Partidas en JSON** con Gson: cada partida se guarda en `src/main/resources/PartidasGuardadas/partida_<n>.json` y se puede cargar desde la pantalla de juego.
+- **Estadísticas en CSV** en `src/main/resources/estadisticas.csv`: número de partida, fecha, cartas jugadas, vida restante del enemigo, mano y resultado.
 
-- Guardar en el servidor las partidas jugadas desde la interfaz nueva (hoy la clasificación solo recibe partidas por `POST /api/partidas`, con sesión iniciada).
-- El endpoint `/api/stats` que usa la pantalla de estadísticas.
-- Desplegar el backend y apuntar el frontend publicado a esa URL.
+Las rutas son relativas, así que el juego se arranca desde la raíz del proyecto.
 
-## Stack
+## Cómo ejecutarlo
 
-| | |
-|---|---|
-| Backend | Java 17, Spring Boot 3.3, Spring Security + JWT, Spring Data JPA, WebSocket (STOMP) |
-| Base de datos | PostgreSQL 16 |
-| Frontend | Angular 18 (componentes standalone, rutas con carga diferida), Tailwind CSS 4, RxStomp |
-| Infraestructura | Docker Compose: PostgreSQL, backend y frontend servido con nginx |
+Requisitos: JDK 17 o superior. JavaFX 23 y Gson los descarga Maven.
+
+```bash
+./mvnw javafx:run        # en Windows: mvnw.cmd javafx:run
+```
+
+También se abre desde IntelliJ IDEA, que es el IDE con el que lo desarrollé.
 
 ## Estructura
 
+Sigue el patrón MVC:
+
 ```
-regicide/
-├── backend/     Spring Boot: reglas del juego, WebSocket, autenticación y partidas
-├── frontend/    Angular: inicio, partida, reglas y estadísticas
-└── legacy/      la versión original en JavaFX
-```
-
-## En local
-
-Requisitos: Docker. Para trabajar fuera de Docker: Java 17 o superior y Node.js 20 o superior.
-
-```bash
-cp .env.example .env     # DB_USER, DB_PASSWORD, DB_NAME y JWT_SECRET
-docker compose up --build
+src/main/java/
+├── Controlador/   Main, ControladorInicio (nombre del jugador y reglas) y ControladorJuego (turnos, ataque, defensa y comodines)
+├── Modelo/        Juego (estado de la partida), Baraja (reparto inicial) y las cartas: CartaPueblo y CartaEnemigo
+└── Utilidades/    Guardado (JSON y CSV) y CartaDeserializable (Gson)
+src/main/resources/
+├── Vistas/        pantallas en FXML y sus hojas de estilo
+└── imgs/          imágenes de las cartas
 ```
 
-- Frontend: <http://localhost>
-- Backend: <http://localhost:3000/api> (WebSocket en `ws://localhost:3000/api/ws/game`)
+## Estado
 
-Para desarrollar el frontend con recarga en caliente, con el backend levantado en Docker:
-
-```bash
-cd frontend
-npm install
-npm start                # http://localhost:4200
-```
-
-## API
-
-| Método | Ruta | |
-|---|---|---|
-| `POST` | `/api/auth/register` | Crear usuario |
-| `POST` | `/api/auth/login` | Iniciar sesión, devuelve el JWT |
-| `GET` | `/api/leaderboard` | Clasificación (sin autenticación) |
-| `POST` | `/api/partidas` | Guardar una partida terminada (con sesión) |
-| `GET` | `/api/partidas/me` | Mis partidas (con sesión) |
-
-Por WebSocket, el cliente envía a `/app/game/start`, `/app/game/play`, `/app/game/state` y `/app/game/finish`, y recibe el estado de la partida en `/topic/game`.
-
-## Versión original
-
-La rama [`javafx`](https://github.com/manzzaano/Regicide/tree/javafx) conserva el proyecto tal como lo entregué: juego de escritorio en JavaFX 23, con guardado y carga de partidas en JSON y estadísticas en CSV, hecho en cuatro días. El mismo código está también en `legacy/` en la rama principal.
+El código es el de la versión que entregué. La migración a la web, con Spring Boot en el servidor y Angular en el navegador, se hace sobre esta base en la rama `dev` y llega a `master` por pull request.
 
 ---
 
