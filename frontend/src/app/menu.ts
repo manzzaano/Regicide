@@ -32,24 +32,25 @@ import { Sesion } from './sesion';
       top: 0;
       z-index: 5;
       margin-bottom: 16px;
-      border-bottom: 1px solid rgb(255 255 255 / 0.08);
-      background: rgb(11 11 11 / 0.75);
+      border-bottom: 1px solid rgb(239 68 68 / 0.35);
+      background: rgb(11 11 11 / 0.92);
+      box-shadow: 0 1px 28px -8px rgb(239 68 68 / 0.35);
       backdrop-filter: blur(12px) saturate(1.4);
     }
     .interior {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 8px 28px;
+      gap: 8px 36px;
       max-width: 1500px;
-      min-height: 60px;
+      min-height: 72px;
       margin: 0 auto;
-      padding: 8px 16px;
+      padding: 10px 16px;
     }
     .marca {
       color: #fafafa;
       font-family: var(--display);
-      font-size: 20px;
+      font-size: 26px;
       font-weight: 800;
       letter-spacing: -0.02em;
       text-decoration: none;
@@ -60,7 +61,7 @@ import { Sesion } from './sesion';
     }
     nav {
       display: flex;
-      gap: 22px;
+      gap: 28px;
     }
     nav a,
     .enlace {
@@ -68,8 +69,8 @@ import { Sesion } from './sesion';
       padding: 6px 0;
       border: 0;
       background: none;
-      color: #a1a1aa;
-      font-size: 14px;
+      color: #d4d4d8;
+      font-size: 15px;
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
@@ -95,13 +96,13 @@ import { Sesion } from './sesion';
       margin-left: auto;
     }
     .jugador {
-      padding: 4px 10px;
-      border: 1px solid rgb(239 68 68 / 0.12);
+      padding: 6px 12px;
+      border: 1px solid rgb(239 68 68 / 0.25);
       border-radius: 3px;
       background: rgb(239 68 68 / 0.06);
       color: var(--rojo);
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 13px;
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
