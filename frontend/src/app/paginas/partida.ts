@@ -64,6 +64,20 @@ export class Partida implements OnInit {
     );
   }
 
+  protected mazos(estado: EstadoPartida): { nombre: string; cartas: number }[] {
+    return [
+      { nombre: 'CASTILLO', cartas: estado.enemigosRestantes },
+      { nombre: 'POSADA', cartas: estado.cartasEnPosada },
+      { nombre: 'JUGADAS', cartas: estado.cartasJugadas.length },
+      { nombre: 'DESCARTES', cartas: estado.cartasEnDescarte },
+    ];
+  }
+
+  /** Grosor de la pila dibujada: una capa por cada 8 cartas, de 1 a 6; ninguna si el mazo está vacío. */
+  protected capas(cartas: number): number[] {
+    return Array.from({ length: cartas ? Math.min(6, Math.ceil(cartas / 8)) : 0 });
+  }
+
   protected cancelarSeleccion(): void {
     this.elegidas.set([]);
   }

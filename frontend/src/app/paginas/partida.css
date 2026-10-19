@@ -17,27 +17,81 @@
 .mazos {
   grid-area: mazos;
   justify-self: start;
-  min-width: 200px;
+  min-width: 240px;
 }
 
 dl {
   display: grid;
-  gap: 6px;
+  gap: 14px;
   margin: 0;
-  font-family: var(--mono);
-  font-size: 15px;
-  font-weight: 600;
 }
 
-dl div {
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
+.mazo {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+dt {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.barra {
+  color: var(--rojo);
 }
 
 dd {
   margin: 0;
+}
+
+.cuenta {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  animation: destello 700ms ease-out;
+}
+
+/* Reverso plano: cada capa se desplaza un poco, así la pila engorda con las cartas. */
+.pila {
+  position: relative;
+  width: 24px;
+  height: 34px;
+  animation: sacudir 320ms var(--curva);
+}
+
+.pila span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(239 68 68 / 0.45);
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(45deg, rgb(239 68 68 / 0.18) 0 2px, transparent 2px 5px),
+    var(--caja-fuerte);
+  transform: translate(calc(var(--capa) * 1.5px), calc(var(--capa) * -1.5px));
+}
+
+.progreso {
+  grid-column: 2 / -1;
+  height: 3px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--linea);
+  overflow: hidden;
+}
+
+.progreso span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  transition: width 600ms var(--curva);
 }
 
 .conectando {
@@ -330,6 +384,19 @@ button.carta-sel:hover {
   from {
     transform: scale(1.25);
     text-shadow: 0 0 24px rgb(239 68 68 / 0.9);
+  }
+}
+
+@keyframes destello {
+  from {
+    color: var(--rojo);
+    transform: scale(1.2);
+  }
+}
+
+@keyframes sacudir {
+  40% {
+    transform: translateY(-3px) rotate(-4deg);
   }
 }
 

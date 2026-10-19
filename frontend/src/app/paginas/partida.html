@@ -9,10 +9,22 @@
     <section class="caja mazos" aria-labelledby="titulo-mazos">
       <h2 class="etiqueta" id="titulo-mazos">Mazos</h2>
       <dl>
-        <div><dt>| CASTILLO</dt><dd>{{ estado.enemigosRestantes }}</dd></div>
-        <div><dt>| POSADA</dt><dd>{{ estado.cartasEnPosada }}</dd></div>
-        <div><dt>| JUGADAS</dt><dd>{{ estado.cartasJugadas.length }}</dd></div>
-        <div><dt>| DESCARTES</dt><dd>{{ estado.cartasEnDescarte }}</dd></div>
+        @for (mazo of mazos(estado); track mazo.nombre) {
+          <div class="mazo">
+            @for (n of [mazo.cartas]; track n) {
+              <span class="pila" aria-hidden="true">
+                @for (capa of capas(n); track $index) {
+                  <span [style.--capa]="$index"></span>
+                }
+              </span>
+            }
+            <dt><span class="barra">|</span> {{ mazo.nombre }}</dt>
+            <dd>@for (n of [mazo.cartas]; track n) {<span class="cuenta">{{ n }}</span>}</dd>
+            @if (mazo.nombre === 'CASTILLO') {
+              <span class="progreso" aria-hidden="true"><span [style.width.%]="(mazo.cartas / 12) * 100"></span></span>
+            }
+          </div>
+        }
       </dl>
     </section>
 
