@@ -4,7 +4,9 @@
   "outputDirectory": "frontend/dist/regicide-frontend",
   "devCommand": "cd frontend && npm start",
   "installCommand": "cd frontend && npm ci",
-  "regions": ["sfo1"],
+  "regions": [
+    "sfo1"
+  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -30,5 +32,8 @@
         }
       ]
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": false
+  }
 }
