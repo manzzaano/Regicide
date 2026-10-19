@@ -25,30 +25,49 @@ import { Component, ElementRef, afterNextRender, inject, input, output } from '@
       display: grid;
       place-items: center;
       padding: 16px;
-      background: rgb(0 0 0 / 0.35);
+      background: rgb(4 20 20 / 0.45);
+      backdrop-filter: blur(3px);
+      animation: aparecer 160ms ease-out;
     }
     .dialogo {
-      width: min(100%, 380px);
-      border: 1px solid #999;
-      background: #f4f4f4;
-      box-shadow: 0 8px 30px rgb(0 0 0 / 0.4);
+      width: min(100%, 400px);
+      overflow: hidden;
+      border: 1px solid var(--borde-caja);
+      border-radius: var(--radio);
+      background: var(--caja-fuerte);
+      box-shadow: 0 24px 60px -12px rgb(0 0 0 / 0.5);
+      animation: subir 260ms var(--curva);
     }
     .cabecera {
       margin: 0;
-      padding: 8px 12px;
-      border-bottom: 1px solid #ccc;
-      background: #fff;
-      font-weight: bold;
+      padding: 18px 20px 0;
+      color: var(--titulo);
+      font-family: var(--display);
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
     }
     .cuerpo {
-      padding: 16px 12px 12px;
+      padding: 6px 20px 20px;
+      color: var(--texto-suave);
     }
     .cuerpo p {
-      margin: 0 0 12px;
+      margin: 0 0 16px;
     }
     .pie {
       display: flex;
       justify-content: flex-end;
+    }
+    @keyframes aparecer {
+      from {
+        opacity: 0;
+      }
+    }
+    @keyframes subir {
+      from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+      }
     }
   `,
 })

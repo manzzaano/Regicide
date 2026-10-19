@@ -84,39 +84,53 @@ function mensajeDeError(error: unknown): string {
       max-width: 400px;
       margin: 40px auto;
     }
+    .tarjeta {
+      padding: 24px;
+    }
     .pestanas {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 20px;
+      padding: 4px;
+      border-radius: 10px;
+      background: rgb(0 0 0 / 0.07);
     }
     .pestanas button {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid #000;
-      border-radius: 3px;
-      background: #fff;
-      color: #000;
-      font-size: 16px;
+      min-height: 38px;
+      border: 0;
+      border-radius: 7px;
+      background: none;
+      color: var(--texto-suave);
+      font-weight: 500;
       cursor: pointer;
+      transition: background 150ms, color 150ms;
     }
     .pestanas button[aria-pressed='true'] {
-      background: #000;
+      background: var(--negro);
       color: #fff;
     }
     h1 {
-      margin: 0 0 10px;
+      margin: 0 0 6px;
       color: var(--titulo);
-      font-size: 24px;
+      font-size: 28px;
+      font-weight: 800;
+    }
+    .ayuda {
+      margin: 0 0 20px;
+      color: var(--texto-suave);
     }
     .pista {
-      margin: -8px 0 12px;
-      font-size: 14px;
+      margin: -8px 0 14px;
+      color: var(--texto-suave);
+      font-size: 13px;
     }
     label {
       display: grid;
-      gap: 4px;
-      margin-bottom: 12px;
-      font-weight: bold;
+      gap: 6px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      font-weight: 600;
     }
     .campo {
       font-weight: normal;
@@ -127,6 +141,7 @@ function mensajeDeError(error: unknown): string {
     }
     .boton {
       width: 100%;
+      margin-top: 6px;
     }
   `,
 })

@@ -1,50 +1,94 @@
-/* Mismo reparto que la ventana de 1500×705 de v1: mazos a la izquierda, enemigo en el centro,
+/* El mismo reparto que la ventana de 1500×705 de v1: mazos a la izquierda, enemigo en el centro,
    selección a la derecha y, abajo, comodines, mano y cancelar. */
 .mesa {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas:
     'mazos enemigo seleccion'
-    'mazos confirmar seleccion'
+    'mazos centro seleccion'
     'comodines mano cancelar';
   align-items: center;
-  gap: 24px 36px;
+  gap: 18px 24px;
   max-width: 1500px;
   margin: 0 auto;
-  padding: 40px 16px 16px;
+  padding: 4px 16px 24px;
 }
 
-.caja-mazos {
+.mazos {
   grid-area: mazos;
   justify-self: start;
+  min-width: 200px;
+}
+
+dl {
+  display: grid;
+  gap: 6px;
   margin: 0;
-  padding: 5px 12px;
-  border-radius: 5px;
-  background: var(--caja-mazos);
-  color: var(--texto);
-  font-size: 18px;
-  font-weight: bold;
-  line-height: 1.55;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
 }
 
 .conectando {
   grid-area: enemigo;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 80px 0;
+  font-family: var(--mono);
 }
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--vida);
+  animation: latido 1s ease-in-out infinite alternate;
+}
+
+/* Enemigo */
 
 .enemigo {
   grid-area: enemigo;
   display: flex;
   align-items: center;
+  gap: 28px;
 }
 
-.vida,
-.ataque {
-  width: 200px;
+.dato {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 140px;
   margin: 0;
-  font-size: 40px;
-  font-weight: bold;
-  line-height: 1.15;
-  text-align: center;
+}
+
+.dato .etiqueta {
+  margin: 0;
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.numero {
+  font-family: var(--display);
+  font-size: 76px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: golpe 420ms var(--curva);
 }
 
 .vida {
@@ -56,72 +100,172 @@
 }
 
 .carta-enemigo {
-  width: 200px;
-  box-shadow: 0 3px 8px rgb(255 0 0 / 0.5);
+  width: clamp(150px, 30vh, 220px);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.6),
+    0 0 40px 4px rgb(255 0 0 / 0.45),
+    0 18px 40px -10px rgb(0 0 0 / 0.6);
+  animation: llegar 600ms var(--curva);
 }
 
 .hueco {
   aspect-ratio: 236 / 330;
+  border: 2px dashed rgb(255 255 255 / 0.6);
+  background: rgb(255 255 255 / 0.15);
+  box-shadow: none;
+}
+
+/* Bajo el enemigo: el castillo, la fase y los botones de confirmar. */
+
+.centro {
+  grid-area: centro;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.castillo {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.castillo li {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgb(0 0 0 / 0.2);
+  border-radius: 5px;
+  background: rgb(255 255 255 / 0.7);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  transition:
+    background 300ms,
+    color 300ms;
+}
+
+.castillo li:nth-child(4n) {
+  margin-right: 6px;
+}
+
+.castillo li:last-child {
+  margin-right: 0;
+}
+
+.castillo .caido {
+  border-color: transparent;
+  background: var(--vida);
+  color: #fff;
+}
+
+.fase {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgb(11 11 11 / 0.82);
+  color: #d4d4d8;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.fase span {
+  margin-right: 6px;
+  color: #fff;
+  font-weight: 700;
 }
 
 .confirmar {
-  grid-area: confirmar;
   display: flex;
   justify-content: center;
-  gap: 60px;
+  gap: 16px;
 }
+
+/* Selección */
 
 .seleccion {
   grid-area: seleccion;
-  justify-self: start;
+  justify-self: end;
+}
+
+.huecos {
   display: grid;
-  grid-template-columns: repeat(4, 71px);
-  gap: 4px;
+  grid-template-columns: repeat(4, 56px);
+  gap: 8px;
 }
 
 .carta-sel {
   display: block;
-  width: 71px;
+  width: 56px;
   aspect-ratio: 236 / 330;
   padding: 0;
   border: 0;
+  border-radius: 8px;
   background: none;
-  opacity: 0.8;
 }
 
 button.carta-sel {
   cursor: pointer;
+  animation: entrar 220ms var(--curva);
 }
+
+button.carta-sel:hover {
+  opacity: 0.8;
+}
+
+.vacia {
+  border: 1.5px dashed rgb(0 0 0 / 0.18);
+}
+
+/* Comodines, mano y cancelar */
 
 .comodines {
   grid-area: comodines;
   justify-self: start;
-  display: flex;
-  gap: 10px;
 }
 
 .mano {
   grid-area: mano;
-  display: flex;
-  gap: 10px;
-  min-width: 756px;
-  min-height: 162px;
+  justify-self: center;
+  min-width: 0;
 }
 
 .cancelar {
   grid-area: cancelar;
-  justify-self: start;
+  justify-self: end;
+}
+
+.fila {
+  display: flex;
+  gap: 10px;
+}
+
+.mano .fila {
+  min-width: calc(8 * 84px + 7 * 10px);
+  min-height: 126px;
 }
 
 .carta {
   position: relative;
-  width: 90px;
+  flex: none;
+  width: 84px;
   padding: 0;
   border: 0;
   border-radius: 8px;
   background: none;
   cursor: pointer;
-  transition: transform 120ms ease;
+  transition:
+    transform 180ms var(--curva),
+    opacity 180ms;
+}
+
+.mano .carta {
+  animation: repartir 420ms var(--curva) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
 }
 
 .carta img {
@@ -146,74 +290,126 @@ button.carta-sel {
   cursor: default;
 }
 
+.usado {
+  filter: grayscale(1);
+}
+
+/* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo. */
 .sin-poder::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 8px;
-  box-shadow: inset 0 0 10px 4px darkred;
+  box-shadow: inset 0 0 12px 4px darkred;
   pointer-events: none;
 }
 
-/* Por debajo del ancho de la ventana de v1, todo en una columna. */
-@media (max-width: 1100px) {
+@keyframes repartir {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(-4deg);
+  }
+}
+
+@keyframes llegar {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92) rotateY(70deg);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes golpe {
+  from {
+    transform: scale(1.25);
+    text-shadow: 0 0 24px rgb(255 255 255 / 0.9);
+  }
+}
+
+@keyframes latido {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* Por debajo del ancho de la ventana de v1, el enemigo y la mano arriba y las cajas debajo. */
+@media (max-width: 1340px) {
   .mesa {
     grid-template-columns: 1fr 1fr;
     grid-template-areas:
       'enemigo enemigo'
-      'confirmar confirmar'
+      'centro centro'
       'mano mano'
       'seleccion cancelar'
       'comodines mazos';
     gap: 16px;
-    padding-top: 20px;
   }
   .enemigo,
   .mano,
-  .confirmar {
+  .centro {
     justify-self: center;
   }
-  .caja-mazos {
+  .seleccion,
+  .comodines {
+    justify-self: start;
+  }
+  .mazos,
+  .cancelar {
     justify-self: end;
   }
   .mano {
+    max-width: 100%;
+  }
+  .mano .fila {
     flex-wrap: wrap;
     justify-content: center;
     min-width: 0;
-    max-width: 100%;
   }
-  .vida,
-  .ataque {
+  .enemigo {
+    gap: 12px;
+  }
+  .dato {
     width: auto;
-    padding-inline: 12px;
-    font-size: clamp(22px, 6vw, 40px);
+    min-width: 80px;
+  }
+  .numero {
+    font-size: clamp(40px, 11vw, 76px);
   }
   .carta-enemigo {
-    width: clamp(120px, 30vw, 200px);
-  }
-  .confirmar {
-    gap: 10px;
+    width: clamp(120px, 32vw, 200px);
   }
   .carta {
-    width: clamp(60px, 18vw, 90px);
+    width: clamp(58px, 18vw, 84px);
   }
-  .seleccion {
-    grid-template-columns: repeat(4, minmax(0, 52px));
+  .huecos {
+    grid-template-columns: repeat(4, 48px);
   }
   .carta-sel {
-    width: 100%;
+    width: 48px;
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 560px) {
   .mesa {
     grid-template-columns: 1fr;
-    grid-template-areas: 'enemigo' 'confirmar' 'mano' 'seleccion' 'cancelar' 'comodines' 'mazos';
+    grid-template-areas: 'enemigo' 'centro' 'mano' 'cancelar' 'seleccion' 'comodines' 'mazos';
   }
   .seleccion,
   .cancelar,
   .comodines,
-  .caja-mazos {
+  .mazos {
     justify-self: center;
+  }
+  .castillo li {
+    width: 18px;
+  }
+  .confirmar {
+    flex-wrap: wrap;
   }
 }

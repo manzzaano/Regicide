@@ -97,10 +97,14 @@ import { Menu } from '../menu';
       margin-top: 0;
       font-size: 18px;
     }
+    article {
+      padding: 28px;
+    }
     h2 {
-      margin: 20px 0 8px;
+      margin: 28px 0 10px;
       color: var(--titulo);
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: 800;
     }
     .enemigos {
       display: flex;
@@ -126,12 +130,17 @@ import { Menu } from '../menu';
       gap: 10px;
     }
     .poderes div {
-      padding: 10px 12px;
-      border-radius: 5px;
-      background: var(--caja-mazos);
+      padding: 12px 14px;
+      border: 1px solid var(--linea);
+      border-radius: 10px;
+      background: var(--caja-fuerte);
     }
     dt {
-      font-weight: bold;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
     dd {
       margin: 4px 0 0;

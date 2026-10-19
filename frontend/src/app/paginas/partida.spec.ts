@@ -145,6 +145,18 @@ describe('Partida', () => {
     expect(cartaDeLaMano(0).getAttribute('aria-pressed')).toBe('false');
   });
 
+  it('dice cuánto hay que cubrir al defenderse', async () => {
+    await mostrar({ ...EN_ATAQUE, fase: 'DEFENSA' });
+
+    expect(pantalla.querySelector('.fase')!.textContent).toContain('al menos 10 puntos');
+  });
+
+  it('marca en el castillo los enemigos derrotados', async () => {
+    await mostrar({ ...EN_ATAQUE, enemigosRestantes: 9 });
+
+    expect(pantalla.querySelectorAll('.castillo .caido').length).toBe(3);
+  });
+
   it('marca las cartas del palo del enemigo, que no activan su poder', async () => {
     await mostrar(EN_ATAQUE);
 
@@ -155,7 +167,8 @@ describe('Partida', () => {
   it('muestra el estado de los mazos como v1', async () => {
     await mostrar(EN_ATAQUE);
 
-    expect(pantalla.querySelector('.caja-mazos')!.textContent).toContain('| POSADA: 40');
+    const posada = [...pantalla.querySelectorAll('.mazos dt')].find((dt) => dt.textContent === '| POSADA')!;
+    expect(posada.nextElementSibling!.textContent).toBe('40');
   });
 
   it('los comodines usados quedan desactivados y el otro se puede usar', async () => {

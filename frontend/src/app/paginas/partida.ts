@@ -34,6 +34,7 @@ export class Partida implements OnInit {
   protected readonly avisos = signal<Mensaje[]>([]);
 
   protected readonly huecosDeSeleccion = Array.from({ length: 8 }, (_, i) => i);
+  protected readonly castillo = ['J', 'J', 'J', 'J', 'Q', 'Q', 'Q', 'Q', 'K', 'K', 'K', 'K'];
   protected readonly terminada = terminada;
 
   constructor() {

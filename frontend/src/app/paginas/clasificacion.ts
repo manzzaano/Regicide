@@ -100,9 +100,15 @@ import { Sesion } from '../sesion';
       padding: 0 16px 30px;
     }
     h2 {
-      margin: 0 0 8px;
+      margin: 0 0 4px;
       color: var(--titulo);
-      font-size: 22px;
+      font-size: 24px;
+      font-weight: 800;
+    }
+    .ayuda {
+      margin: 0 0 16px;
+      color: var(--texto-suave);
+      font-size: 14px;
     }
     .tabla {
       overflow-x: auto;
@@ -117,20 +123,43 @@ import { Sesion } from '../sesion';
       padding: 8px 12px;
       text-align: left;
       white-space: nowrap;
-      border-bottom: 1px solid #bbb;
+      border-bottom: 1px solid var(--linea);
     }
     thead th {
-      background: #000;
-      color: #fff;
+      background: var(--negro);
+      color: #e4e4e7;
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    thead th:first-child {
+      border-radius: 8px 0 0 8px;
+    }
+    thead th:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+    td {
+      font-variant-numeric: tabular-nums;
+    }
+    tbody tr {
+      transition: background 150ms;
+    }
+    tbody tr:hover {
+      background: rgb(255 255 255 / 0.6);
     }
     tbody tr:last-child > * {
       border-bottom: 0;
     }
     .tuyo {
-      font-weight: bold;
+      background: rgb(128 0 0 / 0.08);
+      box-shadow: inset 3px 0 var(--vida);
+      font-weight: 600;
     }
     .gana {
-      font-weight: bold;
+      color: #065f46;
+      font-weight: 600;
     }
     .error {
       color: var(--vida);
