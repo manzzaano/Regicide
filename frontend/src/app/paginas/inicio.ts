@@ -18,7 +18,7 @@ import { Sesion } from '../sesion';
           <app-carta [carta]="{ numero: 12, palo: 'TREBOLES' }" />
         </div>
         <p class="terminal"><span>~/regicide $</span> modo solitario</p>
-        <h1 class="titulo">REGICIDE<span class="punto">.</span></h1>
+        <h1 class="titulo">REGICIDE<span class="punto">/</span></h1>
         <p class="subtitulo">
           Derrota a los 12 enemigos del castillo: cuatro sotas, cuatro reinas y cuatro reyes. Ataca con las cartas de
           tu mano, aprovecha el poder de cada palo y aguanta sus golpes descartando. Tienes dos comodines para salir de
