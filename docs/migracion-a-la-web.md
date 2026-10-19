@@ -50,7 +50,7 @@ flowchart LR
 | El motor del juego es Java sin Spring ni JavaFX | Se prueba con tests rápidos y no depende de cómo se muestre | Reglas dentro de los controladores, como en v1 |
 | Las fases son un `enum` y cada acción comprueba la fase | Una jugada fuera de turno se rechaza en un solo sitio | La fase como texto |
 | El `Random` se pasa al motor desde fuera | Los tests reparten siempre las mismas cartas y son repetibles | Barajar dentro del motor sin control |
-| Cada jugador recibe su estado en `/user/queue/game` | Nadie ve la partida de otro | Un tema compartido (`/topic/game`), el fallo de la primera versión |
+| Cada jugador recibe su estado en `/user/queue/partida` | Nadie ve la partida de otro | Un tema compartido (`/topic/game`), el fallo de la primera versión |
 | El estado que se envía no incluye el orden de la posada | El cliente no puede saber qué carta viene | Enviar el objeto del juego entero |
 | El servidor guarda la partida al terminar | Es quien sabe el resultado | Un endpoint donde el cliente diga "he ganado" |
 | Se puede jugar sin cuenta | La cuenta solo hace falta para aparecer en la clasificación | Obligar a registrarse para probar el juego |
@@ -71,7 +71,7 @@ flowchart LR
 | Fase | Contenido | Estado |
 |---|---|---|
 | 1 | Motor del juego en Java, con tests de cada regla | Terminada |
-| 2 | Backend: la partida por WebSocket | Pendiente |
+| 2 | Backend: la partida por WebSocket | Terminada |
 | 3 | Cuentas y clasificación | Pendiente |
 | 4 | Frontend en Angular | Pendiente |
 | 5 | Docker Compose y CI | Pendiente |
@@ -107,6 +107,8 @@ Terminada cuando todas las reglas tienen tests en verde y una partida completa s
 6. Tests de integración del flujo completo.
 
 Terminada cuando una partida se juega entera con un cliente de test y dos jugadores a la vez no ven la partida del otro.
+
+**Resultado.** El paquete `com.regicide.partida` conecta el motor con STOMP. El navegador abre `/ws` y envía sus jugadas a `/app/partida/empezar`, `atacar`, `defender`, `comodin` y `abandonar`; el estado vuelve solo a esa conexión en `/user/queue/partida` y los errores en `/user/queue/errores`. Cada conexión tiene una partida en memoria, que se borra al abandonar o al desconectarse. El servidor procesa en orden los mensajes de cada conexión, así que dos jugadas seguidas del mismo jugador nunca se cruzan. El estado que se envía (`EstadoPartida`) lleva la mano, el enemigo y cuántas cartas hay en cada mazo, pero no su orden. Los orígenes desde los que se puede abrir el WebSocket se leen de la configuración (`regicide.origenes-permitidos`), así que ese punto de la fase 3 queda hecho para el WebSocket. Se añaden 12 tests de integración con un cliente STOMP real, entre ellos una partida entera por WebSocket, dos jugadores conectados a la vez y mensajes mal formados; el backend suma 86 tests.
 
 ### Fase 3. Cuentas y clasificación
 
