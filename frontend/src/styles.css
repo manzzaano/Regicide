@@ -1,1 +1,139 @@
-/* You can add global styles to this file, and also import other style files */
+@import '@fontsource/alegreya-sc/latin-700.css';
+@import '@fontsource/alegreya-sans/latin-400.css';
+@import '@fontsource/alegreya-sans/latin-700.css';
+
+/* La paleta sale del paisaje de v1: niebla verdosa, pizarra y tierra granate. */
+:root {
+  color-scheme: light dark;
+  --fondo: #eef2f0;
+  --superficie: #fbfcfb;
+  --superficie-2: #dde7e3;
+  --texto: #17252a;
+  --texto-suave: #3e5157;
+  --linea: #a9bdb8;
+  --acento: #8c2f28;
+  --sobre-acento: #ffffff;
+  --exito: #2b6649;
+  --paisaje-filtro: none;
+  --sombra: 0 1px 2px rgb(23 37 42 / 0.12), 0 8px 24px rgb(23 37 42 / 0.12);
+  --display: 'Alegreya SC', Georgia, serif;
+  --cuerpo: 'Alegreya Sans', 'Segoe UI', sans-serif;
+  --radio: 10px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fondo: #10181c;
+    --superficie: #1a252a;
+    --superficie-2: #24333a;
+    --texto: #eef3f1;
+    --texto-suave: #b3c3bf;
+    --linea: #3d5058;
+    --acento: #f0907f;
+    --sobre-acento: #10181c;
+    --exito: #8fd4b0;
+    --paisaje-filtro: brightness(0.42) saturate(0.85);
+    --sombra: 0 1px 2px rgb(0 0 0 / 0.4), 0 8px 24px rgb(0 0 0 / 0.35);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--fondo);
+  color: var(--texto);
+  font-family: var(--cuerpo);
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  line-height: 1.1;
+  margin: 0 0 0.5em;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: var(--acento);
+  text-underline-offset: 0.18em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 3px;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  min-height: 44px;
+  padding: 0.45em 1.2em;
+  border: 2px solid var(--acento);
+  border-radius: 999px;
+  background: var(--acento);
+  color: var(--sobre-acento);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+
+.boton:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.boton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.boton.secundario {
+  background: transparent;
+  color: var(--acento);
+}
+
+.contenedor {
+  width: min(100% - 32px, 1100px);
+  margin-inline: auto;
+}
+
+.visualmente-oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

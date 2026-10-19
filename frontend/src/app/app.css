@@ -1,0 +1,75 @@
+.saltar:focus {
+  position: fixed;
+  inset: 8px auto auto 8px;
+  width: auto;
+  height: auto;
+  padding: 0.5em 1em;
+  clip-path: none;
+  background: var(--superficie);
+  z-index: 10;
+}
+
+.cabecera {
+  border-bottom: 1px solid var(--linea);
+  background: var(--superficie);
+}
+
+.barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1.5rem;
+  min-height: 60px;
+  padding-block: 0.4rem;
+}
+
+.marca {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  color: var(--texto);
+  text-decoration: none;
+}
+
+nav,
+.cuenta {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.cuenta {
+  margin-left: auto;
+}
+
+nav a,
+.cuenta a,
+.salir {
+  padding: 0.35em 0;
+  border: 0;
+  background: none;
+  color: var(--texto-suave);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+nav a:hover,
+.cuenta a:hover,
+.salir:hover,
+.activo {
+  color: var(--texto);
+  border-bottom-color: var(--acento);
+}
+
+.nombre {
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  nav {
+    order: 3;
+    width: 100%;
+    justify-content: space-between;
+  }
+}

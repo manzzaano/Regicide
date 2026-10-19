@@ -1,0 +1,107 @@
+<div class="contenedor mesa">
+  @if (juego.error(); as error) {
+    <p class="error" role="alert">{{ error }}</p>
+  }
+
+  @if (juego.estado(); as estado) {
+    <section class="tablero" aria-label="Castillo">
+      @if (estado.enemigo; as enemigo) {
+        <div class="enemigo">
+          <app-carta class="figura" [carta]="enemigo.carta" />
+          <div>
+            <p class="etiqueta">Enemigo</p>
+            <h1>{{ nombreCarta(enemigo.carta) }}</h1>
+            <dl class="vitales">
+              <div><dt>Vida</dt><dd>{{ enemigo.vida }}</dd></div>
+              <div><dt>Ataque</dt><dd>{{ enemigo.ataque }}</dd></div>
+            </dl>
+            <p class="inmune">Inmune al poder de {{ nombrePalo(enemigo.carta.palo) }}</p>
+          </div>
+        </div>
+      }
+
+      <dl class="mazos">
+        <div><dt>Castillo</dt><dd>{{ estado.enemigosRestantes }}</dd></div>
+        <div><dt>Posada</dt><dd>{{ estado.cartasEnPosada }}</dd></div>
+        <div><dt>Descarte</dt><dd>{{ estado.cartasEnDescarte }}</dd></div>
+        <div><dt>Comodines</dt><dd>{{ estado.comodines }}</dd></div>
+      </dl>
+
+      @if (estado.cartasJugadas.length) {
+        <div class="jugadas">
+          <h2>Jugadas contra este enemigo</h2>
+          <ul>
+            @for (carta of estado.cartasJugadas; track $index) {
+              <li><app-carta [carta]="carta" /></li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+
+    @if (terminada(estado)) {
+      <section class="final" [class.victoria]="estado.fase === 'VICTORIA'" aria-live="polite">
+        @if (estado.fase === 'VICTORIA') {
+          <h2>Has derrotado al último rey</h2>
+          <p>El castillo es tuyo.</p>
+        } @else {
+          <h2>El castillo resiste</h2>
+          <p>Has derrotado a {{ 12 - estado.enemigosRestantes }} de 12 enemigos.</p>
+        }
+        @if (!sesion.nombre()) {
+          <p class="nota"><a routerLink="/entrar">Crea una cuenta</a> para que tus partidas cuenten en la clasificación.</p>
+        }
+        <div class="acciones">
+          <button type="button" class="boton" (click)="nuevaPartida(estado)">Jugar otra</button>
+          <a class="boton secundario" routerLink="/clasificacion">Ver la clasificación</a>
+        </div>
+      </section>
+    } @else {
+      <section class="mano" aria-labelledby="titulo-mano">
+        <div class="cabeza-mano">
+          <h2 id="titulo-mano">{{ estado.fase === 'ATAQUE' ? 'Tu turno: ataca' : 'Defiéndete' }}</h2>
+          <p class="instrucciones">
+            @if (!estado.mano.length) {
+              No te quedan cartas: usa un comodín para robar 8 nuevas.
+            } @else if (estado.fase === 'ATAQUE') {
+              Elige una carta, varias del mismo número que sumen 10 o menos, o un as con otra carta.
+            } @else {
+              El enemigo ataca con {{ estado.enemigo!.ataque }}. Descarta cartas que sumen al menos
+              {{ estado.enemigo!.ataque }}; las figuras valen 10, 15 y 20.
+            }
+          </p>
+        </div>
+
+        <ul class="mano-cartas">
+          @for (carta of estado.mano; track $index; let i = $index) {
+            <li [style.--i]="i">
+              <button type="button" [attr.aria-pressed]="elegidas().includes(i)" (click)="alternar(i)">
+                <app-carta [carta]="carta" />
+              </button>
+            </li>
+          }
+        </ul>
+
+        <div class="acciones">
+          <button type="button" class="boton" [disabled]="!elegidas().length || !juego.conectado()" (click)="jugar(estado)">
+            {{ estado.fase === 'ATAQUE' ? 'Atacar' : 'Defenderte' }}
+          </button>
+          <button
+            type="button"
+            class="boton secundario"
+            [disabled]="!estado.comodines || !juego.conectado()"
+            (click)="juego.usarComodin()"
+          >
+            Usar comodín <span class="cuenta">({{ estado.comodines }})</span>
+          </button>
+          <button type="button" class="boton secundario discreto" (click)="nuevaPartida(estado)">Nueva partida</button>
+        </div>
+        @if (!sesion.nombre()) {
+          <p class="nota">Juegas sin cuenta: si cierras la página, la partida se pierde.</p>
+        }
+      </section>
+    }
+  } @else {
+    <p class="esperando" aria-live="polite">Conectando con el servidor…</p>
+  }
+</div>
