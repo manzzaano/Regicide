@@ -72,6 +72,26 @@ class CuentaTest {
     }
 
     @Test
+    void unJsonMalFormadoEsUnError400() throws Exception {
+        assertThat(api.post("/api/auth/register", "{\"nombre\":").estado()).isEqualTo(400);
+    }
+
+    @Test
+    void unaContrasenaDeMasDe72BytesSeRechaza() throws Exception {
+        Respuesta respuesta = registrar(nombre, "ñ".repeat(40));
+
+        assertThat(respuesta.estado()).isEqualTo(400);
+        assertThat(respuesta.campo("mensaje")).isEqualTo("La contraseña es demasiado larga");
+    }
+
+    @Test
+    void entrarConUnaContrasenaDeMasDe72BytesNoEsUnError500() throws Exception {
+        registrar(nombre, "contrasena-segura");
+
+        assertThat(entrar(nombre, "ñ".repeat(40)).estado()).isEqualTo(401);
+    }
+
+    @Test
     void conLaContrasenaCorrectaSeEntra() throws Exception {
         registrar(nombre, "contrasena-segura");
 

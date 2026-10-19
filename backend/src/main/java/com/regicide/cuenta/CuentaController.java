@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.nio.charset.StandardCharsets;
+
 @RestController
 @RequestMapping("/api/auth")
 class CuentaController {
@@ -48,6 +50,9 @@ class CuentaController {
     // cruzan, la restricción unique de la tabla frena al segundo con un 500 en vez de un 409.
     @PostMapping("/register")
     ResponseEntity<?> registrar(@Valid @RequestBody Registro registro) {
+        if (demasiadoLarga(registro.contrasena())) {
+            return ResponseEntity.badRequest().body(new Mensaje("La contraseña es demasiado larga"));
+        }
         if (usuarios.existsByNombre(registro.nombre())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(new Mensaje("Ese nombre ya está en uso"));
         }
@@ -57,7 +62,8 @@ class CuentaController {
 
     @PostMapping("/login")
     ResponseEntity<?> entrar(@RequestBody Credenciales credenciales) {
-        if (credenciales.nombre() == null || credenciales.contrasena() == null) {
+        if (credenciales.nombre() == null || credenciales.contrasena() == null
+                || demasiadoLarga(credenciales.contrasena())) {
             return incorrectas();
         }
         return usuarios.findByNombre(credenciales.nombre())
@@ -66,7 +72,12 @@ class CuentaController {
                 .orElseGet(CuentaController::incorrectas);
     }
 
-    // El mismo mensaje si falla el nombre o la contraseña, para no revelar qué nombres existen.
+    // BCrypt solo admite 72 bytes y lanza una excepción con más; con tildes o eñes, 72 caracteres pueden pasarse.
+    private static boolean demasiadoLarga(String contrasena) {
+        return contrasena.getBytes(StandardCharsets.UTF_8).length > 72;
+    }
+
+    // El mismo mensaje si falla el nombre o la contraseña: no se dice cuál de los dos está mal.
     private static ResponseEntity<?> incorrectas() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Mensaje("Nombre o contraseña incorrectos"));
     }

@@ -86,6 +86,14 @@ class SeguridadTest {
     }
 
     @Test
+    void laClasificacionSeVeAunqueElTokenHayaCaducado() throws Exception {
+        String nombre = api.registrarJugadorNuevo().nombre();
+        String caducado = token(encoder, nombre, Instant.now().minus(Duration.ofMinutes(5)));
+
+        assertThat(api.get("/api/leaderboard", caducado).estado()).isEqualTo(200);
+    }
+
+    @Test
     void cualquierOtraRutaPideToken() throws Exception {
         assertThat(api.get("/api/otra", null).estado()).isEqualTo(401);
     }

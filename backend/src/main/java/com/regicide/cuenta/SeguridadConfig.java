@@ -15,10 +15,17 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import jakarta.servlet.DispatcherType;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -27,6 +34,12 @@ import java.util.List;
 
 @Configuration
 class SeguridadConfig {
+
+    private static final RequestMatcher PUBLICAS = new OrRequestMatcher(
+            PathPatternRequestMatcher.withDefaults().matcher("/ws"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/register"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/login"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/leaderboard"));
 
     private final SecretKey clave;
 
@@ -45,12 +58,20 @@ class SeguridadConfig {
                 .cors(Customizer.withDefaults())
                 .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(rutas -> rutas
-                        .requestMatchers("/ws").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/leaderboard").permitAll()
+                        // Sin esto, un 400 o un 500 llega al cliente como 401 al pasar por /error.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers(PUBLICAS).permitAll()
                         .anyRequest().authenticated())
-                .oauth2ResourceServer(servidor -> servidor.jwt(Customizer.withDefaults()))
+                .oauth2ResourceServer(servidor -> servidor
+                        .bearerTokenResolver(tokenSoloEnRutasPrivadas())
+                        .jwt(Customizer.withDefaults()))
                 .build();
+    }
+
+    // En una ruta pública se ignora el token: uno caducado no debe impedir ver la clasificación.
+    private static BearerTokenResolver tokenSoloEnRutasPrivadas() {
+        DefaultBearerTokenResolver resolver = new DefaultBearerTokenResolver();
+        return peticion -> PUBLICAS.matches(peticion) ? null : resolver.resolve(peticion);
     }
 
     @Bean
