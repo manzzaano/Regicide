@@ -24,11 +24,14 @@ import { Sesion } from '../sesion';
           tu mano, aprovecha el poder de cada palo y aguanta sus golpes descartando. Tienes dos comodines para salir de
           un apuro.
         </p>
-        <ul class="palos" aria-label="Poderes de los palos">
-          <li><span aria-hidden="true">♣</span> daño ×2</li>
-          <li><span aria-hidden="true">♦</span> roba</li>
-          <li><span aria-hidden="true">♠</span> escudo</li>
-          <li><span aria-hidden="true">♥</span> cura</li>
+<ul class="palos" aria-label="Poderes de los palos">
+          @for (palo of palos; track palo.nombre) {
+            <li [class.rojo]="palo.rojo">
+              <span class="simbolo" aria-hidden="true">{{ palo.simbolo }}</span>
+              <span class="nombre">{{ palo.nombre }}</span>
+              <span class="efecto">{{ palo.efecto }}</span>
+            </li>
+          }
         </ul>
       </div>
 
@@ -137,23 +140,48 @@ import { Sesion } from '../sesion';
       text-wrap: pretty;
     }
     .palos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4em;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.6em;
+      width: min(100%, 34em);
       margin: 0;
       padding: 0;
-      font-size: 0.66em;
       list-style: none;
     }
     .palos li {
-      padding: 0.35em 0.85em;
-      border: 1px solid rgb(239 68 68 / 0.12);
-      border-radius: 3px;
-      background: rgb(239 68 68 / 0.06);
+      display: grid;
+      gap: 0.15em;
+      padding: 0.8em 0.9em;
+      border: 1px solid var(--linea);
+      border-radius: 0.5em;
+      background: rgb(18 18 18 / 0.85);
+      transition:
+        transform 200ms var(--curva),
+        border-color 200ms;
+    }
+    .palos li:hover {
+      border-color: rgb(239 68 68 / 0.5);
+      transform: translateY(-3px);
+    }
+    .simbolo {
+      color: var(--texto);
+      font-size: 1.6em;
+      line-height: 1.1;
+    }
+    .rojo .simbolo {
       color: var(--rojo);
+    }
+    .nombre {
+      color: var(--texto-suave);
       font-family: var(--mono);
+      font-size: 0.55em;
       letter-spacing: 0.15em;
       text-transform: uppercase;
+    }
+    .efecto {
+      font-size: 0.75em;
+      font-weight: 500;
+      line-height: 1.3;
     }
     .panel {
       display: grid;
@@ -229,6 +257,9 @@ import { Sesion } from '../sesion';
       .castillo {
         width: 100vw;
       }
+      .palos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
     @keyframes abrir {
       from {
@@ -246,4 +277,10 @@ import { Sesion } from '../sesion';
 })
 export class Inicio {
   protected readonly sesion = inject(Sesion);
+  protected readonly palos = [
+    { simbolo: '♣', nombre: 'Tréboles', efecto: 'Doble de daño', rojo: false },
+    { simbolo: '♦', nombre: 'Diamantes', efecto: 'Robas cartas', rojo: true },
+    { simbolo: '♠', nombre: 'Picas', efecto: 'Baja su ataque', rojo: false },
+    { simbolo: '♥', nombre: 'Corazones', efecto: 'Recuperas cartas', rojo: true },
+  ];
 }
