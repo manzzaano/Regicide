@@ -4,7 +4,7 @@ import { Aviso } from '../aviso';
 import { Carta } from '../carta';
 import { Juego } from '../juego';
 import { Menu } from '../menu';
-import { Carta as DatosCarta, EstadoPartida, terminada } from '../modelo';
+import { Carta as DatosCarta, EstadoPartida, nombreCarta, terminada } from '../modelo';
 import { Sesion } from '../sesion';
 
 interface Mensaje {
@@ -36,6 +36,7 @@ export class Partida implements OnInit {
   protected readonly huecosDeSeleccion = Array.from({ length: 8 }, (_, i) => i);
   protected readonly castillo = ['J', 'J', 'J', 'J', 'Q', 'Q', 'Q', 'Q', 'K', 'K', 'K', 'K'];
   protected readonly terminada = terminada;
+  protected readonly nombreCarta = nombreCarta;
 
   constructor() {
     let anterior: EstadoPartida | null = null;
@@ -62,6 +63,19 @@ export class Partida implements OnInit {
     this.elegidas.update((elegidas) =>
       elegidas.includes(posicion) ? elegidas.filter((p) => p !== posicion) : [...elegidas, posicion],
     );
+  }
+
+  // Solo para dibujar la barra de vida y el escudo; los valores reales llegan del servidor.
+  protected base(carta: DatosCarta): { vida: number; ataque: number } {
+    return { 11: { vida: 20, ataque: 10 }, 12: { vida: 30, ataque: 15 } }[carta.numero] ?? { vida: 40, ataque: 20 };
+  }
+
+  protected porcentajeDeVida(estado: EstadoPartida): number {
+    return estado.enemigo ? (estado.enemigo.vida / this.base(estado.enemigo.carta).vida) * 100 : 0;
+  }
+
+  protected ataqueReducido(estado: EstadoPartida): number {
+    return estado.enemigo ? Math.max(0, this.base(estado.enemigo.carta).ataque - estado.enemigo.ataque) : 0;
   }
 
   protected mazos(estado: EstadoPartida): { nombre: string; cartas: number }[] {

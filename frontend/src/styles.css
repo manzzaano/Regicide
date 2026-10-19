@@ -195,6 +195,32 @@ h2 {
   outline-offset: 0;
 }
 
+/* El castillo de fondo: la ladera sube desde abajo, a media pantalla, hasta la esquina de arriba a la izquierda.
+   El SVG recorta lo que sobra (slice) para cubrir siempre todo el alto. */
+.fondo-castillo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  width: 60vw;
+  height: 100dvh;
+  pointer-events: none;
+  animation: alzarse 1200ms var(--curva) backwards;
+}
+
+@media (max-width: 860px) {
+  .fondo-castillo {
+    width: 100vw;
+  }
+}
+
+@keyframes alzarse {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
 .visualmente-oculto {
   position: absolute;
   width: 1px;

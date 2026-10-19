@@ -130,27 +130,30 @@ dd {
   justify-self: center;
   display: flex;
   align-items: center;
-  gap: 28px;
+  gap: 32px;
 }
 
 .dato {
   display: grid;
   justify-items: center;
-  gap: 2px;
-  width: 140px;
+  gap: 4px;
+  width: 150px;
   margin: 0;
 }
 
 .dato .etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   color: inherit;
   font-size: 12px;
-  opacity: 0.75;
+  opacity: 0.8;
 }
 
 .numero {
   font-family: var(--display);
-  font-size: 76px;
+  font-size: 80px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
@@ -166,8 +169,81 @@ dd {
   color: var(--texto);
 }
 
+/* Barra de vida de juego de lucha: la parte roja baja enseguida y la estela blanca la sigue con retraso. */
+.barra-vida {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  background: var(--linea);
+  overflow: hidden;
+}
+
+.barra-vida span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 8px;
+}
+
+.estela {
+  background: rgb(255 255 255 / 0.75);
+  transition: width 700ms ease-in 350ms;
+}
+
+.resto {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  transition: width 250ms ease-out;
+}
+
+.escudo {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.grieta {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset 500ms var(--curva);
+}
+
+.agrietado {
+  color: var(--rojo);
+}
+
+.agrietado .grieta {
+  stroke-dashoffset: 0;
+}
+
+.reduccion {
+  color: var(--rojo);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* El retrato del enemigo sobre un círculo de luz roja. */
+.retrato {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.retrato::before {
+  content: '';
+  position: absolute;
+  inset: -20% -35%;
+  z-index: -1;
+  background: radial-gradient(circle, rgb(239 68 68 / 0.22), transparent 62%);
+  pointer-events: none;
+}
+
 .carta-enemigo {
-  width: clamp(150px, 30vh, 220px);
+  width: clamp(160px, 32vh, 250px);
   border-radius: 12px;
   box-shadow:
     0 0 0 1px rgb(255 255 255 / 0.12),
@@ -181,6 +257,15 @@ dd {
   border: 2px dashed var(--linea);
   background: transparent;
   box-shadow: none;
+}
+
+.nombre-enemigo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Bajo el enemigo: el castillo, la fase y los botones de confirmar. */
