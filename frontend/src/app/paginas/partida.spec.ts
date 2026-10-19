@@ -94,6 +94,7 @@ describe('Partida', () => {
     cartaDeLaMano(1).click();
     fixture.detectChanges();
     expect(boton('Confirmar Ataque').textContent).toContain('· 2');
+    expect(pantalla.querySelector('.suma')!.textContent).toContain('6 puntos');
     boton('Confirmar Ataque').click();
 
     expect(juego.atacar).toHaveBeenCalledWith([1, 2]);

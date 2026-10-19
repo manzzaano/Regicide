@@ -92,6 +92,12 @@ export class Partida implements OnInit {
     return Array.from({ length: cartas ? Math.min(6, Math.ceil(cartas / 8)) : 0 });
   }
 
+  // Valor de una carta en la mano: el as 1 y las figuras robadas 10, 15 y 20, como en las reglas.
+  protected puntosElegidos(estado: EstadoPartida): number {
+    const valor = (numero: number) => ({ 11: 10, 12: 15, 13: 20 })[numero] ?? numero;
+    return this.elegidas().reduce((suma, i) => suma + valor(estado.mano[i].numero), 0);
+  }
+
   protected cancelarSeleccion(): void {
     this.elegidas.set([]);
   }

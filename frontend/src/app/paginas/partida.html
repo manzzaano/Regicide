@@ -137,13 +137,20 @@
     </section>
 
     <section class="caja mano" aria-labelledby="titulo-mano">
-      <h2 class="etiqueta" id="titulo-mano">Tu mano · {{ estado.mano.length }}/8</h2>
+      <h2 class="etiqueta" id="titulo-mano">
+        Tu mano · {{ estado.mano.length }}/8
+        @if (elegidas().length) {
+          <span class="suma">· {{ puntosElegidos(estado) }} puntos</span>
+        }
+      </h2>
       <div class="fila">
         @for (carta of estado.mano; track carta.palo + carta.numero; let i = $index) {
           <button
             type="button"
             class="carta"
             [style.--i]="i"
+            [style.--giro]="(i - (estado.mano.length - 1) / 2) * 2 + 'deg'"
+            [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 1.5 + 'px'"
             [class.sin-poder]="sinPoder(carta, estado)"
             [attr.aria-pressed]="elegidas().includes(i)"
             [disabled]="terminada(estado)"
