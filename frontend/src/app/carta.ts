@@ -8,10 +8,10 @@ import { Carta as DatosCarta, nombreCarta } from './modelo';
     :host {
       display: block;
       aspect-ratio: 236 / 330;
-      border-radius: 6%/4.3%;
+      border-radius: 8px;
       overflow: hidden;
       background: #fff;
-      box-shadow: var(--sombra);
+      box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
     }
     img {
       display: block;

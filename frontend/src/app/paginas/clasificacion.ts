@@ -3,14 +3,18 @@ import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { PuestoEnClasificacion, ResumenPartida } from '../modelo';
+import { Menu } from '../menu';
 import { Sesion } from '../sesion';
 
 @Component({
   selector: 'app-clasificacion',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, Menu, RouterLink],
   template: `
-    <div class="contenedor pagina">
-      <h1>Clasificación</h1>
+    <app-menu />
+    <main>
+      <h1 class="titulo">Estadísticas</h1>
+      <section class="caja">
+      <h2>Clasificación</h2>
       <p class="ayuda">Más victorias primero; a igualdad, la mejor partida y quien lo logró en menos partidas.</p>
 
       @if (clasificacion.error()) {
@@ -48,6 +52,9 @@ import { Sesion } from '../sesion';
         <p class="ayuda">Cargando…</p>
       }
 
+      </section>
+
+      <section class="caja">
       <h2>Tus partidas</h2>
       @if (!sesion.nombre()) {
         <p><a routerLink="/entrar">Entra con tu cuenta</a> para ver tus partidas.</p>
@@ -81,27 +88,24 @@ import { Sesion } from '../sesion';
           <p>Todavía no has terminado ninguna partida.</p>
         }
       }
-    </div>
+      </section>
+    </main>
   `,
   styles: `
-    .pagina {
-      padding-block: 2rem 3rem;
-    }
-    h1 {
-      font-size: clamp(2.2rem, 6vw, 3.2rem);
+    main {
+      display: grid;
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px 30px;
     }
     h2 {
-      margin-top: 2.5rem;
-      font-size: 1.7rem;
-    }
-    .ayuda {
-      color: var(--texto-suave);
+      margin: 0 0 8px;
+      color: var(--titulo);
+      font-size: 22px;
     }
     .tabla {
       overflow-x: auto;
-      border-radius: var(--radio);
-      background: var(--superficie);
-      box-shadow: var(--sombra);
     }
     table {
       width: 100%;
@@ -110,30 +114,27 @@ import { Sesion } from '../sesion';
     }
     th,
     td {
-      padding: 0.7em 1em;
+      padding: 8px 12px;
       text-align: left;
       white-space: nowrap;
-      border-bottom: 1px solid var(--linea);
+      border-bottom: 1px solid #bbb;
     }
     thead th {
-      color: var(--texto-suave);
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      background: #000;
+      color: #fff;
     }
     tbody tr:last-child > * {
       border-bottom: 0;
     }
     .tuyo {
-      background: var(--superficie-2);
-      box-shadow: inset 4px 0 var(--acento);
+      font-weight: bold;
     }
     .gana {
-      color: var(--exito);
-      font-weight: 700;
+      font-weight: bold;
     }
     .error {
-      font-weight: 700;
+      color: var(--vida);
+      font-weight: bold;
     }
   `,
 })

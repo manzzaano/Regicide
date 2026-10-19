@@ -1,13 +1,16 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
+import { Menu } from '../menu';
 
 @Component({
   selector: 'app-reglas',
-  imports: [Carta, RouterLink],
+  imports: [Carta, Menu, RouterLink],
   template: `
-    <article class="contenedor pagina">
-      <h1>Cómo se juega</h1>
+    <app-menu />
+    <main>
+      <h1 class="titulo">¿Cómo jugar?</h1>
+      <article class="caja">
       <p class="entrada">
         Derrota a los 12 enemigos del castillo, uno detrás de otro: primero las 4 sotas, después las 4 reinas y al
         final los 4 reyes. Empiezas con 8 cartas en la mano y la posada como mazo para robar.
@@ -80,66 +83,62 @@ import { Carta } from '../carta';
         </p>
       </section>
 
-      <a class="boton" routerLink="/partida">Jugar ahora</a>
-    </article>
+      </article>
+      <a class="boton jugar" routerLink="/partida">Jugar</a>
+    </main>
   `,
   styles: `
-    .pagina {
-      max-width: 760px;
-      padding-block: 2rem 3rem;
-    }
-    h1 {
-      font-size: clamp(2.2rem, 6vw, 3.2rem);
-    }
-    h2 {
-      margin-top: 2rem;
-      font-size: 1.6rem;
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 16px 30px;
     }
     .entrada {
-      font-size: 1.25rem;
+      margin-top: 0;
+      font-size: 18px;
+    }
+    h2 {
+      margin: 20px 0 8px;
+      color: var(--titulo);
+      font-size: 22px;
     }
     .enemigos {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.25rem;
+      gap: 20px;
       padding: 0;
       list-style: none;
     }
     .enemigos li {
       display: grid;
-      gap: 0.35rem;
-      width: 140px;
-      color: var(--texto-suave);
-    }
-    .enemigos strong {
-      color: var(--texto);
+      gap: 6px;
+      width: 120px;
     }
     ol {
-      padding-left: 1.25rem;
+      padding-left: 20px;
     }
     li + li {
-      margin-top: 0.5rem;
+      margin-top: 6px;
     }
     .poderes {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 0.75rem;
+      gap: 10px;
     }
     .poderes div {
-      padding: 1rem;
-      border-top: 4px solid var(--acento);
-      border-radius: var(--radio);
-      background: var(--superficie);
+      padding: 10px 12px;
+      border-radius: 5px;
+      background: var(--caja-mazos);
     }
     dt {
-      font-family: var(--display);
-      font-size: 1.25rem;
+      font-weight: bold;
     }
     dd {
-      margin: 0.3rem 0 0;
+      margin: 4px 0 0;
     }
-    .boton {
-      margin-top: 2rem;
+    .jugar {
+      display: table;
+      margin: 20px auto 0;
     }
   `,
 })

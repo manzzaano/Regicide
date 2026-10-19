@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { Juego } from '../juego';
-import { EstadoPartida } from '../modelo';
+import { EstadoPartida, nombreCarta } from '../modelo';
 import { Sesion } from '../sesion';
 import { Partida } from './partida';
 
@@ -49,8 +49,12 @@ describe('Partida', () => {
     return encontrado;
   }
 
+  function aviso(): string | null {
+    return pantalla.querySelector('[role="alertdialog"]')?.textContent ?? null;
+  }
+
   function cartaDeLaMano(posicion: number): HTMLButtonElement {
-    return pantalla.querySelectorAll<HTMLButtonElement>('.mano-cartas button')[posicion];
+    return pantalla.querySelectorAll<HTMLButtonElement>('.mano button')[posicion];
   }
 
   beforeEach(() => {
@@ -89,7 +93,7 @@ describe('Partida', () => {
     cartaDeLaMano(2).click();
     cartaDeLaMano(1).click();
     fixture.detectChanges();
-    boton('Atacar').click();
+    boton('Confirmar Ataque').click();
 
     expect(juego.atacar).toHaveBeenCalledWith([1, 2]);
   });
@@ -104,19 +108,32 @@ describe('Partida', () => {
     cartaDeLaMano(0).click();
     fixture.detectChanges();
     expect(cartaDeLaMano(0).getAttribute('aria-pressed')).toBe('false');
-    expect(boton('Atacar').disabled).toBe(true);
+    expect(boton('Confirmar Ataque').disabled).toBe(true);
   });
 
-  it('al defenderse dice cuánto hay que cubrir y envía la defensa', async () => {
+  it('envía la defensa con las cartas elegidas', async () => {
     await mostrar({ ...EN_ATAQUE, fase: 'DEFENSA' });
 
-    expect(pantalla.textContent).toContain('al menos 10');
+    expect(boton('Confirmar Ataque').disabled).toBe(true);
     cartaDeLaMano(0).click();
     cartaDeLaMano(1).click();
     fixture.detectChanges();
-    boton('Defenderte').click();
+    boton('Confirmar Defensa').click();
 
     expect(juego.defender).toHaveBeenCalledWith([0, 1]);
+  });
+
+  it('las cartas elegidas pasan a la caja de selección y Cancelar Selección las suelta', async () => {
+    await mostrar(EN_ATAQUE);
+
+    cartaDeLaMano(1).click();
+    fixture.detectChanges();
+    expect(pantalla.querySelector('.seleccion img')!.getAttribute('alt')).toBe(nombreCarta(EN_ATAQUE.mano[1]));
+
+    boton('Cancelar Selección').click();
+    fixture.detectChanges();
+    expect(pantalla.querySelector('.seleccion img')).toBeNull();
+    expect(cartaDeLaMano(1).getAttribute('aria-pressed')).toBe('false');
   });
 
   it('la elección se borra cuando llega un estado nuevo', async () => {
@@ -128,45 +145,60 @@ describe('Partida', () => {
     expect(cartaDeLaMano(0).getAttribute('aria-pressed')).toBe('false');
   });
 
-  it('sin comodines no se puede usar ninguno', async () => {
-    await mostrar({ ...EN_ATAQUE, comodines: 0 });
-
-    expect(boton('Usar comodín').disabled).toBe(true);
-  });
-
-  it('sin cartas en la mano pide usar un comodín', async () => {
-    await mostrar({ ...EN_ATAQUE, mano: [] });
-
-    expect(pantalla.textContent).toContain('usa un comodín');
-  });
-
-  it('usa un comodín', async () => {
+  it('marca las cartas del palo del enemigo, que no activan su poder', async () => {
     await mostrar(EN_ATAQUE);
 
-    boton('Usar comodín').click();
+    expect(cartaDeLaMano(1).classList).toContain('sin-poder');
+    expect(cartaDeLaMano(0).classList).not.toContain('sin-poder');
+  });
+
+  it('muestra el estado de los mazos como v1', async () => {
+    await mostrar(EN_ATAQUE);
+
+    expect(pantalla.querySelector('.caja-mazos')!.textContent).toContain('| POSADA: 40');
+  });
+
+  it('los comodines usados quedan desactivados y el otro se puede usar', async () => {
+    await mostrar({ ...EN_ATAQUE, comodines: 1 });
+    const [usado, libre] = pantalla.querySelectorAll<HTMLButtonElement>('.comodines button');
+
+    expect(usado.disabled).toBe(true);
+    libre.click();
 
     expect(juego.usarComodin).toHaveBeenCalled();
   });
 
-  it('muestra el error del servidor', async () => {
-    juego.error.set('Solo puedes combinar cartas del mismo número que sumen 10 o menos');
+  it('avisa cuando la mano se queda vacía', async () => {
+    await mostrar({ ...EN_ATAQUE, mano: [] });
+
+    expect(aviso()).toContain('No te quedan cartas en la mano.');
+  });
+
+  it('avisa del error del servidor y el aviso se cierra con Aceptar', async () => {
     await mostrar(EN_ATAQUE);
+    juego.error.set('Solo puedes combinar cartas del mismo número que sumen 10 o menos');
+    fixture.detectChanges();
+    await fixture.whenStable();
 
-    expect(pantalla.querySelector('[role="alert"]')!.textContent).toContain('sumen 10 o menos');
+    expect(aviso()).toContain('sumen 10 o menos');
+    boton('Aceptar').click();
+    fixture.detectChanges();
+    expect(aviso()).toBeNull();
   });
 
-  it('al ganar ofrece jugar otra', async () => {
-    await mostrar({ ...EN_ATAQUE, fase: 'VICTORIA', enemigo: null, enemigosRestantes: 0, mano: [] });
+  it('avisa al derrotar a un enemigo', async () => {
+    await mostrar(EN_ATAQUE);
+    await mostrar({ ...EN_ATAQUE, enemigosRestantes: 11 });
 
-    expect(pantalla.textContent).toContain('Has derrotado al último rey');
-    boton('Jugar otra').click();
-
-    expect(juego.nuevaPartida).toHaveBeenCalled();
+    expect(aviso()).toContain('¡Has derrotado al enemigo!');
   });
 
-  it('al perder dice cuántos enemigos ha derrotado', async () => {
+  it('al terminar avisa del resultado y Nueva Partida empieza otra sin preguntar', async () => {
     await mostrar({ ...EN_ATAQUE, fase: 'DERROTA', enemigosRestantes: 5 });
 
-    expect(pantalla.textContent).toContain('7 de 12');
+    expect(aviso()).toContain('La partida ha terminado: Derrota');
+    boton('Nueva Partida').click();
+
+    expect(juego.nuevaPartida).toHaveBeenCalled();
   });
 });

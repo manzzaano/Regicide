@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
@@ -6,7 +7,7 @@ import { Sesion } from '../sesion';
 import { Entrar } from './entrar';
 
 describe('Entrar', () => {
-  let sesion: { entrar: ReturnType<typeof vi.fn>; registrarse: ReturnType<typeof vi.fn> };
+  let sesion: { nombre: ReturnType<typeof signal<string | null>>; entrar: ReturnType<typeof vi.fn>; registrarse: ReturnType<typeof vi.fn> };
   let pantalla: HTMLElement;
   let fixture: ReturnType<typeof TestBed.createComponent<Entrar>>;
   let navegar: ReturnType<typeof vi.spyOn>;
@@ -24,7 +25,7 @@ describe('Entrar', () => {
   }
 
   beforeEach(async () => {
-    sesion = { entrar: vi.fn(() => of(undefined)), registrarse: vi.fn(() => of(undefined)) };
+    sesion = { nombre: signal(null), entrar: vi.fn(() => of(undefined)), registrarse: vi.fn(() => of(undefined)) };
     TestBed.configureTestingModule({
       imports: [Entrar],
       providers: [provideRouter([]), { provide: Sesion, useValue: sesion }],

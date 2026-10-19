@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { Menu } from '../menu';
 import { Sesion } from '../sesion';
 
 function mensajeDeError(error: unknown): string {
@@ -17,9 +18,11 @@ function mensajeDeError(error: unknown): string {
 
 @Component({
   selector: 'app-entrar',
+  imports: [Menu],
   template: `
-    <div class="contenedor">
-      <section class="tarjeta">
+    <app-menu />
+    <main>
+      <section class="caja tarjeta">
         <div class="pestanas" role="group" aria-label="Elige una opción">
           <button type="button" [attr.aria-pressed]="!creando()" (click)="cambiar(false)">Entrar</button>
           <button type="button" [attr.aria-pressed]="creando()" (click)="cambiar(true)">Crear cuenta</button>
@@ -31,6 +34,7 @@ function mensajeDeError(error: unknown): string {
           <label>
             Nombre
             <input
+              class="campo"
               name="nombre"
               autocomplete="username"
               required
@@ -46,6 +50,7 @@ function mensajeDeError(error: unknown): string {
           <label>
             Contraseña
             <input
+              class="campo"
               name="contrasena"
               type="password"
               [attr.autocomplete]="creando() ? 'new-password' : 'current-password'"
@@ -69,74 +74,59 @@ function mensajeDeError(error: unknown): string {
           </button>
         </form>
       </section>
-    </div>
+    </main>
   `,
   styles: `
+    main {
+      padding: 0 16px;
+    }
     .tarjeta {
-      max-width: 440px;
-      margin: 2.5rem auto;
-      padding: 1.75rem;
-      border-radius: var(--radio);
-      background: var(--superficie);
-      box-shadow: var(--sombra);
+      max-width: 400px;
+      margin: 40px auto;
     }
     .pestanas {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--linea);
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
     }
     .pestanas button {
-      min-height: 44px;
-      border: 0;
-      border-bottom: 3px solid transparent;
-      background: none;
-      color: var(--texto-suave);
-      font-weight: 700;
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #000;
+      border-radius: 3px;
+      background: #fff;
+      color: #000;
+      font-size: 16px;
       cursor: pointer;
     }
     .pestanas button[aria-pressed='true'] {
-      color: var(--texto);
-      border-bottom-color: var(--acento);
+      background: #000;
+      color: #fff;
     }
     h1 {
-      font-size: 2rem;
-    }
-    .ayuda,
-    .pista {
-      color: var(--texto-suave);
+      margin: 0 0 10px;
+      color: var(--titulo);
+      font-size: 24px;
     }
     .pista {
-      margin: -0.6rem 0 1rem;
-      font-size: 0.95rem;
+      margin: -8px 0 12px;
+      font-size: 14px;
     }
     label {
       display: grid;
-      gap: 0.3rem;
-      margin-bottom: 1rem;
-      font-weight: 700;
+      gap: 4px;
+      margin-bottom: 12px;
+      font-weight: bold;
     }
-    input {
-      min-height: 44px;
-      padding: 0.4em 0.7em;
-      border: 2px solid var(--linea);
-      border-radius: 8px;
-      background: var(--fondo);
-      font-weight: 400;
-    }
-    input:focus-visible {
-      border-color: var(--acento);
-      outline-offset: 1px;
+    .campo {
+      font-weight: normal;
     }
     .error {
-      padding: 0.6em 0.8em;
-      border-left: 4px solid var(--acento);
-      background: var(--superficie-2);
-      font-weight: 700;
+      color: var(--vida);
+      font-weight: bold;
     }
     .boton {
       width: 100%;
-      margin-top: 0.5rem;
     }
   `,
 })
