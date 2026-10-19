@@ -152,6 +152,7 @@
             [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 3 + 'px'"
             [class.sin-poder]="sinPoder(carta, estado)"
             [attr.aria-pressed]="elegidas().includes(i)"
+            [attr.data-orden]="elegidas().includes(i) ? elegidas().indexOf(i) + 1 : null"
             [disabled]="terminada(estado)"
             (click)="alternar(i)"
             (pointermove)="inclinar($event)"

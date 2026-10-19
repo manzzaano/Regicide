@@ -125,6 +125,18 @@ describe('Partida', () => {
     expect(juego.defender).toHaveBeenCalledWith([0, 1]);
   });
 
+  it('cada carta elegida lleva el orden en que se eligió', async () => {
+    await mostrar(EN_ATAQUE);
+
+    cartaDeLaMano(2).click();
+    cartaDeLaMano(0).click();
+    fixture.detectChanges();
+
+    expect(cartaDeLaMano(2).dataset['orden']).toBe('1');
+    expect(cartaDeLaMano(0).dataset['orden']).toBe('2');
+    expect(cartaDeLaMano(1).dataset['orden']).toBeUndefined();
+  });
+
   it('Cancelar suelta las cartas elegidas', async () => {
     await mostrar(EN_ATAQUE);
 

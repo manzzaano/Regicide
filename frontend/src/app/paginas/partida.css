@@ -10,7 +10,8 @@
 .mesa {
   flex: 1;
   display: grid;
-  align-content: center;
+  /* safe: si no cabe, lo que sobra es el pie de la mano, nunca la parte de arriba. */
+  align-content: safe center;
   width: 100%;
   /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
@@ -517,6 +518,9 @@ dd {
 }
 
 .info {
+  /* Por encima de las cartas: una carta elegida o ampliada nunca tapa los botones. */
+  position: relative;
+  z-index: 30;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -538,14 +542,14 @@ dd {
   --ancho: clamp(64px, min(16vh, 15vw), 150px);
   display: flex;
   justify-content: center;
-  padding: 8px calc(var(--ancho) * 0.2) 12px;
+  /* Hueco arriba para lo que sube una carta elegida, con su número de orden. */
+  padding: calc(var(--ancho) * 0.18 + 6px) calc(var(--ancho) * 0.2) 12px;
 }
 
 .abanico-mano .carta {
-  --alza: 0px;
   width: var(--ancho);
   margin-inline: calc(var(--ancho) * -0.2);
-  transform: translateY(calc(var(--arco, 0px) - var(--alza))) rotate(var(--giro, 0deg));
+  transform: translateY(var(--arco, 0px)) rotate(var(--giro, 0deg));
   transform-origin: 50% 100%;
   animation: repartir 420ms var(--curva) backwards;
   animation-delay: calc(var(--i, 0) * 45ms);
@@ -554,7 +558,7 @@ dd {
 /* La que está bajo el ratón se endereza, crece y pasa por encima; las vecinas se apartan para dejarla ver. */
 .abanico-mano .carta:hover:not(:disabled) {
   z-index: 20;
-  transform: translateY(calc(var(--ancho) * -0.22)) scale(1.2);
+  transform: translateY(calc(var(--ancho) * -0.12)) scale(1.15);
 }
 
 .abanico-mano .carta:hover:not(:disabled) + .carta {
@@ -585,7 +589,8 @@ dd {
   transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition:
     transform 120ms ease-out,
-    box-shadow 200ms;
+    box-shadow 200ms,
+    filter 200ms;
 }
 
 /* Reflejo de luz que sigue al puntero. */
@@ -605,15 +610,58 @@ dd {
   opacity: 1;
 }
 
-/* La carta elegida sube y se marca en rojo, en vez de apagarse como en v1: así sigue a la vista. */
+/* La carta elegida sube, se endereza y pasa por delante, con un borde rojo que late despacio
+   y el orden en que se eligió encima. Las demás se apagan para que la jugada destaque. */
 .abanico-mano .carta[aria-pressed='true'] {
-  --alza: calc(var(--ancho) * 0.2);
+  z-index: 10;
+  transform: translateY(calc(var(--ancho) * -0.25));
+}
+
+.abanico-mano .carta[aria-pressed='true']:hover:not(:disabled) {
+  transform: translateY(calc(var(--ancho) * -0.25)) scale(1.05);
 }
 
 .carta[aria-pressed='true'] .cara {
-  box-shadow:
-    0 0 0 3px var(--rojo),
-    0 0 32px 4px rgb(239 68 68 / 0.55);
+  animation: latir-eleccion 1.6s ease-in-out infinite;
+}
+
+.carta[aria-pressed='true']::after {
+  content: attr(data-orden);
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow: 0 2px 10px rgb(239 68 68 / 0.6);
+  color: var(--negro);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  translate: -50% 0;
+  animation: entrar 220ms var(--curva);
+}
+
+.abanico-mano:has([aria-pressed='true']) .carta:not([aria-pressed='true'], :hover) .cara {
+  filter: brightness(0.55);
+}
+
+@keyframes latir-eleccion {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--rojo),
+      0 0 16px 2px rgb(239 68 68 / 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--rojo),
+      0 0 34px 6px rgb(239 68 68 / 0.65);
+  }
 }
 
 /* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo.
@@ -744,10 +792,11 @@ dd {
       'mazos centro comodines'
       'mano mano mano'
       '. . .';
+    row-gap: clamp(8px, 1.6vh, 18px);
     padding-bottom: 0;
   }
   .carta-enemigo {
-    width: clamp(120px, 23vh, 250px);
+    width: clamp(110px, 20vh, 250px);
   }
 }
 
