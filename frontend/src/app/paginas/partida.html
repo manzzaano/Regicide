@@ -73,7 +73,12 @@
     <div class="centro">
       <ol class="castillo" [attr.aria-label]="12 - estado.enemigosRestantes + ' de 12 enemigos derrotados'">
         @for (figura of castillo; track $index) {
-          <li [class.caido]="$index < 12 - estado.enemigosRestantes">{{ figura }}</li>
+          <li
+            [class.caido]="$index < 12 - estado.enemigosRestantes"
+            [class.actual]="$index === 12 - estado.enemigosRestantes && !terminada(estado)"
+          >
+            {{ figura }}
+          </li>
         }
       </ol>
       <p class="fase" aria-live="polite">
@@ -83,25 +88,19 @@
           @case ('VICTORIA') { <span>&gt; victoria</span> has derrotado al último rey }
           @case ('DERROTA') { <span>&gt; derrota</span> {{ 12 - estado.enemigosRestantes }} de 12 enemigos }
         }
+        <span class="cursor" aria-hidden="true">▌</span>
       </p>
-      <div class="confirmar">
-        <button
-          type="button"
-          class="boton"
-          [disabled]="estado.fase !== 'DEFENSA' || !elegidas().length || !juego.conectado()"
-          (click)="defender()"
-        >
-          Confirmar Defensa
-        </button>
-        <button
-          type="button"
-          class="boton"
-          [disabled]="estado.fase !== 'ATAQUE' || !elegidas().length || !juego.conectado()"
-          (click)="atacar()"
-        >
-          Confirmar Ataque
-        </button>
-      </div>
+      <button
+        type="button"
+        class="boton-principal confirmar"
+        [disabled]="terminada(estado) || !elegidas().length || !juego.conectado()"
+        (click)="estado.fase === 'DEFENSA' ? defender() : atacar()"
+      >
+        {{ estado.fase === 'DEFENSA' ? 'Confirmar Defensa' : 'Confirmar Ataque' }}
+        @if (elegidas().length) {
+          <span class="cuantas">· {{ elegidas().length }}</span>
+        }
+      </button>
     </div>
 
     <section class="caja seleccion" aria-labelledby="titulo-seleccion">

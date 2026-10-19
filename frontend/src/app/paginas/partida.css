@@ -279,31 +279,32 @@ dd {
 
 .castillo {
   display: flex;
-  gap: 4px;
+  gap: 5px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .castillo li {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 30px;
   border: 1px solid var(--linea);
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--caja-fuerte);
   color: var(--texto-suave);
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: 700;
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 800;
   transition:
     background 300ms,
     color 300ms;
 }
 
 .castillo li:nth-child(4n) {
-  margin-right: 6px;
+  margin-right: 8px;
 }
 
 .castillo li:last-child {
@@ -316,26 +317,54 @@ dd {
   color: var(--negro);
 }
 
+/* Tachado en diagonal: el enemigo ya ha caído. */
+.castillo .caido::after {
+  content: '';
+  position: absolute;
+  inset: 50% 4px auto;
+  height: 2px;
+  background: var(--negro);
+  transform: rotate(-35deg);
+}
+
+.castillo .actual {
+  border-color: var(--rojo);
+  color: var(--texto);
+  animation: palpitar 1.4s ease-in-out infinite;
+}
+
 .fase {
   margin: 0;
   padding: 4px 12px;
+  border: 1px solid var(--linea);
   border-radius: 999px;
-  background: rgb(11 11 11 / 0.82);
-  color: #d4d4d8;
+  background: var(--caja);
+  color: var(--texto-suave);
   font-family: var(--mono);
   font-size: 13px;
 }
 
-.fase span {
+.fase span:first-child {
   margin-right: 6px;
-  color: #fff;
+  color: var(--rojo);
   font-weight: 700;
 }
 
+.cursor {
+  margin-left: 2px;
+  color: var(--rojo);
+  animation: parpadeo 1s steps(1) infinite;
+}
+
 .confirmar {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
+  min-width: 260px;
+  min-height: 48px;
+  font-size: 15px;
+}
+
+.cuantas {
+  font-family: var(--mono);
+  font-weight: 700;
 }
 
 /* Selección */
@@ -498,6 +527,18 @@ button.carta-sel:hover {
   }
 }
 
+@keyframes palpitar {
+  50% {
+    box-shadow: 0 0 0 4px rgb(239 68 68 / 0.25);
+  }
+}
+
+@keyframes parpadeo {
+  50% {
+    opacity: 0;
+  }
+}
+
 @keyframes latido {
   to {
     opacity: 0.25;
@@ -557,9 +598,7 @@ button.carta-sel:hover {
     grid-template-areas: 'enemigo' 'centro' 'mano' 'cancelar' 'seleccion' 'comodines' 'mazos';
   }
   .castillo li {
-    width: 18px;
-  }
-  .confirmar {
-    flex-wrap: wrap;
+    width: 20px;
+    font-size: 11px;
   }
 }

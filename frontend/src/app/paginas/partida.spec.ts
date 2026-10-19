@@ -93,6 +93,7 @@ describe('Partida', () => {
     cartaDeLaMano(2).click();
     cartaDeLaMano(1).click();
     fixture.detectChanges();
+    expect(boton('Confirmar Ataque').textContent).toContain('· 2');
     boton('Confirmar Ataque').click();
 
     expect(juego.atacar).toHaveBeenCalledWith([1, 2]);
@@ -114,7 +115,7 @@ describe('Partida', () => {
   it('envía la defensa con las cartas elegidas', async () => {
     await mostrar({ ...EN_ATAQUE, fase: 'DEFENSA' });
 
-    expect(boton('Confirmar Ataque').disabled).toBe(true);
+    expect(pantalla.textContent).not.toContain('Confirmar Ataque');
     cartaDeLaMano(0).click();
     cartaDeLaMano(1).click();
     fixture.detectChanges();
