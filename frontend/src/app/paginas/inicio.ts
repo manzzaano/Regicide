@@ -47,16 +47,19 @@ import { Sesion } from '../sesion';
     </main>
   `,
   styles: `
+    /* Todo se mide en em sobre un tamaño base que crece con el ancho y el alto de la pantalla:
+       unos 16px en un portátil de 1366×768, 21px en 1920×1080 y el tope de 24px en 2560×1440. */
     .inicio {
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
+      grid-template-columns: minmax(0, 1fr) clamp(300px, 22em, 520px);
       align-items: center;
-      gap: 48px;
-      max-width: 1200px;
+      gap: clamp(32px, 4vw, 96px);
+      max-width: 1760px;
       min-height: 100dvh;
       margin: 0 auto;
-      padding: 48px 24px;
+      padding: clamp(32px, 5vh, 72px) clamp(20px, 5vw, 96px);
+      font-size: clamp(15px, calc(0.55vw + 0.6vh + 4px), 24px);
     }
     /* Fondo: sube en diagonal desde el centro de la pantalla hasta la esquina de arriba a la izquierda. */
     .castillo {
@@ -64,7 +67,7 @@ import { Sesion } from '../sesion';
       top: 0;
       left: 0;
       z-index: -1;
-      width: min(64vw, 1100px);
+      width: max(72vw, 110vh);
       height: auto;
       pointer-events: none;
       animation: alzarse 1200ms var(--curva) backwards;
@@ -75,14 +78,14 @@ import { Sesion } from '../sesion';
     }
     .abanico {
       display: flex;
-      height: clamp(110px, 20vh, 170px);
-      margin: 0 0 20px 18px;
+      height: 8.6em;
+      margin: 0 0 1.2em 1em;
     }
     .abanico app-carta {
-      width: clamp(80px, 13vh, 116px);
-      margin-inline: -18px;
-      border-radius: 10px;
-      box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.8);
+      width: 6em;
+      margin-inline: -0.95em;
+      border-radius: 0.5em;
+      box-shadow: 0 1em 2em -0.6em rgb(0 0 0 / 0.8);
       transform-origin: 50% 120%;
       animation: abrir 900ms var(--curva) backwards;
     }
@@ -91,83 +94,88 @@ import { Sesion } from '../sesion';
     }
     .abanico app-carta:nth-child(2) {
       z-index: 1;
-      transform: translateY(-14px);
+      transform: translateY(-0.7em);
       box-shadow:
-        0 0 40px 4px rgb(239 68 68 / 0.55),
-        0 18px 40px -12px rgb(0 0 0 / 0.8);
+        0 0 2em 0.2em rgb(239 68 68 / 0.55),
+        0 1em 2em -0.6em rgb(0 0 0 / 0.8);
     }
     .abanico app-carta:nth-child(3) {
       transform: rotate(14deg);
     }
     .terminal {
       margin: 0;
-      padding: 4px 12px;
+      padding: 0.3em 0.9em;
       border: 1px solid var(--linea);
       border-radius: 999px;
       background: var(--caja);
       color: var(--texto-suave);
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 0.7em;
     }
     .terminal span {
       color: var(--rojo);
     }
     .titulo {
-      padding: 16px 0 8px;
-      font-size: clamp(60px, 10vw, 136px);
+      padding: 0.12em 0 0.06em;
+      font-size: min(7.5em, 10.5vw);
       text-align: left;
     }
     .punto {
       color: var(--rojo);
     }
     .subtitulo {
-      margin: 0 0 24px;
+      margin: 0 0 1.3em;
       color: var(--texto-suave);
-      font-size: clamp(17px, 1.8vw, 20px);
+      font-size: 1.1em;
     }
     .palos {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 0.4em;
       margin: 0;
       padding: 0;
+      font-size: 0.66em;
       list-style: none;
     }
     .palos li {
-      padding: 4px 10px;
+      padding: 0.35em 0.85em;
       border: 1px solid rgb(239 68 68 / 0.12);
       border-radius: 3px;
       background: rgb(239 68 68 / 0.06);
       color: var(--rojo);
       font-family: var(--mono);
-      font-size: 12px;
       letter-spacing: 0.15em;
       text-transform: uppercase;
     }
     .panel {
       display: grid;
-      gap: 18px;
-      padding: 24px;
+      gap: 1em;
+      padding: 1.4em;
       border: 1px solid var(--borde-caja);
-      border-radius: var(--radio);
+      border-radius: 0.7em;
       background: rgb(18 18 18 / 0.85);
       box-shadow: var(--sombra);
       backdrop-filter: blur(12px);
     }
     .panel .etiqueta {
-      margin: 0 0 -14px;
+      margin: 0 0 -0.6em;
+      font-size: 0.6em;
     }
     .jugador {
       margin: 0;
       font-family: var(--display);
-      font-size: 26px;
+      font-size: 1.5em;
       font-weight: 700;
       letter-spacing: -0.02em;
       overflow-wrap: anywhere;
     }
     .botones {
       display: grid;
-      gap: 10px;
+      gap: 0.5em;
+    }
+    .botones a {
+      min-height: 2.9em;
+      font-size: 0.85em;
     }
     .enlaces {
       display: grid;
@@ -177,12 +185,12 @@ import { Sesion } from '../sesion';
     .enlaces button {
       display: flex;
       justify-content: space-between;
-      padding: 12px 0;
+      padding: 0.75em 0;
       border: 0;
       border-bottom: 1px solid var(--linea);
       background: none;
       color: var(--texto-suave);
-      font-size: 14px;
+      font-size: 0.8em;
       text-align: left;
       text-decoration: none;
       cursor: pointer;
@@ -206,11 +214,9 @@ import { Sesion } from '../sesion';
     @media (max-width: 860px) {
       .inicio {
         grid-template-columns: 1fr;
-        gap: 32px;
-        padding-top: 32px;
       }
-      .castillo {
-        width: 100vw;
+      .titulo {
+        font-size: min(7.5em, 20vw);
       }
     }
     @keyframes abrir {
