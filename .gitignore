@@ -7,7 +7,7 @@ backend/*.iws
 backend/.vscode/
 
 # Frontend (Angular)
-frontend/node_modules/
+node_modules/
 frontend/dist/
 frontend/.angular/
 frontend/out-tsc/
