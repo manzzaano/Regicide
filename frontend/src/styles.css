@@ -113,13 +113,13 @@ input {
 .boton-rojo {
   display: inline-flex;
   align-items: center;
-  min-height: 36px;
-  padding: 6px 14px;
+  min-height: 40px;
+  padding: 8px 16px;
   border: 1px solid rgb(239 68 68 / 0.3);
   border-radius: 8px;
   background: rgb(239 68 68 / 0.06);
   color: var(--rojo);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition:

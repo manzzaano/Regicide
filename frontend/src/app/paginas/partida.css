@@ -7,29 +7,6 @@
   min-height: 100dvh;
 }
 
-/* Nueva Partida en la barra: solo el icono, el texto aparece al pasar el ratón o con el foco. */
-.nueva {
-  gap: 0;
-  padding-inline: 10px;
-  font-size: 16px;
-}
-
-.texto-nueva {
-  max-width: 0;
-  overflow: hidden;
-  font-size: 14px;
-  white-space: nowrap;
-  transition:
-    max-width 300ms var(--curva),
-    margin 300ms var(--curva);
-}
-
-.nueva:hover .texto-nueva,
-.nueva:focus-visible .texto-nueva {
-  max-width: 120px;
-  margin-left: 6px;
-}
-
 .mesa {
   flex: 1;
   display: grid;
