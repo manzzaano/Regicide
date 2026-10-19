@@ -1,55 +1,43 @@
 # Regicide
 
-Juego de cartas Regicide en modo solitario, hecho en Java con JavaFX como proyecto final del módulo de Programación de DAM. Es el punto de partida de la migración a la web; la versión entregada se conserva en la rama [`v1`](https://github.com/manzzaano/Regicide/tree/v1).
+Juego de cartas Regicide en modo solitario. Empezó como mi proyecto final de Programación en DAM, hecho en JavaFX, y lo llevo a la web: las reglas en un servidor Spring Boot, la partida en tiempo real por WebSocket y una interfaz en Angular.
 
-## Cómo se juega
-
-Se juega con una baraja francesa de 52 cartas (Picas, Corazones, Tréboles y Diamantes) y el objetivo es derrotar a los 12 enemigos del castillo.
-
-- **El castillo:** las 4 jotas (vida 20, ataque 10), después las 4 reinas (vida 30, ataque 15) y por último los 4 reyes (vida 40, ataque 20), barajados dentro de cada grupo.
-- **La mano:** empiezas con 8 cartas del 1 al 10. El resto forma la posada, de donde se roba.
-- **Atacar:** juegas una carta, varias del mismo número y distinto palo que sumen 10 como máximo, o un as (el compañero, que vale 1) junto a otra carta.
-- **Poderes de los palos:** Tréboles duplica el daño, Picas reduce el ataque del enemigo, Diamantes roba cartas de la posada y Corazones devuelve cartas del descarte a la posada. Picas, Diamantes y Corazones no funcionan contra un enemigo de su mismo palo.
-- **Defenderse:** si el enemigo sobrevive, te ataca y descartas cartas de la mano hasta cubrir su ataque.
-- **Comodines:** hay dos. Cada uno descarta la mano entera y roba 8 cartas nuevas.
-- **Final:** ganas al derrotar al último rey. Pierdes si, sin comodines, te quedas sin cartas o no puedes cubrir un ataque.
-
-Si dejas a un enemigo con la vida justa a 0, pasa a la posada y lo puedes robar como carta.
-
-## Guardado y estadísticas
-
-- **Partidas en JSON** con Gson: cada partida se guarda en `src/main/resources/PartidasGuardadas/partida_<n>.json` y se puede cargar desde la pantalla de juego.
-- **Estadísticas en CSV** en `src/main/resources/estadisticas.csv`: número de partida, fecha, cartas jugadas, vida restante del enemigo, mano y resultado.
-
-Las rutas son relativas, así que el juego se arranca desde la raíz del proyecto.
-
-## Cómo ejecutarlo
-
-Requisitos: JDK 17 o superior. JavaFX 23 y Gson los descarga Maven.
-
-```bash
-./mvnw javafx:run        # en Windows: mvnw.cmd javafx:run
-```
-
-También se abre desde IntelliJ IDEA, que es el IDE con el que lo desarrollé.
-
-## Estructura
-
-Sigue el patrón MVC:
-
-```
-src/main/java/
-├── Controlador/   Main, ControladorInicio (nombre del jugador y reglas) y ControladorJuego (turnos, ataque, defensa y comodines)
-├── Modelo/        Juego (estado de la partida), Baraja (reparto inicial) y las cartas: CartaPueblo y CartaEnemigo
-└── Utilidades/    Guardado (JSON y CSV) y CartaDeserializable (Gson)
-src/main/resources/
-├── Vistas/        pantallas en FXML y sus hojas de estilo
-└── imgs/          imágenes de las cartas
-```
+La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manzzaano/Regicide/tree/v1).
 
 ## Estado
 
-El código es el de la versión que entregué. La migración a la web, con Spring Boot en el servidor y Angular en el navegador, se hace sobre esta base en la rama `dev` y llega a `master` por pull request. Las fases, las decisiones y el estado de cada una están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+La migración va por fases y cada una llega a `master` con un pull request. El plan, las decisiones y el estado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+
+En `master` está el motor del juego: todas las reglas en Java, sin dependencias de interfaz, con tests de cada regla y partidas completas jugadas desde los tests.
+
+## Cómo se juega
+
+El objetivo es derrotar a los 12 enemigos del castillo: 4 sotas (vida 20, ataque 10), 4 reinas (vida 30, ataque 15) y 4 reyes (vida 40, ataque 20).
+
+- **Atacar:** juegas una carta, de 2 a 4 cartas del mismo número que sumen 10 como máximo, o un as junto a una única carta.
+- **Poderes de los palos:** Corazones devuelve cartas del descarte debajo de la posada, Diamantes roba cartas, Picas baja el ataque del enemigo y Tréboles dobla el daño. Ningún poder funciona contra un enemigo de su mismo palo.
+- **Defenderse:** si el enemigo sobrevive, descartas cartas que sumen al menos su ataque.
+- **Comodines:** dos por partida. Cada uno descarta la mano y roba 8 cartas, antes de atacar o antes de defenderte.
+- **Final:** ganas al derrotar al último rey. Pierdes si, sin comodines, no puedes atacar o no puedes cubrir un ataque.
+
+Si derrotas a un enemigo con la vida justa, pasa encima de la posada y lo puedes robar como carta.
+
+## Cómo ejecutar los tests
+
+Requisitos: JDK 21.
+
+```bash
+cd backend
+./mvnw test
+```
+
+## Estructura
+
+```
+regicide/
+├── backend/   Spring Boot; el motor del juego está en com.regicide.juego
+└── docs/      caso de estudio de la migración
+```
 
 ---
 
