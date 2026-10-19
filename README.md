@@ -8,7 +8,7 @@ La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manz
 
 La migración va por fases y cada una llega a `master` con un pull request. El plan, las decisiones y el estado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
-En `master` está el motor del juego: todas las reglas en Java, sin dependencias de interfaz, con tests de cada regla y partidas completas jugadas desde los tests.
+En `master` está el backend: el motor del juego, con todas las reglas en Java y tests de cada una, y la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado.
 
 ## Cómo se juega
 
@@ -22,20 +22,23 @@ El objetivo es derrotar a los 12 enemigos del castillo: 4 sotas (vida 20, ataque
 
 Si derrotas a un enemigo con la vida justa, pasa encima de la posada y lo puedes robar como carta.
 
-## Cómo ejecutar los tests
+## Cómo ejecutarlo
 
 Requisitos: JDK 21.
 
 ```bash
 cd backend
-./mvnw test
+./mvnw test              # tests del motor y de la partida por WebSocket
+./mvnw spring-boot:run   # servidor en http://localhost:8080, WebSocket en ws://localhost:8080/ws
 ```
+
+Por WebSocket, el cliente envía sus jugadas a `/app/partida/empezar`, `atacar`, `defender`, `comodin` y `abandonar` (`atacar` y `defender` llevan `{"cartas": [posiciones en la mano]}`), y recibe el estado de su partida en `/user/queue/partida` y los errores en `/user/queue/errores`.
 
 ## Estructura
 
 ```
 regicide/
-├── backend/   Spring Boot; el motor del juego está en com.regicide.juego
+├── backend/   Spring Boot: el motor del juego (com.regicide.juego) y la partida por WebSocket (com.regicide.partida)
 └── docs/      caso de estudio de la migración
 ```
 
