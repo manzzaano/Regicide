@@ -53,7 +53,7 @@ dd {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--vida);
+  background: var(--rojo);
   animation: latido 1s ease-in-out infinite alternate;
 }
 
@@ -92,27 +92,27 @@ dd {
 }
 
 .vida {
-  color: var(--vida);
+  color: var(--rojo);
 }
 
 .ataque {
-  color: #000;
+  color: var(--texto);
 }
 
 .carta-enemigo {
   width: clamp(150px, 30vh, 220px);
   border-radius: 12px;
   box-shadow:
-    0 0 0 1px rgb(255 255 255 / 0.6),
-    0 0 40px 4px rgb(255 0 0 / 0.45),
+    0 0 0 1px rgb(255 255 255 / 0.12),
+    0 0 48px 6px rgb(239 68 68 / 0.4),
     0 18px 40px -10px rgb(0 0 0 / 0.6);
   animation: llegar 600ms var(--curva);
 }
 
 .hueco {
   aspect-ratio: 236 / 330;
-  border: 2px dashed rgb(255 255 255 / 0.6);
-  background: rgb(255 255 255 / 0.15);
+  border: 2px dashed var(--linea);
+  background: transparent;
   box-shadow: none;
 }
 
@@ -138,9 +138,10 @@ dd {
   place-items: center;
   width: 22px;
   height: 22px;
-  border: 1px solid rgb(0 0 0 / 0.2);
+  border: 1px solid var(--linea);
   border-radius: 5px;
-  background: rgb(255 255 255 / 0.7);
+  background: var(--caja-fuerte);
+  color: var(--texto-suave);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 700;
@@ -159,8 +160,8 @@ dd {
 
 .castillo .caido {
   border-color: transparent;
-  background: var(--vida);
-  color: #fff;
+  background: var(--rojo);
+  color: var(--negro);
 }
 
 .fase {
@@ -218,7 +219,7 @@ button.carta-sel:hover {
 }
 
 .vacia {
-  border: 1.5px dashed rgb(0 0 0 / 0.18);
+  border: 1.5px dashed var(--linea);
 }
 
 /* Comodines, mano y cancelar */
@@ -328,7 +329,7 @@ button.carta-sel:hover {
 @keyframes golpe {
   from {
     transform: scale(1.25);
-    text-shadow: 0 0 24px rgb(255 255 255 / 0.9);
+    text-shadow: 0 0 24px rgb(239 68 68 / 0.9);
   }
 }
 

@@ -147,22 +147,22 @@ import { Sesion } from '../sesion';
       transition: background 150ms;
     }
     tbody tr:hover {
-      background: rgb(255 255 255 / 0.6);
+      background: rgb(255 255 255 / 0.04);
     }
     tbody tr:last-child > * {
       border-bottom: 0;
     }
     .tuyo {
-      background: rgb(128 0 0 / 0.08);
-      box-shadow: inset 3px 0 var(--vida);
+      background: rgb(239 68 68 / 0.06);
+      box-shadow: inset 3px 0 var(--rojo);
       font-weight: 600;
     }
     .gana {
-      color: #065f46;
+      color: #4ade80;
       font-weight: 600;
     }
     .error {
-      color: var(--vida);
+      color: var(--rojo);
       font-weight: bold;
     }
   `,

@@ -94,7 +94,7 @@ function mensajeDeError(error: unknown): string {
       margin-bottom: 20px;
       padding: 4px;
       border-radius: 10px;
-      background: rgb(0 0 0 / 0.07);
+      background: rgb(255 255 255 / 0.06);
     }
     .pestanas button {
       min-height: 38px;
@@ -107,8 +107,8 @@ function mensajeDeError(error: unknown): string {
       transition: background 150ms, color 150ms;
     }
     .pestanas button[aria-pressed='true'] {
-      background: var(--negro);
-      color: #fff;
+      background: var(--hover);
+      color: var(--texto);
     }
     h1 {
       margin: 0 0 6px;
@@ -136,7 +136,7 @@ function mensajeDeError(error: unknown): string {
       font-weight: normal;
     }
     .error {
-      color: var(--vida);
+      color: var(--rojo);
       font-weight: bold;
     }
     .boton {

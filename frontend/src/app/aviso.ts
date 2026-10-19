@@ -25,7 +25,7 @@ import { Component, ElementRef, afterNextRender, inject, input, output } from '@
       display: grid;
       place-items: center;
       padding: 16px;
-      background: rgb(4 20 20 / 0.45);
+      background: rgb(0 0 0 / 0.6);
       backdrop-filter: blur(3px);
       animation: aparecer 160ms ease-out;
     }

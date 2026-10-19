@@ -25,8 +25,8 @@ import { Sesion } from '../sesion';
           <strong>{{ sesion.nombre() ?? 'invitado' }}</strong>
         </p>
         <div class="botones">
-          <a class="boton" routerLink="/partida">Jugar</a>
-          <a class="boton-rojo" routerLink="/reglas">¿Cómo jugar?</a>
+          <a class="boton-principal" routerLink="/partida">Jugar</a>
+          <a class="boton" routerLink="/reglas">¿Cómo jugar?</a>
         </div>
         <div class="enlaces">
           <a routerLink="/clasificacion">Estadísticas</a>
@@ -87,8 +87,9 @@ import { Sesion } from '../sesion';
       margin: 0;
       padding: 4px 12px;
       border-radius: 999px;
-      background: rgb(11 11 11 / 0.8);
-      color: #d4d4d8;
+      border: 1px solid var(--linea);
+      background: var(--caja);
+      color: var(--texto-suave);
       font-family: var(--mono);
       font-size: 13px;
     }
@@ -104,24 +105,19 @@ import { Sesion } from '../sesion';
     }
     .subtitulo {
       margin: 0 0 28px;
-      color: #fff;
+      color: var(--texto-suave);
       font-size: clamp(16px, 2vw, 19px);
-      font-weight: 500;
-      text-shadow: 0 1px 12px rgb(0 30 30 / 0.6);
     }
-    /* Oscuro como la barra superior: sobre negro, el rojo se lee bien. */
     .panel {
       display: grid;
       justify-items: center;
       gap: 16px;
       width: min(100%, 380px);
       padding: 20px;
-      border: 1px solid rgb(255 255 255 / 0.08);
+      border: 1px solid var(--borde-caja);
       border-radius: var(--radio);
-      background: rgb(11 11 11 / 0.75);
-      box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.6);
-      backdrop-filter: blur(12px) saturate(1.4);
-      color: #fafafa;
+      background: var(--caja);
+      box-shadow: var(--sombra);
     }
     .jugador {
       display: grid;
@@ -147,9 +143,6 @@ import { Sesion } from '../sesion';
       justify-content: center;
       min-height: 42px;
       text-decoration: none;
-    }
-    .botones .boton {
-      border-color: rgb(255 255 255 / 0.14);
     }
     .enlaces {
       display: flex;
@@ -182,7 +175,7 @@ import { Sesion } from '../sesion';
       padding: 4px 10px;
       border: 1px solid rgb(239 68 68 / 0.12);
       border-radius: 3px;
-      background: linear-gradient(rgb(239 68 68 / 0.06), rgb(239 68 68 / 0.06)), rgb(11 11 11 / 0.8);
+      background: rgb(239 68 68 / 0.06);
       color: var(--rojo);
       font-family: var(--mono);
       font-size: 12px;
