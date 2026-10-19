@@ -4,9 +4,11 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 /** Una partida en solitario con las reglas del juego. No sabe nada de cómo se muestra. */
 public class Partida {
@@ -49,10 +51,11 @@ public class Partida {
     }
 
     /** Para los tests: una partida con las cartas colocadas a mano. La primera de la posada es la de arriba. */
-    Partida(List<Carta> mano, List<Carta> posada, List<Enemigo> castillo, Random random) {
+    Partida(List<Carta> mano, List<Carta> posada, List<Carta> descarte, List<Enemigo> castillo, Random random) {
         this.random = random;
         this.mano.addAll(mano);
         this.posada.addAll(posada);
+        this.descarte.addAll(descarte);
         this.castillo.addAll(castillo);
     }
 
@@ -65,8 +68,31 @@ public class Partida {
         mano.removeAll(cartas);
         jugadas.addAll(cartas);
         int total = cartas.stream().mapToInt(Carta::valor).sum();
-        enemigo().restarVida(total);
+        Enemigo enemigo = enemigo();
+        Set<Palo> poderes = EnumSet.noneOf(Palo.class);
+        cartas.forEach(carta -> poderes.add(carta.palo()));
+        poderes.remove(enemigo.carta().palo());
+
+        // Corazones antes que Diamantes: así se pueden robar las cartas recién curadas.
+        if (poderes.contains(Palo.CORAZONES)) {
+            curar(total);
+        }
+        if (poderes.contains(Palo.DIAMANTES)) {
+            robar(total);
+        }
+        if (poderes.contains(Palo.PICAS)) {
+            enemigo.reducirAtaque(total);
+        }
+        int daño = poderes.contains(Palo.TREBOLES) ? total * 2 : total;
+        enemigo.restarVida(daño);
         fase = Fase.DEFENSA;
+    }
+
+    private void curar(int cartas) {
+        Collections.shuffle(descarte, random);
+        for (int i = 0; i < cartas && !descarte.isEmpty(); i++) {
+            posada.addLast(descarte.removeLast());
+        }
     }
 
     private void exigirFase(Fase esperada) {
@@ -131,6 +157,10 @@ public class Partida {
 
     public List<Carta> cartasJugadas() {
         return List.copyOf(jugadas);
+    }
+
+    List<Carta> posada() {
+        return List.copyOf(posada);
     }
 
     public int cartasEnPosada() {
