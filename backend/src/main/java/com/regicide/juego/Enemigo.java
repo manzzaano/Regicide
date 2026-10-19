@@ -18,6 +18,12 @@ public class Enemigo {
         this.ataque = carta.valor();
     }
 
+    Enemigo(Carta carta, int vida, int ataque) {
+        this.carta = carta;
+        this.vida = vida;
+        this.ataque = ataque;
+    }
+
     public Carta carta() {
         return carta;
     }
