@@ -1,22 +1,22 @@
 import { Component, OnInit, effect, inject, linkedSignal, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Aviso } from '../aviso';
 import { Carta } from '../carta';
+import { FinDePartida } from '../fin-de-partida';
 import { Juego } from '../juego';
 import { Menu } from '../menu';
 import { Carta as DatosCarta, EstadoPartida, nombreCarta, nombrePalo, terminada } from '../modelo';
 import { Sesion } from '../sesion';
 
 interface Mensaje {
+  id: number;
   titulo: string;
   texto: string;
-  invitado?: boolean;
+  error: boolean;
 }
 
 /** VistaJuego.fxml de v1. Solo pinta el estado y envía jugadas: las reglas las aplica el servidor. */
 @Component({
   selector: 'app-partida',
-  imports: [Aviso, Carta, Menu, RouterLink],
+  imports: [Carta, FinDePartida, Menu],
   templateUrl: './partida.html',
   styleUrl: './partida.css',
 })
@@ -30,8 +30,15 @@ export class Partida implements OnInit {
     computation: () => [],
   });
 
-  /** Los avisos pendientes; se muestran de uno en uno, como los Alert de v1. */
+  /** Avisos de la esquina: no paran la partida y se cierran solos, a diferencia de los Alert de v1. */
   protected readonly avisos = signal<Mensaje[]>([]);
+  private siguienteAviso = 0;
+
+  /** El diálogo de fin de partida se puede cerrar para ver la mesa; vuelve con cada estado nuevo. */
+  protected readonly finCerrado = linkedSignal<EstadoPartida | null, boolean>({
+    source: this.juego.estado,
+    computation: () => false,
+  });
 
   protected readonly simbolos = { PICAS: '♠', CORAZONES: '♥', TREBOLES: '♣', DIAMANTES: '♦' };
   protected readonly castillo = ['J', 'J', 'J', 'J', 'Q', 'Q', 'Q', 'Q', 'K', 'K', 'K', 'K'];
@@ -51,7 +58,7 @@ export class Partida implements OnInit {
     effect(() => {
       const error = this.juego.error();
       if (error) {
-        this.encolar({ titulo: 'Jugada no válida', texto: error });
+        this.encolar('Jugada no válida', error, true);
       }
     });
   }
@@ -141,27 +148,26 @@ export class Partida implements OnInit {
     return estado.fase === 'ATAQUE' && carta.palo === estado.enemigo?.carta.palo;
   }
 
-  protected cerrarAviso(): void {
-    this.avisos.update(([, ...resto]) => resto);
+  protected cerrarAviso(id: number): void {
+    this.avisos.update((avisos) => avisos.filter((aviso) => aviso.id !== id));
   }
 
+  // El final lo cuenta su propio diálogo; aquí solo lo que pasa durante la partida.
   private avisar(anterior: EstadoPartida | null, estado: EstadoPartida): void {
     if (terminada(estado)) {
-      if (!anterior || !terminada(anterior)) {
-        const resultado = estado.fase === 'VICTORIA' ? 'Victoria' : 'Derrota';
-        this.encolar({ titulo: 'Fin de Partida', texto: `La partida ha terminado: ${resultado}`, invitado: !this.sesion.nombre() });
-      }
       return;
     }
     if (anterior && estado.enemigosRestantes < anterior.enemigosRestantes) {
-      this.encolar({ titulo: 'Enemigo Derrotado', texto: '¡Has derrotado al enemigo!' });
+      this.encolar('Enemigo derrotado', '¡Has derrotado al enemigo!');
     }
     if (!estado.mano.length && (!anterior || anterior.mano.length)) {
-      this.encolar({ titulo: 'Mano Vacía', texto: 'No te quedan cartas en la mano.' });
+      this.encolar('Mano vacía', 'No te quedan cartas en la mano.');
     }
   }
 
-  private encolar(mensaje: Mensaje): void {
-    this.avisos.update((avisos) => [...avisos, mensaje]);
+  private encolar(titulo: string, texto: string, error = false): void {
+    const id = this.siguienteAviso++;
+    this.avisos.update((avisos) => [...avisos, { id, titulo, texto, error }]);
+    setTimeout(() => this.cerrarAviso(id), error ? 6000 : 4000);
   }
 }

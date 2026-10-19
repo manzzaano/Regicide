@@ -50,7 +50,9 @@ describe('Partida', () => {
   }
 
   function aviso(): string | null {
-    return pantalla.querySelector('[role="alertdialog"]')?.textContent ?? null;
+    const esquina = pantalla.querySelector('.avisos')?.textContent ?? '';
+    const dialogo = pantalla.querySelector('[role="alertdialog"]')?.textContent ?? '';
+    return (esquina + dialogo).trim() || null;
   }
 
   function cartaDeLaMano(posicion: number): HTMLButtonElement {
@@ -200,16 +202,28 @@ describe('Partida', () => {
     expect(aviso()).toContain('No te quedan cartas en la mano.');
   });
 
-  it('avisa del error del servidor y el aviso se cierra con Aceptar', async () => {
+  it('avisa del error del servidor y el aviso se cierra con su botón', async () => {
     await mostrar(EN_ATAQUE);
     juego.error.set('Solo puedes combinar cartas del mismo número que sumen 10 o menos');
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(aviso()).toContain('sumen 10 o menos');
-    boton('Aceptar').click();
+    pantalla.querySelector<HTMLButtonElement>('.avisos button')!.click();
     fixture.detectChanges();
     expect(aviso()).toBeNull();
+  });
+
+  it('los avisos se cierran solos', async () => {
+    vi.useFakeTimers();
+    await mostrar(EN_ATAQUE);
+    await mostrar({ ...EN_ATAQUE, enemigosRestantes: 11 });
+    expect(aviso()).toContain('¡Has derrotado al enemigo!');
+
+    vi.advanceTimersByTime(4000);
+    fixture.detectChanges();
+    expect(aviso()).toBeNull();
+    vi.useRealTimers();
   });
 
   it('avisa al derrotar a un enemigo', async () => {
@@ -222,7 +236,8 @@ describe('Partida', () => {
   it('al terminar avisa del resultado y Nueva Partida empieza otra sin preguntar', async () => {
     await mostrar({ ...EN_ATAQUE, fase: 'DERROTA', enemigosRestantes: 5 });
 
-    expect(aviso()).toContain('La partida ha terminado: Derrota');
+    expect(aviso()).toContain('Derrota');
+    expect(aviso()).toContain('7 de 12');
     boton('Nueva Partida').click();
 
     expect(juego.nuevaPartida).toHaveBeenCalled();
