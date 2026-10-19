@@ -9,7 +9,12 @@ import org.springframework.messaging.handler.annotation.support.MethodArgumentNo
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
-/** Las acciones del jugador llegan a /app/partida/*; el estado vuelve solo a su sesión. */
+import java.security.Principal;
+
+/**
+ * Las acciones del jugador llegan a /app/partida/*; el estado vuelve solo a su sesión. Sin
+ * token en la conexión, el jugador es invitado y {@code usuario} llega a null.
+ */
 @Controller
 @MessageMapping("/partida")
 class PartidaController {
@@ -24,31 +29,41 @@ class PartidaController {
 
     @MessageMapping("/empezar")
     @SendToUser(destinations = "/queue/partida", broadcast = false)
-    EstadoPartida empezar(@Header(SESION) String sesion) {
-        return partidas.empezar(sesion);
+    EstadoPartida empezar(@Header(SESION) String sesion, Principal usuario) {
+        return partidas.empezar(sesion, nombre(usuario));
+    }
+
+    @MessageMapping("/retomar")
+    @SendToUser(destinations = "/queue/partida", broadcast = false)
+    EstadoPartida retomar(@Header(SESION) String sesion, Principal usuario) {
+        return partidas.retomar(sesion, nombre(usuario));
     }
 
     @MessageMapping("/atacar")
     @SendToUser(destinations = "/queue/partida", broadcast = false)
-    EstadoPartida atacar(Jugada jugada, @Header(SESION) String sesion) {
-        return partidas.jugar(sesion, partida -> partida.atacar(jugada.cartas()));
+    EstadoPartida atacar(Jugada jugada, @Header(SESION) String sesion, Principal usuario) {
+        return partidas.jugar(sesion, nombre(usuario), partida -> partida.atacar(jugada.cartas()));
     }
 
     @MessageMapping("/defender")
     @SendToUser(destinations = "/queue/partida", broadcast = false)
-    EstadoPartida defender(Jugada jugada, @Header(SESION) String sesion) {
-        return partidas.jugar(sesion, partida -> partida.defender(jugada.cartas()));
+    EstadoPartida defender(Jugada jugada, @Header(SESION) String sesion, Principal usuario) {
+        return partidas.jugar(sesion, nombre(usuario), partida -> partida.defender(jugada.cartas()));
     }
 
     @MessageMapping("/comodin")
     @SendToUser(destinations = "/queue/partida", broadcast = false)
-    EstadoPartida usarComodin(@Header(SESION) String sesion) {
-        return partidas.jugar(sesion, partida -> partida.usarComodin());
+    EstadoPartida usarComodin(@Header(SESION) String sesion, Principal usuario) {
+        return partidas.jugar(sesion, nombre(usuario), partida -> partida.usarComodin());
     }
 
     @MessageMapping("/abandonar")
-    void abandonar(@Header(SESION) String sesion) {
-        partidas.terminar(sesion);
+    void abandonar(@Header(SESION) String sesion, Principal usuario) {
+        partidas.abandonar(sesion, nombre(usuario));
+    }
+
+    private static String nombre(Principal usuario) {
+        return usuario == null ? null : usuario.getName();
     }
 
     @MessageExceptionHandler

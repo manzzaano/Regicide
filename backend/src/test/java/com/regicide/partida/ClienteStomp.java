@@ -5,6 +5,7 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import tools.jackson.databind.json.JsonMapper;
@@ -25,8 +26,18 @@ class ClienteStomp implements AutoCloseable {
     private final BlockingQueue<byte[]> errores = new LinkedBlockingQueue<>();
 
     ClienteStomp(int puerto) throws Exception {
+        this(puerto, null);
+    }
+
+    /** Con token, el jugador se identifica en el CONNECT; sin él, entra como invitado. */
+    ClienteStomp(int puerto, String token) throws Exception {
+        StompHeaders conexion = new StompHeaders();
+        if (token != null) {
+            conexion.add("Authorization", "Bearer " + token);
+        }
         WebSocketStompClient cliente = new WebSocketStompClient(new StandardWebSocketClient());
-        sesion = cliente.connectAsync("ws://localhost:" + puerto + "/ws", new StompSessionHandlerAdapter() { })
+        sesion = cliente.connectAsync("ws://localhost:" + puerto + "/ws", new WebSocketHttpHeaders(), conexion,
+                        new StompSessionHandlerAdapter() { })
                 .get(5, TimeUnit.SECONDS);
         suscribir("/user/queue/partida", estados);
         suscribir("/user/queue/errores", errores);
