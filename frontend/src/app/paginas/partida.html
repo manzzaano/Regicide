@@ -141,7 +141,7 @@
             class="carta"
             [style.--i]="i"
             [style.--giro]="(i - (estado.mano.length - 1) / 2) * 5 + 'deg'"
-            [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 6 + 'px'"
+            [style.--arco]="(i - (estado.mano.length - 1) / 2) ** 2 * 3 + 'px'"
             [class.sin-poder]="sinPoder(carta, estado)"
             [attr.data-palo]="simbolos[carta.palo]"
             [attr.aria-pressed]="elegidas().includes(i)"

@@ -445,10 +445,10 @@ dd {
 
 /* Abanico de verdad: cartas grandes solapadas que giran 5° y bajan en arco según lo lejos que estén del centro. */
 .abanico-mano {
-  --ancho: clamp(64px, min(17vh, 15vw), 150px);
+  --ancho: clamp(64px, min(16vh, 15vw), 150px);
   display: flex;
   justify-content: center;
-  padding: 40px calc(var(--ancho) * 0.2) 12px;
+  padding: 8px calc(var(--ancho) * 0.2) 12px;
 }
 
 .abanico-mano .carta {
@@ -643,10 +643,10 @@ dd {
     padding-bottom: 0;
   }
   .carta-enemigo {
-    width: clamp(140px, 26vh, 250px);
+    width: clamp(120px, 23vh, 250px);
   }
   .abanico-mano {
-    margin-bottom: calc(var(--ancho) * -0.4);
+    margin-bottom: calc(var(--ancho) * -0.12);
   }
 }
 
