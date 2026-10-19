@@ -51,8 +51,9 @@ public class Partida {
     }
 
     /** Para los tests: una partida con las cartas colocadas a mano. La primera de la posada es la de arriba. */
-    Partida(List<Carta> mano, List<Carta> posada, List<Carta> descarte, List<Enemigo> castillo, Random random) {
+    Partida(List<Carta> mano, List<Carta> posada, List<Carta> descarte, List<Enemigo> castillo, int comodines, Random random) {
         this.random = random;
+        this.comodines = comodines;
         this.mano.addAll(mano);
         this.posada.addAll(posada);
         this.descarte.addAll(descarte);
@@ -91,6 +92,7 @@ public class Partida {
         } else {
             fase = enemigo.ataque() > 0 ? Fase.DEFENSA : Fase.ATAQUE;
         }
+        comprobarDerrota();
     }
 
     // Con la vida justa, el enemigo se une a la posada y se puede robar como una carta más.
@@ -124,9 +126,41 @@ public class Partida {
         mano.removeAll(cartas);
         descarte.addAll(cartas);
         fase = Fase.ATAQUE;
+        comprobarDerrota();
+    }
+
+    /** Al empezar el paso 1 o el paso 4: descarta la mano entera y roba hasta 8 cartas. */
+    public void usarComodin() {
+        if (fase != Fase.ATAQUE && fase != Fase.DEFENSA) {
+            throw new JugadaNoValida("La partida ha terminado");
+        }
+        if (comodines == 0) {
+            throw new JugadaNoValida("No te quedan comodines");
+        }
+        comodines--;
+        descarte.addAll(mano);
+        mano.clear();
+        robar(MANO_MAXIMA);
+        comprobarDerrota();
+    }
+
+    // Mientras quede un comodín, el jugador todavía puede cambiar la mano.
+    private void comprobarDerrota() {
+        if (comodines > 0) {
+            return;
+        }
+        boolean sinCartasParaAtacar = fase == Fase.ATAQUE && mano.isEmpty();
+        boolean sinCartasParaDefenderse = fase == Fase.DEFENSA
+                && mano.stream().mapToInt(Carta::valor).sum() < enemigo().ataque();
+        if (sinCartasParaAtacar || sinCartasParaDefenderse) {
+            fase = Fase.DERROTA;
+        }
     }
 
     private void exigirFase(Fase esperada) {
+        if (fase == Fase.VICTORIA || fase == Fase.DERROTA) {
+            throw new JugadaNoValida("La partida ha terminado");
+        }
         if (fase != esperada) {
             throw new JugadaNoValida("Ahora no toca " + (esperada == Fase.ATAQUE ? "atacar" : "defenderse"));
         }

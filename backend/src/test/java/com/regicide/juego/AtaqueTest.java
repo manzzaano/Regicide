@@ -14,7 +14,7 @@ class AtaqueTest {
     // Un rey de Picas aguanta cualquier ataque de estos tests; posada y descarte vacíos para que
     // los poderes de Corazones y Diamantes no muevan cartas.
     private Partida partidaCon(Carta... mano) {
-        return new Partida(List.of(mano), List.of(), List.of(), List.of(new Enemigo(new Carta(13, PICAS))), new Random(1));
+        return new Partida(List.of(mano), List.of(), List.of(), List.of(new Enemigo(new Carta(13, PICAS))), 2, new Random(1));
     }
 
     @Test

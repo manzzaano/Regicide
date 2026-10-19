@@ -17,7 +17,7 @@ class DefensaTest {
     private static Partida partidaEnDefensa(Carta... resto) {
         List<Carta> mano = new ArrayList<>(List.of(new Carta(2, TREBOLES)));
         mano.addAll(List.of(resto));
-        Partida partida = new Partida(mano, List.of(), List.of(), List.of(new Enemigo(new Carta(13, CORAZONES))), new Random(1));
+        Partida partida = new Partida(mano, List.of(), List.of(), List.of(new Enemigo(new Carta(13, CORAZONES))), 2, new Random(1));
         partida.atacar(List.of(0));
         return partida;
     }
@@ -59,7 +59,7 @@ class DefensaTest {
     @Test
     void noSePuedeDefenderCuandoTocaAtacar() {
         Partida partida = new Partida(List.of(new Carta(10, PICAS)), List.of(), List.of(),
-                List.of(new Enemigo(new Carta(13, CORAZONES))), new Random(1));
+                List.of(new Enemigo(new Carta(13, CORAZONES))), 2, new Random(1));
 
         assertThatThrownBy(() -> partida.defender(List.of(0))).isInstanceOf(JugadaNoValida.class);
     }
@@ -68,7 +68,7 @@ class DefensaTest {
     void lasPicasSeAcumulanContraElMismoEnemigo() {
         Partida partida = new Partida(
                 List.of(new Carta(5, PICAS), new Carta(10, DIAMANTES), new Carta(5, TREBOLES), new Carta(3, PICAS), new Carta(9, CORAZONES)),
-                List.of(), List.of(), List.of(new Enemigo(new Carta(13, CORAZONES))), new Random(1));
+                List.of(), List.of(), List.of(new Enemigo(new Carta(13, CORAZONES))), 2, new Random(1));
 
         partida.atacar(List.of(0));
         partida.defender(List.of(0, 1));

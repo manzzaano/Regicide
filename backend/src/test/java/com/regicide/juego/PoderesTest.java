@@ -15,7 +15,7 @@ class PoderesTest {
     }
 
     private static Partida partida(List<Carta> mano, List<Carta> posada, List<Carta> descarte, Palo paloDelEnemigo) {
-        return new Partida(mano, posada, descarte, List.of(rey(paloDelEnemigo)), new Random(1));
+        return new Partida(mano, posada, descarte, List.of(rey(paloDelEnemigo)), 2, new Random(1));
     }
 
     @Test

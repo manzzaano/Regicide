@@ -11,7 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EnemigoDerrotadoTest {
 
     private static Partida partida(List<Carta> mano, Enemigo... castillo) {
-        return new Partida(mano, List.of(), List.of(), List.of(castillo), new Random(1));
+        return new Partida(mano, List.of(), List.of(), List.of(castillo), 2, new Random(1));
     }
 
     private static Enemigo enemigo(int numero, Palo palo) {
