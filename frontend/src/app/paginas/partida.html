@@ -1,5 +1,7 @@
-<app-menu>
-  <button type="button" class="boton-rojo" (click)="nuevaPartida(juego.estado())">Nueva Partida</button>
+<app-menu [estado]="juego.estado()" [conectado]="juego.conectado()">
+  <button type="button" class="boton-rojo nueva" (click)="nuevaPartida(juego.estado())">
+    <span aria-hidden="true">↻</span><span class="texto-nueva">Nueva Partida</span>
+  </button>
 </app-menu>
 
 <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />

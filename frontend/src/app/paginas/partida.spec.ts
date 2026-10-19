@@ -42,7 +42,7 @@ describe('Partida', () => {
   }
 
   function boton(texto: string): HTMLButtonElement {
-    const encontrado = [...pantalla.querySelectorAll('button')].find((b) => b.textContent!.trim().startsWith(texto));
+    const encontrado = [...pantalla.querySelectorAll('button')].find((b) => b.textContent!.includes(texto));
     if (!encontrado) {
       throw new Error(`No hay ningún botón «${texto}»`);
     }
