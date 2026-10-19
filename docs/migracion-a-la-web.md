@@ -85,7 +85,7 @@ Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
 2. Modelo: cartas, palos (`enum`), enemigos, mano, posada, descarte y castillo.
 3. Reparto inicial: 8 cartas del 1 al 10 en la mano, el castillo con jotas, reinas y reyes barajados por grupo y el resto en la posada.
 4. Máquina de estados: `ATAQUE`, `DEFENSA`, `VICTORIA` y `DERROTA`.
-5. Ataque: una carta, varias del mismo número y distinto palo que sumen 10 como máximo, o un as junto a otra carta.
+5. Ataque: una carta, varias del mismo número que sumen 10 como máximo, o un as junto a una única carta.
 6. Poderes de los palos e inmunidad contra un enemigo del mismo palo.
 7. Enemigo derrotado: con la vida justa a 0 pasa a la posada; si no, al descarte.
 8. Defensa: descartar hasta cubrir el ataque del enemigo.
@@ -150,16 +150,21 @@ Terminada cuando se puede jugar desde la URL publicada.
 
 ## Reglas: cambios respecto a v1
 
-Las reglas son las de v1. Cuando al pasarlas al motor encuentre un fallo, lo anoto aquí con la decisión.
+Las reglas del juego son las que fijé para el proyecto en clase: los enunciados de las cuatro entregas y el reglamento oficial de Regicide en español (Devir), que v1 abre desde el botón "¿Cómo jugar?". Al pasar v1 al motor encontré seis puntos en los que el código no cumplía ese reglamento. En la versión web se corrigen:
 
-| Regla | En v1 | En la versión web |
+| Regla | En v1 | Según el reglamento |
 |---|---|---|
-| Tréboles contra un enemigo de Tréboles | Dobla el daño igualmente | Pendiente de decidir en la fase 1 (las reglas oficiales lo impiden) |
+| Tréboles contra un enemigo de Tréboles | Dobla el daño igualmente | No lo dobla: cada enemigo es inmune al poder de su palo, también Tréboles. La entrega final también lo pedía ("tener en cuenta el palo de los enemigos") |
+| Compañero animal (as) | Se pueden juntar varios ases con otra carta | El as se juega solo o con una única carta, que puede ser otro as |
+| Cartas curadas con Corazones | Van encima de la posada y se roban enseguida | Van debajo de la posada |
+| Cartas jugadas contra un enemigo derrotado con la vida justa | Se quedan en el mazo de jugadas | Pasan al descarte, igual que cuando se derrota con daño de sobra |
+| Comodines al defenderse | No se pueden usar | Se pueden usar al empezar el paso 1 (antes de atacar) o el paso 4 (antes de recibir daño) |
+| Figuras robadas de la posada | Valen su número: 11, 12 y 13 | La sota vale 10, la reina 15 y el rey 20 |
+
+Lo que el reglamento deja a elección o no aplica a una partida de un jugador se queda como en v1: no se puede pasar el turno y no hay niveles de victoria (oro, plata y bronce).
 
 ## Pendiente de decidir
 
 | Tema | Cuándo |
 |---|---|
-| Inmunidad de Tréboles | Fase 1 |
-| Diferencias de v1 con las reglas oficiales de Regicide | Fase 1 |
 | Alojamiento del backend | Fase 6 |
