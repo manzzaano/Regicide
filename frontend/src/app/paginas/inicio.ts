@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
 import { Sesion } from '../sesion';
 
-/** VistaInicio.fxml de v1: el título, quién juega y los botones, con los tres enemigos del castillo encima. */
+/** VistaInicio.fxml de v1 (título, quién juega y los botones) con la portada de leosoftware.dev. */
 @Component({
   selector: 'app-inicio',
   imports: [Carta, RouterLink],
@@ -14,20 +14,19 @@ import { Sesion } from '../sesion';
         <app-carta [carta]="{ numero: 13, palo: 'CORAZONES' }" />
         <app-carta [carta]="{ numero: 12, palo: 'TREBOLES' }" />
       </div>
-      <h1 class="titulo">
-        <span class="saludo">Bienvenido a</span>
-        REGICIDE
-        <span class="modo">Modo solitario</span>
-      </h1>
-      <section class="caja panel">
-        @if (sesion.nombre(); as nombre) {
-          <p class="jugador"><span class="etiqueta">Jugando como</span><strong>{{ nombre }}</strong></p>
-        } @else {
-          <p class="jugador"><span class="etiqueta">Jugando como</span><strong>invitado</strong></p>
-        }
+
+      <p class="terminal"><span>~/regicide $</span> modo solitario</p>
+      <h1 class="titulo">REGICIDE<span class="punto">.</span></h1>
+      <p class="subtitulo">Derrota a los 12 enemigos del castillo.</p>
+
+      <section class="panel" aria-label="Empezar">
+        <p class="jugador">
+          <span class="etiqueta">Jugando como</span>
+          <strong>{{ sesion.nombre() ?? 'invitado' }}</strong>
+        </p>
         <div class="botones">
-          <a class="boton claro" routerLink="/reglas">¿Cómo jugar?</a>
           <a class="boton" routerLink="/partida">Jugar</a>
+          <a class="boton-rojo" routerLink="/reglas">¿Cómo jugar?</a>
         </div>
         <div class="enlaces">
           <a routerLink="/clasificacion">Estadísticas</a>
@@ -38,6 +37,13 @@ import { Sesion } from '../sesion';
           }
         </div>
       </section>
+
+      <ul class="palos" aria-label="Poderes de los palos">
+        <li><span aria-hidden="true">♣</span> daño ×2</li>
+        <li><span aria-hidden="true">♦</span> roba</li>
+        <li><span aria-hidden="true">♠</span> escudo</li>
+        <li><span aria-hidden="true">♥</span> cura</li>
+      </ul>
     </main>
   `,
   styles: `
@@ -46,18 +52,18 @@ import { Sesion } from '../sesion';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
       min-height: 100dvh;
       padding: 32px 16px;
+      text-align: center;
     }
     .abanico {
       display: flex;
       justify-content: center;
-      height: clamp(120px, 22vh, 190px);
-      margin-bottom: 8px;
+      height: clamp(110px, 20vh, 180px);
+      margin-bottom: 20px;
     }
     .abanico app-carta {
-      width: clamp(86px, 15vh, 130px);
+      width: clamp(80px, 14vh, 124px);
       margin-inline: -18px;
       border-radius: 10px;
       box-shadow: 0 18px 40px -12px rgb(0 0 0 / 0.6);
@@ -71,42 +77,59 @@ import { Sesion } from '../sesion';
       z-index: 1;
       transform: translateY(-14px);
       box-shadow:
-        0 0 36px 2px rgb(255 0 0 / 0.4),
+        0 0 40px 4px rgb(239 68 68 / 0.55),
         0 18px 40px -12px rgb(0 0 0 / 0.6);
     }
     .abanico app-carta:nth-child(3) {
       transform: rotate(14deg);
     }
-    .titulo {
-      display: grid;
-      gap: 10px;
-      padding: 12px 0 20px;
-      color: #fff;
-      font-size: clamp(56px, 12vw, 120px);
-      text-shadow: 0 2px 30px rgb(0 30 30 / 0.45);
-    }
-    .saludo,
-    .modo {
+    .terminal {
+      margin: 0;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgb(11 11 11 / 0.8);
+      color: #d4d4d8;
       font-family: var(--mono);
-      font-size: clamp(12px, 1.6vw, 15px);
-      font-weight: 500;
-      letter-spacing: 0.3em;
-      text-transform: uppercase;
+      font-size: 13px;
     }
+    .terminal span {
+      color: var(--rojo);
+    }
+    .titulo {
+      padding: 14px 0 6px;
+      font-size: clamp(60px, 13vw, 128px);
+    }
+    .punto {
+      color: var(--rojo);
+    }
+    .subtitulo {
+      margin: 0 0 28px;
+      color: #fff;
+      font-size: clamp(16px, 2vw, 19px);
+      font-weight: 500;
+      text-shadow: 0 1px 12px rgb(0 30 30 / 0.6);
+    }
+    /* Oscuro como la barra superior: sobre negro, el rojo se lee bien. */
     .panel {
       display: grid;
       justify-items: center;
       gap: 16px;
-      width: min(100%, 360px);
+      width: min(100%, 380px);
       padding: 20px;
+      border: 1px solid rgb(255 255 255 / 0.08);
+      border-radius: var(--radio);
+      background: rgb(11 11 11 / 0.75);
+      box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.6);
+      backdrop-filter: blur(12px) saturate(1.4);
+      color: #fafafa;
     }
     .jugador {
       display: grid;
-      justify-items: center;
       margin: 0;
     }
     .jugador .etiqueta {
       margin: 0;
+      color: #a1a1aa;
     }
     .jugador strong {
       font-family: var(--display);
@@ -120,13 +143,13 @@ import { Sesion } from '../sesion';
       gap: 10px;
       width: 100%;
     }
-    .claro {
-      border-color: var(--linea);
-      background: #fff;
-      color: var(--negro);
+    .botones a {
+      justify-content: center;
+      min-height: 42px;
+      text-decoration: none;
     }
-    .boton.claro:hover {
-      background: #f4f4f5;
+    .botones .boton {
+      border-color: rgb(255 255 255 / 0.14);
     }
     .enlaces {
       display: flex;
@@ -138,13 +161,33 @@ import { Sesion } from '../sesion';
       padding: 0;
       border: 0;
       background: none;
-      color: var(--texto-suave);
+      color: #a1a1aa;
       text-decoration: underline;
       cursor: pointer;
     }
     .enlaces a:hover,
     .enlaces button:hover {
-      color: var(--texto);
+      color: #fafafa;
+    }
+    .palos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+      margin: 24px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    .palos li {
+      padding: 4px 10px;
+      border: 1px solid rgb(239 68 68 / 0.12);
+      border-radius: 3px;
+      background: linear-gradient(rgb(239 68 68 / 0.06), rgb(239 68 68 / 0.06)), rgb(11 11 11 / 0.8);
+      color: var(--rojo);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
     }
     @keyframes abrir {
       from {
