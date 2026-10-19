@@ -624,6 +624,32 @@ dd {
   }
 }
 
+/* En ordenador la partida cabe en la pantalla sin scroll: la mesa se centra en el alto que queda
+   y la mano se queda abajo del todo, con la parte de abajo de las cartas escondida. */
+@media (min-width: 1341px) {
+  :host {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .mesa {
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      '. . .'
+      'mazos enemigo comodines'
+      'mazos centro comodines'
+      '. . .'
+      'mano mano mano';
+    padding-bottom: 0;
+  }
+  .carta-enemigo {
+    width: clamp(140px, 26vh, 250px);
+  }
+  .abanico-mano {
+    margin-bottom: calc(var(--ancho) * -0.4);
+  }
+}
+
 /* Por debajo del ancho de la ventana de v1, el enemigo y la mano arriba y las cajas debajo. */
 @media (max-width: 1340px) {
   .mesa {
