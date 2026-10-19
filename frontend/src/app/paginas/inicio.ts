@@ -19,7 +19,11 @@ import { Sesion } from '../sesion';
         </div>
         <p class="terminal"><span>~/regicide $</span> modo solitario</p>
         <h1 class="titulo">REGICIDE<span class="punto">.</span></h1>
-        <p class="subtitulo">Derrota a los 12 enemigos del castillo.</p>
+        <p class="subtitulo">
+          Derrota a los 12 enemigos del castillo: cuatro sotas, cuatro reinas y cuatro reyes. Ataca con las cartas de
+          tu mano, aprovecha el poder de cada palo y aguanta sus golpes descartando. Tienes dos comodines para salir de
+          un apuro.
+        </p>
         <ul class="palos" aria-label="Poderes de los palos">
           <li><span aria-hidden="true">♣</span> daño ×2</li>
           <li><span aria-hidden="true">♦</span> roba</li>
@@ -124,9 +128,12 @@ import { Sesion } from '../sesion';
       color: var(--rojo);
     }
     .subtitulo {
+      max-width: 32em;
       margin: 0 0 1.3em;
       color: var(--texto-suave);
       font-size: 1.1em;
+      line-height: 1.6;
+      text-wrap: pretty;
     }
     .palos {
       display: flex;
