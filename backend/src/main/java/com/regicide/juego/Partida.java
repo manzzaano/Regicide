@@ -85,7 +85,25 @@ public class Partida {
         }
         int daño = poderes.contains(Palo.TREBOLES) ? total * 2 : total;
         enemigo.restarVida(daño);
-        fase = Fase.DEFENSA;
+
+        if (enemigo.vida() <= 0) {
+            derrotar(enemigo);
+        } else {
+            fase = enemigo.ataque() > 0 ? Fase.DEFENSA : Fase.ATAQUE;
+        }
+    }
+
+    // Con la vida justa, el enemigo se une a la posada y se puede robar como una carta más.
+    private void derrotar(Enemigo enemigo) {
+        castillo.poll();
+        descarte.addAll(jugadas);
+        jugadas.clear();
+        if (enemigo.vida() == 0) {
+            posada.addFirst(enemigo.carta());
+        } else {
+            descarte.add(enemigo.carta());
+        }
+        fase = castillo.isEmpty() ? Fase.VICTORIA : Fase.ATAQUE;
     }
 
     private void curar(int cartas) {
@@ -165,6 +183,10 @@ public class Partida {
 
     public int cartasEnPosada() {
         return posada.size();
+    }
+
+    List<Carta> descarte() {
+        return List.copyOf(descarte);
     }
 
     public int cartasEnDescarte() {
