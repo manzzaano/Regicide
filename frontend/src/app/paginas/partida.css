@@ -1,0 +1,416 @@
+/* El mismo reparto que la ventana de 1500×705 de v1: mazos a la izquierda, enemigo en el centro,
+   selección a la derecha y, abajo, comodines, mano y cancelar. */
+.mesa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'mazos enemigo seleccion'
+    'mazos centro seleccion'
+    'comodines mano cancelar';
+  align-items: center;
+  gap: 18px 24px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 16px 24px;
+}
+
+.mazos {
+  grid-area: mazos;
+  justify-self: start;
+  min-width: 200px;
+}
+
+dl {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.conectando {
+  grid-area: enemigo;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 80px 0;
+  font-family: var(--mono);
+}
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rojo);
+  animation: latido 1s ease-in-out infinite alternate;
+}
+
+/* Enemigo */
+
+.enemigo {
+  grid-area: enemigo;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.dato {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 140px;
+  margin: 0;
+}
+
+.dato .etiqueta {
+  margin: 0;
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.numero {
+  font-family: var(--display);
+  font-size: 76px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: golpe 420ms var(--curva);
+}
+
+.vida {
+  color: var(--rojo);
+}
+
+.ataque {
+  color: var(--texto);
+}
+
+.carta-enemigo {
+  width: clamp(150px, 30vh, 220px);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.12),
+    0 0 48px 6px rgb(239 68 68 / 0.4),
+    0 18px 40px -10px rgb(0 0 0 / 0.6);
+  animation: llegar 600ms var(--curva);
+}
+
+.hueco {
+  aspect-ratio: 236 / 330;
+  border: 2px dashed var(--linea);
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Bajo el enemigo: el castillo, la fase y los botones de confirmar. */
+
+.centro {
+  grid-area: centro;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.castillo {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.castillo li {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--linea);
+  border-radius: 5px;
+  background: var(--caja-fuerte);
+  color: var(--texto-suave);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  transition:
+    background 300ms,
+    color 300ms;
+}
+
+.castillo li:nth-child(4n) {
+  margin-right: 6px;
+}
+
+.castillo li:last-child {
+  margin-right: 0;
+}
+
+.castillo .caido {
+  border-color: transparent;
+  background: var(--rojo);
+  color: var(--negro);
+}
+
+.fase {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgb(11 11 11 / 0.82);
+  color: #d4d4d8;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.fase span {
+  margin-right: 6px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.confirmar {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+/* Selección */
+
+.seleccion {
+  grid-area: seleccion;
+  justify-self: end;
+}
+
+.huecos {
+  display: grid;
+  grid-template-columns: repeat(4, 56px);
+  gap: 8px;
+}
+
+.carta-sel {
+  display: block;
+  width: 56px;
+  aspect-ratio: 236 / 330;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+}
+
+button.carta-sel {
+  cursor: pointer;
+  animation: entrar 220ms var(--curva);
+}
+
+button.carta-sel:hover {
+  opacity: 0.8;
+}
+
+.vacia {
+  border: 1.5px dashed var(--linea);
+}
+
+/* Comodines, mano y cancelar */
+
+.comodines {
+  grid-area: comodines;
+  justify-self: start;
+}
+
+.mano {
+  grid-area: mano;
+  justify-self: center;
+  min-width: 0;
+}
+
+.cancelar {
+  grid-area: cancelar;
+  justify-self: end;
+}
+
+.fila {
+  display: flex;
+  gap: 10px;
+}
+
+.mano .fila {
+  min-width: calc(8 * 84px + 7 * 10px);
+  min-height: 126px;
+}
+
+.carta {
+  position: relative;
+  flex: none;
+  width: 84px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  transition:
+    transform 180ms var(--curva),
+    opacity 180ms;
+}
+
+.mano .carta {
+  animation: repartir 420ms var(--curva) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+.carta img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
+}
+
+.carta:hover:not(:disabled) {
+  transform: translateY(-10px);
+}
+
+.carta:disabled,
+.carta[aria-pressed='true'] {
+  opacity: 0.4;
+}
+
+.carta:disabled {
+  cursor: default;
+}
+
+.usado {
+  filter: grayscale(1);
+}
+
+/* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo. */
+.sin-poder::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  box-shadow: inset 0 0 12px 4px darkred;
+  pointer-events: none;
+}
+
+@keyframes repartir {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(-4deg);
+  }
+}
+
+@keyframes llegar {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92) rotateY(70deg);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes golpe {
+  from {
+    transform: scale(1.25);
+    text-shadow: 0 0 24px rgb(239 68 68 / 0.9);
+  }
+}
+
+@keyframes latido {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* Por debajo del ancho de la ventana de v1, el enemigo y la mano arriba y las cajas debajo. */
+@media (max-width: 1340px) {
+  .mesa {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'enemigo enemigo'
+      'centro centro'
+      'mano mano'
+      'seleccion cancelar'
+      'comodines mazos';
+    gap: 16px;
+  }
+  .enemigo,
+  .mano,
+  .centro {
+    justify-self: center;
+  }
+  .seleccion,
+  .comodines {
+    justify-self: start;
+  }
+  .mazos,
+  .cancelar {
+    justify-self: end;
+  }
+  .mano {
+    max-width: 100%;
+  }
+  .mano .fila {
+    flex-wrap: wrap;
+    justify-content: center;
+    min-width: 0;
+  }
+  .enemigo {
+    gap: 12px;
+  }
+  .dato {
+    width: auto;
+    min-width: 80px;
+  }
+  .numero {
+    font-size: clamp(40px, 11vw, 76px);
+  }
+  .carta-enemigo {
+    width: clamp(120px, 32vw, 200px);
+  }
+  .carta {
+    width: clamp(58px, 18vw, 84px);
+  }
+  .huecos {
+    grid-template-columns: repeat(4, 48px);
+  }
+  .carta-sel {
+    width: 48px;
+  }
+}
+
+@media (max-width: 560px) {
+  .mesa {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'enemigo' 'centro' 'mano' 'cancelar' 'seleccion' 'comodines' 'mazos';
+  }
+  .seleccion,
+  .cancelar,
+  .comodines,
+  .mazos {
+    justify-self: center;
+  }
+  .castillo li {
+    width: 18px;
+  }
+  .confirmar {
+    flex-wrap: wrap;
+  }
+}

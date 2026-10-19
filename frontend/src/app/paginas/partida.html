@@ -1,0 +1,141 @@
+<app-menu>
+  <button type="button" class="boton-rojo" (click)="nuevaPartida(juego.estado())">Nueva Partida</button>
+</app-menu>
+
+<main class="mesa">
+  <h1 class="visualmente-oculto">Partida</h1>
+
+  @if (juego.estado(); as estado) {
+    <section class="caja mazos" aria-labelledby="titulo-mazos">
+      <h2 class="etiqueta" id="titulo-mazos">Mazos</h2>
+      <dl>
+        <div><dt>| CASTILLO</dt><dd>{{ estado.enemigosRestantes }}</dd></div>
+        <div><dt>| POSADA</dt><dd>{{ estado.cartasEnPosada }}</dd></div>
+        <div><dt>| JUGADAS</dt><dd>{{ estado.cartasJugadas.length }}</dd></div>
+        <div><dt>| DESCARTES</dt><dd>{{ estado.cartasEnDescarte }}</dd></div>
+      </dl>
+    </section>
+
+    <section class="enemigo" aria-label="Enemigo">
+      <p class="dato vida">
+        <span class="etiqueta">Vida</span>
+        @for (vida of [estado.enemigo?.vida ?? 0]; track vida) {
+          <span class="numero">{{ vida }}</span>
+        }
+      </p>
+      @for (enemigo of estado.enemigo ? [estado.enemigo] : []; track enemigo.carta.palo + enemigo.carta.numero) {
+        <app-carta class="carta-enemigo" [carta]="enemigo.carta" />
+      } @empty {
+        <div class="carta-enemigo hueco"></div>
+      }
+      <p class="dato ataque">
+        <span class="etiqueta">Ataque</span>
+        @for (ataque of [estado.enemigo?.ataque ?? 0]; track ataque) {
+          <span class="numero">{{ ataque }}</span>
+        }
+      </p>
+    </section>
+
+    <div class="centro">
+      <ol class="castillo" [attr.aria-label]="12 - estado.enemigosRestantes + ' de 12 enemigos derrotados'">
+        @for (figura of castillo; track $index) {
+          <li [class.caido]="$index < 12 - estado.enemigosRestantes">{{ figura }}</li>
+        }
+      </ol>
+      <p class="fase" aria-live="polite">
+        @switch (estado.fase) {
+          @case ('ATAQUE') { <span>&gt; ataca</span> elige cartas de tu mano }
+          @case ('DEFENSA') { <span>&gt; defiéndete</span> descarta al menos {{ estado.enemigo?.ataque }} puntos }
+          @case ('VICTORIA') { <span>&gt; victoria</span> has derrotado al último rey }
+          @case ('DERROTA') { <span>&gt; derrota</span> {{ 12 - estado.enemigosRestantes }} de 12 enemigos }
+        }
+      </p>
+      <div class="confirmar">
+        <button
+          type="button"
+          class="boton"
+          [disabled]="estado.fase !== 'DEFENSA' || !elegidas().length || !juego.conectado()"
+          (click)="defender()"
+        >
+          Confirmar Defensa
+        </button>
+        <button
+          type="button"
+          class="boton"
+          [disabled]="estado.fase !== 'ATAQUE' || !elegidas().length || !juego.conectado()"
+          (click)="atacar()"
+        >
+          Confirmar Ataque
+        </button>
+      </div>
+    </div>
+
+    <section class="caja seleccion" aria-labelledby="titulo-seleccion">
+      <h2 class="etiqueta" id="titulo-seleccion">Selección</h2>
+      <div class="huecos">
+        @for (hueco of huecosDeSeleccion; track hueco) {
+          @if (elegidas()[hueco] !== undefined) {
+            <button type="button" class="carta-sel" (click)="alternar(elegidas()[hueco])">
+              <app-carta [carta]="estado.mano[elegidas()[hueco]]" />
+            </button>
+          } @else {
+            <span class="carta-sel vacia"></span>
+          }
+        }
+      </div>
+    </section>
+
+    <section class="caja comodines" aria-labelledby="titulo-comodines">
+      <h2 class="etiqueta" id="titulo-comodines">Comodines</h2>
+      <div class="fila">
+        @for (n of [1, 2]; track n) {
+          <button
+            type="button"
+            class="carta"
+            [class.usado]="2 - estado.comodines >= n"
+            [disabled]="2 - estado.comodines >= n || terminada(estado) || !juego.conectado()"
+            [attr.aria-label]="'Comodín ' + n + (2 - estado.comodines >= n ? ' (usado)' : '')"
+            (click)="juego.usarComodin()"
+          >
+            <img src="cartas/comodin.webp" alt="" width="236" height="330" />
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="caja mano" aria-labelledby="titulo-mano">
+      <h2 class="etiqueta" id="titulo-mano">Tu mano · {{ estado.mano.length }}/8</h2>
+      <div class="fila">
+        @for (carta of estado.mano; track carta.palo + carta.numero; let i = $index) {
+          <button
+            type="button"
+            class="carta"
+            [style.--i]="i"
+            [class.sin-poder]="sinPoder(carta, estado)"
+            [attr.aria-pressed]="elegidas().includes(i)"
+            [disabled]="terminada(estado)"
+            (click)="alternar(i)"
+          >
+            <app-carta [carta]="carta" />
+          </button>
+        }
+      </div>
+    </section>
+
+    <div class="cancelar">
+      <button type="button" class="boton" [disabled]="!elegidas().length" (click)="cancelarSeleccion()">
+        Cancelar Selección
+      </button>
+    </div>
+  } @else {
+    <p class="caja conectando" aria-live="polite"><span class="punto"></span>Conectando con el servidor…</p>
+  }
+</main>
+
+@if (avisos()[0]; as aviso) {
+  <app-aviso [titulo]="aviso.titulo" [texto]="aviso.texto" (aceptar)="cerrarAviso()">
+    @if (aviso.invitado) {
+      <p><a routerLink="/entrar">Crea una cuenta</a> para que tus partidas cuenten en las estadísticas.</p>
+    }
+  </app-aviso>
+}
