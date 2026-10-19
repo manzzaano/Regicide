@@ -14,10 +14,7 @@
   width: 100%;
   /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  /* Las dos filas de 1fr reparten el alto sobrante: la mesa queda centrada y la mano pegada abajo. */
-  grid-template-rows: 1fr auto auto 1fr;
   grid-template-areas:
-    '. . .'
     'mazos enemigo comodines'
     'mazos centro comodines'
     'mano mano mano';
@@ -423,7 +420,6 @@ dd {
 
 .mano {
   grid-area: mano;
-  align-self: end;
   display: grid;
   justify-items: center;
   gap: 14px;
@@ -632,7 +628,6 @@ dd {
 @media (max-width: 1340px) {
   .mesa {
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: none;
     grid-template-areas:
       'enemigo enemigo'
       'centro centro'
