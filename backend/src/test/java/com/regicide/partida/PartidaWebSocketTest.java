@@ -1,6 +1,10 @@
 package com.regicide.partida;
 
 import com.regicide.juego.Fase;
+import com.regicide.juego.JugadorSencillo;
+import com.regicide.juego.JugadorSencillo.Atacar;
+import com.regicide.juego.JugadorSencillo.Defender;
+import com.regicide.juego.JugadorSencillo.UsarComodin;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +34,30 @@ class PartidaWebSocketTest {
             assertThat(estado.cartasEnPosada()).isEqualTo(32);
             assertThat(estado.comodines()).isEqualTo(2);
         }
+    }
+
+    @Test
+    void unaPartidaSeJuegaEnteraPorWebSocket() throws Exception {
+        try (ClienteStomp jugador = new ClienteStomp(puerto)) {
+            jugador.enviar("empezar");
+            EstadoPartida estado = jugador.estado();
+
+            for (int turno = 0; turno < 500 && !terminada(estado); turno++) {
+                int ataque = estado.fase() == Fase.DEFENSA ? estado.enemigo().ataque() : 0;
+                switch (JugadorSencillo.decidir(estado.fase(), estado.mano(), ataque)) {
+                    case Atacar atacar -> jugador.enviar("atacar", "{\"cartas\":" + atacar.cartas() + "}");
+                    case Defender defender -> jugador.enviar("defender", "{\"cartas\":" + defender.cartas() + "}");
+                    case UsarComodin ignorada -> jugador.enviar("comodin");
+                }
+                estado = jugador.estado();
+            }
+
+            assertThat(terminada(estado)).isTrue();
+        }
+    }
+
+    private static boolean terminada(EstadoPartida estado) {
+        return estado.fase() == Fase.VICTORIA || estado.fase() == Fase.DERROTA;
     }
 
     @Test
