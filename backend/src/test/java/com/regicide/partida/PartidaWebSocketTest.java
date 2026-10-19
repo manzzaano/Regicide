@@ -1,5 +1,6 @@
 package com.regicide.partida;
 
+import com.regicide.BaseDeDatosDePrueba;
 import com.regicide.juego.Fase;
 import com.regicide.juego.JugadorSencillo;
 import com.regicide.juego.JugadorSencillo.Atacar;
@@ -9,10 +10,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.context.annotation.Import;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Import(BaseDeDatosDePrueba.class)
 class PartidaWebSocketTest {
 
     @LocalServerPort

@@ -53,7 +53,8 @@ flowchart LR
 | Cada jugador recibe su estado en `/user/queue/partida` | Nadie ve la partida de otro | Un tema compartido (`/topic/game`), el fallo de la primera versión |
 | El estado que se envía no incluye el orden de la posada | El cliente no puede saber qué carta viene | Enviar el objeto del juego entero |
 | El servidor guarda la partida al terminar | Es quien sabe el resultado | Un endpoint donde el cliente diga "he ganado" |
-| Se puede jugar sin cuenta | La cuenta solo hace falta para aparecer en la clasificación | Obligar a registrarse para probar el juego |
+| Se puede jugar sin cuenta | La cuenta solo hace falta para aparecer en la clasificación y retomar partidas | Obligar a registrarse para probar el juego |
+| Con cuenta, la partida a medias se guarda en PostgreSQL tras cada jugada | v1 permitía guardar y cargar una partida (lo pedía la entrega 2); así el juego sigue siendo el mismo | Perder la partida al cerrar el navegador, o un botón de guardar que el jugador puede olvidar |
 | Esquema de base de datos con migraciones de Flyway | Cada cambio de tablas queda versionado | `ddl-auto: update` |
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
 
@@ -72,7 +73,7 @@ flowchart LR
 |---|---|---|
 | 1 | Motor del juego en Java, con tests de cada regla | Terminada |
 | 2 | Backend: la partida por WebSocket | Terminada |
-| 3 | Cuentas y clasificación | Pendiente |
+| 3 | Cuentas y clasificación | Terminada |
 | 4 | Frontend en Angular | Pendiente |
 | 5 | Docker Compose y CI | Pendiente |
 | 6 | Publicación | Pendiente |
@@ -116,11 +117,14 @@ Terminada cuando una partida se juega entera con un cliente de test y dos jugado
 2. Registro e inicio de sesión con contraseñas cifradas con BCrypt y JWT.
 3. El JWT también en la conexión STOMP.
 4. Partida guardada por el servidor al terminar, si el jugador tiene sesión.
-5. API REST: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/leaderboard` y `GET /api/games/me`.
-6. Orígenes permitidos (CORS y WebSocket) leídos de la configuración.
-7. Tests de seguridad: rutas protegidas sin token, token caducado y registro duplicado.
+5. Partida a medias: con sesión, el estado completo (mano, posada en su orden, descarte, castillo, comodines y fase) se guarda tras cada jugada y se retoma al volver a conectarse. Sin cuenta, se pierde al cerrar la conexión.
+6. API REST: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/leaderboard` y `GET /api/games/me`.
+7. Orígenes permitidos (CORS y WebSocket) leídos de la configuración.
+8. Tests de seguridad: rutas protegidas sin token, token caducado y registro duplicado.
 
-Terminada cuando una partida jugada con sesión aparece en la clasificación.
+Terminada cuando una partida jugada con sesión aparece en la clasificación y una partida a medias se retoma después de desconectarse.
+
+**Resultado.** El paquete `com.regicide.cuenta` registra jugadores e inicia sesión: la contraseña se guarda cifrada con BCrypt y el servidor responde con un JWT firmado con HS256 que dura 24 horas. Si falla el nombre o la contraseña, el mensaje es el mismo y no dice cuál de los dos está mal. Las rutas públicas ignoran el token, así que uno caducado no impide ver la clasificación. El navegador envía el token en la cabecera `Authorization` del CONNECT de STOMP; sin token se juega como invitado y con un token falso o caducado se rechaza la conexión. Con sesión, el servidor guarda tras cada jugada el estado completo del motor en una columna `jsonb` (una partida a medias por jugador); al volver, el jugador envía `/app/partida/retomar` y recibe la partida tal como la dejó. Al terminar, la partida pasa al historial (`GET /api/games/me`) y cuenta para la clasificación (`GET /api/leaderboard`), que ordena por victorias, después por la mejor partida y, a igualdad, por menos partidas jugadas. Las tablas se crean con dos migraciones de Flyway y Hibernate solo valida el esquema. Los tests de integración levantan un PostgreSQL real con Testcontainers. Se añaden 26 tests: 3 del motor para exportar y reconstruir una partida, 17 de cuentas y seguridad (registro duplicado, datos no válidos, contraseñas de más de 72 bytes, que BCrypt no admite, rutas sin token, token caducado y token firmado con otra clave) y 6 de partidas con sesión; el backend suma 112 tests.
 
 ### Fase 4. Frontend en Angular
 
