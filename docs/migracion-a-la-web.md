@@ -70,7 +70,7 @@ flowchart LR
 
 | Fase | Contenido | Estado |
 |---|---|---|
-| 1 | Motor del juego en Java, con tests de cada regla | Pendiente |
+| 1 | Motor del juego en Java, con tests de cada regla | Terminada |
 | 2 | Backend: la partida por WebSocket | Pendiente |
 | 3 | Cuentas y clasificación | Pendiente |
 | 4 | Frontend en Angular | Pendiente |
@@ -94,6 +94,8 @@ Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
 11. Retirar el código JavaFX de `master`; queda en la rama `v1`.
 
 Terminada cuando todas las reglas tienen tests en verde y una partida completa se juega desde un test.
+
+**Resultado.** El motor está en `backend/src/main/java/com/regicide/juego`: seis clases y 333 líneas, frente a las 499 de `ControladorJuego` en v1. `Partida` es la única con lógica y expone tres acciones (`atacar`, `defender` y `usarComodin`); una jugada que las reglas no permiten lanza `JugadaNoValida` con un mensaje para el jugador. Tiene 74 tests: 54 de reglas concretas y 20 partidas completas con semillas distintas, que comprueban en cada turno que las 52 cartas siguen en juego. Al escribir los tests de cada regla salieron los seis fallos de v1 que recoge la tabla de reglas.
 
 ### Fase 2. La partida por WebSocket
 
