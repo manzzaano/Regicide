@@ -95,8 +95,18 @@ class ClienteStomp implements AutoCloseable {
         return mensaje;
     }
 
+    /** Si el servidor cierra la conexión en los próximos 5 segundos, por ejemplo tras un ERROR. */
+    boolean cerradaPorElServidor() throws InterruptedException {
+        for (int i = 0; i < 50 && sesion.isConnected(); i++) {
+            Thread.sleep(100);
+        }
+        return !sesion.isConnected();
+    }
+
     @Override
     public void close() {
-        sesion.disconnect();
+        if (sesion.isConnected()) {
+            sesion.disconnect();
+        }
     }
 }

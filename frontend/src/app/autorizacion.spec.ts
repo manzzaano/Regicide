@@ -39,7 +39,7 @@ describe('autorizacion', () => {
   });
 
   it('sin sesión no añade nada', () => {
-    sesion.salir();
+    sesion.olvidar();
     http.get('/api/leaderboard').subscribe();
 
     expect(servidor.expectOne('/api/leaderboard').request.headers.has('Authorization')).toBe(false);
@@ -53,7 +53,7 @@ describe('autorizacion', () => {
   });
 
   it('una contraseña incorrecta no cierra una sesión que no existía', () => {
-    sesion.salir();
+    sesion.olvidar();
     http.post('/api/auth/login', {}).subscribe({ error: () => {} });
     servidor.expectOne('/api/auth/login').flush({ mensaje: 'Nombre o contraseña incorrectos' }, { status: 401, statusText: 'Unauthorized' });
 

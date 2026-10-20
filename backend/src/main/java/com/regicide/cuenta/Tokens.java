@@ -23,10 +23,13 @@ class Tokens {
         this.duracion = duracion;
     }
 
-    String emitir(String nombre) {
+    static final String SESION = "sesion";
+
+    String emitir(Usuario usuario) {
         Instant ahora = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .subject(nombre)
+                .subject(usuario.getNombre())
+                .claim(SESION, usuario.getVersionSesion())
                 .issuedAt(ahora)
                 .expiresAt(ahora.plus(duracion))
                 .build();

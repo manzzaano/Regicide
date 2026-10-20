@@ -85,6 +85,15 @@ class SeguridadTest {
         assertThat(api.get("/api/games/me", falso).estado()).isEqualTo(401);
     }
 
+    // Firmado con la clave buena y sin caducar, pero sin la versión de sesión: así eran los de antes.
+    @Test
+    void unTokenSinSesionNoVale() throws Exception {
+        String nombre = api.registrarJugadorNuevo().nombre();
+        String sinSesion = token(encoder, nombre, Instant.now().plus(Duration.ofHours(1)));
+
+        assertThat(api.get("/api/games/me", sinSesion).estado()).isEqualTo(401);
+    }
+
     @Test
     void laClasificacionSeVeAunqueElTokenHayaCaducado() throws Exception {
         String nombre = api.registrarJugadorNuevo().nombre();

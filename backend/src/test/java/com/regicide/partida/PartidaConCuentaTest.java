@@ -133,6 +133,20 @@ class PartidaConCuentaTest {
         assertThatThrownBy(() -> new ClienteStomp(puerto, "token-falso")).isInstanceOf(ExecutionException.class);
     }
 
+    @Test
+    void alCerrarLaSesionLaConexionAbiertaDejaDeAdmitirJugadas() throws Exception {
+        Jugador ana = api.registrarJugadorNuevo();
+        try (ClienteStomp jugador = new ClienteStomp(puerto, ana.token())) {
+            jugador.enviar("empezar");
+            jugador.estado();
+
+            api.post("/api/auth/salir", "{}", ana.token());
+            jugador.enviar("atacar", "{\"cartas\":[0]}");
+
+            assertThat(jugador.cerradaPorElServidor()).isTrue();
+        }
+    }
+
     private static boolean terminada(EstadoPartida estado) {
         return estado.fase() == Fase.VICTORIA || estado.fase() == Fase.DERROTA;
     }
