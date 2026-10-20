@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Import;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,7 +59,12 @@ class PartidaConCuentaTest {
         assertThat(misPartidas.getFirst()).containsEntry("resultado", resultado.name());
 
         List<Map<String, Object>> clasificacion = lista(api.get("/api/leaderboard", null).cuerpo());
-        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto).containsEntry("nombre", ana.nombre()));
+        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto)
+                .containsEntry("nombre", ana.nombre())
+                .containsEntry("simulado", false));
+        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto)
+                .containsEntry("nombre", "lucia_mtz")
+                .containsEntry("simulado", true));
     }
 
     @Test
@@ -111,9 +117,10 @@ class PartidaConCuentaTest {
         }
     }
 
+    // El servidor tiene que cerrar la conexión con un ERROR; si no, el cliente se queda esperando.
     @Test
-    void conUnTokenFalsoNoSeConecta() {
-        assertThatThrownBy(() -> new ClienteStomp(puerto, "token-falso")).isInstanceOf(Exception.class);
+    void conUnTokenFalsoElServidorRechazaLaConexion() {
+        assertThatThrownBy(() -> new ClienteStomp(puerto, "token-falso")).isInstanceOf(ExecutionException.class);
     }
 
     private static boolean terminada(EstadoPartida estado) {

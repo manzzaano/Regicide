@@ -74,8 +74,9 @@ class SeguridadConfig {
         return peticion -> PUBLICAS.matches(peticion) ? null : resolver.resolve(peticion);
     }
 
+    // .cors() busca el bean por este nombre exacto; con otro, se ignora sin avisar.
     @Bean
-    CorsConfigurationSource cors(@Value("${regicide.origenes-permitidos}") List<String> origenes) {
+    CorsConfigurationSource corsConfigurationSource(@Value("${regicide.origenes-permitidos}") List<String> origenes) {
         CorsConfiguration configuracion = new CorsConfiguration();
         configuracion.setAllowedOrigins(origenes);
         configuracion.setAllowedMethods(List.of("GET", "POST"));
