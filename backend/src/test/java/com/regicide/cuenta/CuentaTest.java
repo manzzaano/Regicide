@@ -112,6 +112,11 @@ class CuentaTest {
     }
 
     @Test
+    void conUnJugadorSimuladoNoSeEntra() throws Exception {
+        assertThat(entrar("lucia_mtz", "!").estado()).isEqualTo(401);
+    }
+
+    @Test
     void unNombreQueNoExisteDaElMismoMensaje() throws Exception {
         Respuesta respuesta = entrar(nombre, "contrasena-segura");
 
