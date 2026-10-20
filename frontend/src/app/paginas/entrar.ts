@@ -23,21 +23,6 @@ function mensajeDeError(error: unknown): string {
     <app-menu />
     <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
     <main class="entrar">
-      <div class="portada">
-        <p class="terminal"><span>~/regicide $</span> cuenta</p>
-        <p class="titulo" aria-hidden="true">REGICIDE<span class="punto">/</span></p>
-        <p class="subtitulo">Guarda tu partida y entra en la clasificación. Como invitado también se juega, pero no queda nada.</p>
-        <ul class="ventajas">
-          @for (ventaja of ventajas; track ventaja.titulo) {
-            <li>
-              <span class="simbolo" aria-hidden="true">{{ ventaja.simbolo }}</span>
-              <span class="nombre">{{ ventaja.titulo }}</span>
-              <span class="efecto">{{ ventaja.texto }}</span>
-            </li>
-          }
-        </ul>
-      </div>
-
       <section class="panel">
         <div class="pestanas" role="group" aria-label="Elige una opción">
           <button type="button" [attr.aria-pressed]="!creando()" (click)="cambiar(false)">Entrar</button>
@@ -105,92 +90,16 @@ function mensajeDeError(error: unknown): string {
     </main>
   `,
   styles: `
-    /* Misma composición y escala que la portada, descontando el menú de arriba. */
+    /* El formulario solo, centrado en lo que deja el menú y con la escala de la portada. */
     .entrar {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) clamp(300px, 22em, 480px);
-      align-items: center;
-      gap: clamp(32px, 4vw, 96px);
-      max-width: 1760px;
+      place-items: center;
       min-height: calc(100dvh - 72px);
-      margin: 0 auto;
-      padding: clamp(24px, 4vh, 56px) clamp(20px, 5vw, 96px);
+      padding: clamp(24px, 4vh, 56px) 16px;
       font-size: clamp(15px, calc(0.55vw + 0.6vh + 4px), 24px);
     }
-    .portada {
-      display: grid;
-      justify-items: start;
-    }
-    .terminal {
-      margin: 0;
-      padding: 0.3em 0.9em;
-      border: 1px solid var(--linea);
-      border-radius: 999px;
-      background: var(--caja);
-      color: var(--texto-suave);
-      font-family: var(--mono);
-      font-size: 0.7em;
-    }
-    .terminal span,
-    .punto {
-      color: var(--rojo);
-    }
-    .titulo {
-      padding: 0.12em 0 0.06em;
-      font-size: min(5.5em, 10vw);
-      text-align: left;
-    }
-    .subtitulo {
-      max-width: 30em;
-      margin: 0 0 1.3em;
-      color: var(--texto-suave);
-      font-size: 1.1em;
-      line-height: 1.6;
-      text-wrap: pretty;
-    }
-    .ventajas {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.6em;
-      width: min(100%, 34em);
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-    .ventajas li {
-      display: grid;
-      align-content: start;
-      gap: 0.25em;
-      padding: 0.8em 0.9em;
-      border: 1px solid var(--linea);
-      border-radius: 0.5em;
-      background: rgb(18 18 18 / 0.85);
-      transition:
-        transform 200ms var(--curva),
-        border-color 200ms;
-    }
-    .ventajas li:hover {
-      border-color: rgb(239 68 68 / 0.5);
-      transform: translateY(-3px);
-    }
-    .simbolo {
-      color: var(--rojo);
-      font-size: 1.4em;
-      line-height: 1.1;
-    }
-    .nombre {
-      color: var(--texto-suave);
-      font-family: var(--mono);
-      font-size: 0.55em;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    .efecto {
-      font-size: 0.75em;
-      font-weight: 500;
-      line-height: 1.35;
-    }
     .panel {
+      width: min(100%, 22em);
       padding: 1.4em;
       border: 1px solid var(--borde-caja);
       border-top: 2px solid var(--rojo);
@@ -305,29 +214,6 @@ function mensajeDeError(error: unknown): string {
       font-weight: 600;
       text-decoration: none;
     }
-    @media (max-width: 860px) {
-      .entrar {
-        grid-template-columns: 1fr;
-        align-content: start;
-        justify-items: start;
-        row-gap: 0;
-      }
-      /* En el móvil el formulario va justo después del título y las ventajas quedan debajo. */
-      .portada {
-        display: contents;
-      }
-      .titulo {
-        font-size: min(5.5em, 18vw);
-      }
-      .panel {
-        justify-self: stretch;
-        margin-bottom: 1.3em;
-      }
-      .ventajas {
-        order: 1;
-        grid-template-columns: 1fr;
-      }
-    }
   `,
 })
 export class Entrar {
@@ -340,11 +226,6 @@ export class Entrar {
   protected readonly error = signal<string | null>(null);
   protected readonly enviando = signal(false);
   protected readonly visible = signal(false);
-  protected readonly ventajas = [
-    { simbolo: '♥', titulo: 'Partida guardada', texto: 'Se guarda tras cada jugada; vuelve cuando quieras.' },
-    { simbolo: '♦', titulo: 'Estadísticas', texto: 'Victorias, derrotas y enemigos derrotados.' },
-    { simbolo: '♠', titulo: 'Clasificación', texto: 'Compárate con el resto de jugadores.' },
-  ];
 
   protected cambiar(creando: boolean): void {
     this.creando.set(creando);
