@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -26,11 +29,11 @@ import java.util.function.Function;
 class CuentaController {
 
     record Registro(
-            @NotNull(message = "Falta el nombre")
-            @Pattern(regexp = "[A-Za-z0-9_]{3,20}", message = "El nombre debe tener de 3 a 20 letras, números o guiones bajos")
+            @NotNull(message = "{cuenta.falta-nombre}")
+            @Pattern(regexp = "[A-Za-z0-9_]{3,20}", message = "{cuenta.nombre-formato}")
             String nombre,
             String contrasena,
-            @Email(message = "El correo no es válido") @Size(max = 254, message = "El correo no es válido")
+            @Email(message = "{cuenta.correo-no-valido}") @Size(max = 254, message = "{cuenta.correo-no-valido}")
             String correo) {
     }
 
@@ -41,7 +44,7 @@ class CuentaController {
     }
 
     record CambioDeCorreo(
-            @Email(message = "El correo no es válido") @Size(max = 254, message = "El correo no es válido")
+            @Email(message = "{cuenta.correo-no-valido}") @Size(max = 254, message = "{cuenta.correo-no-valido}")
             String correo,
             String contrasena) {
     }
@@ -77,19 +80,22 @@ class CuentaController {
     private final Contrasenas contrasenas;
     private final Intentos intentos;
     private final Correos correos;
+    private final MessageSource textos;
     private final String urlPublica;
     // Con un nombre que no existe se compara igual contra este hash, para que la respuesta tarde
     // lo mismo y no delate qué nombres tienen cuenta.
     private final String hashDeNadie;
 
     CuentaController(Usuarios usuarios, PasswordEncoder cifrado, Tokens tokens, Contrasenas contrasenas,
-                     Intentos intentos, Correos correos, @Value("${regicide.url-publica}") String urlPublica) {
+                     Intentos intentos, Correos correos, MessageSource textos,
+                     @Value("${regicide.url-publica}") String urlPublica) {
         this.usuarios = usuarios;
         this.cifrado = cifrado;
         this.tokens = tokens;
         this.contrasenas = contrasenas;
         this.intentos = intentos;
         this.correos = correos;
+        this.textos = textos;
         this.urlPublica = urlPublica;
         this.hashDeNadie = cifrado.encode("contrasena-de-un-usuario-que-no-existe");
     }
@@ -99,15 +105,15 @@ class CuentaController {
     @PostMapping("/register")
     ResponseEntity<?> registrar(@Valid @RequestBody Registro registro, HttpServletRequest peticion) {
         if (NombresProhibidos.ofensivo(registro.nombre())) {
-            return ResponseEntity.badRequest().body(new Mensaje("Ese nombre no está permitido. Elige otro."));
+            return ResponseEntity.badRequest().body(mensaje("cuenta.nombre-prohibido"));
         }
         Optional<String> problema = contrasenas.problema(registro.nombre(), registro.contrasena());
         if (problema.isPresent()) {
-            return ResponseEntity.badRequest().body(new Mensaje(problema.get()));
+            return ResponseEntity.badRequest().body(mensaje(problema.get()));
         }
         // Decir que el nombre está ocupado no filtra nada: los nombres ya se ven en la clasificación.
         if (usuarios.existsByNombre(registro.nombre())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(new Mensaje("Ese nombre ya está en uso"));
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensaje("cuenta.nombre-ocupado"));
         }
         if (!intentos.registrar(peticion.getRemoteAddr())) {
             return demasiados();
@@ -129,7 +135,7 @@ class CuentaController {
         Optional<Usuario> encontrado = conContrasena(credenciales.nombre(), credenciales.contrasena());
         if (encontrado.isEmpty()) {
             intentos.fallo(nombre, ip);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new Mensaje("Nombre o contraseña incorrectos"));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensaje("cuenta.credenciales"));
         }
         Usuario usuario = encontrado.get();
         intentos.acierto(nombre);
@@ -161,7 +167,7 @@ class CuentaController {
         return conContrasenaActual(jwt, cambio.actual(), peticion, usuario -> {
             Optional<String> problema = contrasenas.problema(usuario.getNombre(), cambio.nueva());
             if (problema.isPresent()) {
-                return ResponseEntity.badRequest().body(new Mensaje(problema.get()));
+                return ResponseEntity.badRequest().body(mensaje(problema.get()));
             }
             usuario.setContrasena(cifrado.encode(cambio.nueva()));
             usuario.cerrarSesiones();
@@ -180,9 +186,7 @@ class CuentaController {
             String enlace = usuario.cambiarCorreo(sinBlancos(cambio.correo()));
             usuarios.save(usuario);
             if (enlace == null && anterior != null) {
-                correos.enviar(anterior, "Has quitado el correo de tu cuenta de Regicide", saludo(usuario)
-                        + "Este correo ya no sirve para recuperar la contraseña de tu cuenta. Si no has sido tú, "
-                        + "entra y cambia la contraseña cuanto antes.");
+                enviar(anterior, "correo.quitado.asunto", "correo.ya-no-sirve.texto", usuario, null);
             }
             enviarConfirmacion(usuario, enlace);
             return ResponseEntity.ok(new DatosDeCuenta(usuario));
@@ -203,9 +207,7 @@ class CuentaController {
         usuarios.save(usuario);
         // Si alguien con la contraseña cambia el correo, el dueño se entera en el de antes.
         if (anterior != null && !anterior.equalsIgnoreCase(usuario.getCorreo())) {
-            correos.enviar(anterior, "El correo de tu cuenta de Regicide ha cambiado", saludo(usuario)
-                    + "Este correo ya no sirve para recuperar la contraseña de tu cuenta. Si no has sido tú, "
-                    + "entra y cambia la contraseña cuanto antes.");
+            enviar(anterior, "correo.cambiado.asunto", "correo.ya-no-sirve.texto", usuario, null);
         }
         return ResponseEntity.noContent().build();
     }
@@ -221,14 +223,11 @@ class CuentaController {
             usuarios.findByNombre(nombre).filter(usuario -> usuario.getCorreo() != null).ifPresent(usuario -> {
                 String enlace = usuario.nuevoEnlaceContrasena();
                 usuarios.save(usuario);
-                correos.enviar(usuario.getCorreo(), "Restablece tu contraseña de Regicide", saludo(usuario)
-                        + "Para poner una contraseña nueva, abre este enlace en los próximos 30 minutos:\n\n"
-                        + urlPublica + "/restablecer#" + enlace + "\n\n"
-                        + "Si no lo has pedido tú, ignora este mensaje: tu contraseña no cambia.");
+                enviar(usuario.getCorreo(), "correo.restablecer.asunto", "correo.restablecer.texto", usuario,
+                        urlPublica + "/restablecer#" + enlace);
             });
         }
-        return ResponseEntity.accepted().body(new Mensaje(
-                "Si la cuenta tiene un correo confirmado, te hemos enviado un enlace. Caduca en 30 minutos."));
+        return ResponseEntity.accepted().body(mensaje("cuenta.enlace-enviado"));
     }
 
     /** Pone la contraseña nueva con el enlace del correo. No inicia sesión: hay que entrar con ella. */
@@ -242,7 +241,7 @@ class CuentaController {
         // La contraseña se comprueba antes de gastar el enlace, para poder corregirla.
         Optional<String> problema = contrasenas.problema(usuario.getNombre(), restablecimiento.nueva());
         if (problema.isPresent()) {
-            return ResponseEntity.badRequest().body(new Mensaje(problema.get()));
+            return ResponseEntity.badRequest().body(mensaje(problema.get()));
         }
         boolean vigente = usuario.gastarEnlaceContrasena();
         if (vigente) {
@@ -278,7 +277,7 @@ class CuentaController {
         Optional<Usuario> usuario = conContrasena(nombre, contrasena);
         if (usuario.isEmpty()) {
             intentos.fallo(nombre, peticion.getRemoteAddr());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new Mensaje("La contraseña actual no es correcta"));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensaje("cuenta.contrasena-actual"));
         }
         intentos.acierto(nombre);
         return accion.apply(usuario.get());
@@ -311,34 +310,38 @@ class CuentaController {
         if (enlace == null) {
             return;
         }
-        correos.enviar(usuario.getCorreoPendiente(), "Confirma tu correo en Regicide", saludo(usuario)
-                + "Para usar este correo para recuperar la contraseña de tu cuenta, abre este enlace en las "
-                + "próximas 24 horas:\n\n" + urlPublica + "/confirmar-correo#" + enlace + "\n\n"
-                + "Solo lo usaremos para eso. Si no has creado tú la cuenta, ignora este mensaje.");
+        enviar(usuario.getCorreoPendiente(), "correo.confirmar.asunto", "correo.confirmar.texto", usuario,
+                urlPublica + "/confirmar-correo#" + enlace);
     }
 
     private void avisarDelCambioDeContrasena(Usuario usuario) {
         if (usuario.getCorreo() != null) {
-            correos.enviar(usuario.getCorreo(), "Tu contraseña de Regicide ha cambiado", saludo(usuario)
-                    + "La contraseña de tu cuenta acaba de cambiar y se han cerrado todas las sesiones. Si no has "
-                    + "sido tú, recupérala desde " + urlPublica + "/entrar con \"¿Has olvidado la contraseña?\".");
+            enviar(usuario.getCorreo(), "correo.contrasena-cambiada.asunto", "correo.contrasena-cambiada.texto", usuario,
+                    urlPublica + "/entrar");
         }
     }
 
-    private static String saludo(Usuario usuario) {
-        return "Hola, " + usuario.getNombre() + ":\n\n";
+    // En el idioma de la petición, que siempre hace el propio jugador. El texto se arma aquí y no en
+    // el hilo del envío, donde ya no se sabe el idioma.
+    private void enviar(String para, String asunto, String texto, Usuario usuario, String enlace) {
+        Locale idioma = LocaleContextHolder.getLocale();
+        correos.enviar(para, textos.getMessage(asunto, null, idioma),
+                textos.getMessage(texto, new Object[] {usuario.getNombre(), enlace}, idioma));
+    }
+
+    private Mensaje mensaje(String clave) {
+        return new Mensaje(textos.getMessage(clave, null, LocaleContextHolder.getLocale()));
     }
 
     private static String sinBlancos(String correo) {
         return correo == null || correo.isBlank() ? null : correo.strip();
     }
 
-    private static ResponseEntity<?> enlaceNoValido() {
-        return ResponseEntity.badRequest().body(new Mensaje("El enlace no es válido o ha caducado. Pide otro."));
+    private ResponseEntity<?> enlaceNoValido() {
+        return ResponseEntity.badRequest().body(mensaje("cuenta.enlace-no-valido"));
     }
 
-    private static ResponseEntity<?> demasiados() {
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(new Mensaje("Demasiados intentos. Espera unos minutos y vuelve a probar."));
+    private ResponseEntity<?> demasiados() {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(mensaje("cuenta.demasiados"));
     }
 }

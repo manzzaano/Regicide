@@ -4,7 +4,109 @@ import { httpResource } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { PuestoEnClasificacion, ResumenPartida } from '../modelo';
 import { Menu } from '../menu';
+import { Idioma } from '../idioma';
 import { Sesion } from '../sesion';
+
+const es = {
+  terminal: 'estadísticas',
+  titulo: 'Estadísticas',
+  comoSeCalculan: '¿Cómo se calculan?',
+  tituloExplicacion: 'Cómo se calculan',
+  cerrar: 'Cerrar',
+  soloCuentan: 'Solo cuentan las partidas terminadas con cuenta',
+  soloCuentanResto:
+    ': al derrotar al último rey o al no poder defenderte. Las de invitado y las abandonadas con Nueva Partida no se guardan.',
+  cifras: [
+    { simbolo: '♥', nombre: 'Victorias', texto: 'Partidas en las que derrotaste a los 12 enemigos del castillo.' },
+    { simbolo: '♠', nombre: 'Partidas', texto: 'Todas las terminadas, ganadas o perdidas.' },
+    { simbolo: '♦', nombre: 'Mejor partida', texto: 'Más enemigos derrotados en una sola partida, de 0 a 12.' },
+    { simbolo: '♣', nombre: 'Comodines', texto: 'Cuántos de los 2 comodines usaste en esa partida.' },
+  ],
+  orden: 'Orden de la clasificación',
+  criterios: [
+    { nombre: 'Más victorias', texto: 'gana quien más veces ha tomado el castillo' },
+    { nombre: 'Mejor partida', texto: 'si empatan, quien llegó más lejos' },
+    { nombre: 'Menos partidas', texto: 'si sigue el empate, quien lo logró antes' },
+  ],
+  limites: 'Se muestran los 20 primeros y tus 50 últimas partidas. Los marcados como simulados son jugadores de ejemplo.',
+  entendido: 'Entendido',
+  tuResumen: 'Tu resumen',
+  puesto: 'Puesto',
+  victorias: 'Victorias',
+  partidas: 'Partidas',
+  mejor: 'Mejor partida',
+  entraConTuCuenta: 'Entra con tu cuenta',
+  paraGuardar: 'para guardar tus partidas y ver aquí tu resumen.',
+  clasificacion: 'Clasificación',
+  errorClasificacion: 'No se ha podido cargar la clasificación.',
+  jugador: 'Jugador',
+  simulado: 'simulado',
+  deDoce: (n: number) => `${n} de 12`,
+  notaSimulados: 'Jugadores de ejemplo, de principiante a nivel medio, para que tengas con quién medirte. Supéralos.',
+  nadieAun: 'Aún no ha terminado nadie una partida.',
+  seElPrimero: 'Sé el primero.',
+  cargando: 'Cargando…',
+  tusPartidas: 'Tus partidas',
+  comoInvitado: 'Como invitado no se guarda ninguna partida.',
+  fecha: 'Fecha',
+  resultado: 'Resultado',
+  enemigosDerrotados: 'Enemigos derrotados',
+  comodines: 'Comodines',
+  victoria: 'Victoria',
+  derrota: 'Derrota',
+  ningunaAun: 'Todavía no has terminado ninguna partida.',
+  juegaUna: 'Juega una.',
+};
+const en: typeof es = {
+  terminal: 'stats',
+  titulo: 'Stats',
+  comoSeCalculan: 'How are they calculated?',
+  tituloExplicacion: 'How they are calculated',
+  cerrar: 'Close',
+  soloCuentan: 'Only finished games with an account count',
+  soloCuentanResto:
+    ': when you defeat the last king or cannot defend yourself. Guest games and games abandoned with New Game are not saved.',
+  cifras: [
+    { simbolo: '♥', nombre: 'Wins', texto: 'Games in which you defeated the 12 enemies in the castle.' },
+    { simbolo: '♠', nombre: 'Games', texto: 'Every finished game, won or lost.' },
+    { simbolo: '♦', nombre: 'Best game', texto: 'Most enemies defeated in a single game, from 0 to 12.' },
+    { simbolo: '♣', nombre: 'Jokers', texto: 'How many of the 2 jokers you used in that game.' },
+  ],
+  orden: 'Leaderboard order',
+  criterios: [
+    { nombre: 'Most wins', texto: 'whoever took the castle most often wins' },
+    { nombre: 'Best game', texto: 'on a tie, whoever got furthest' },
+    { nombre: 'Fewest games', texto: 'if still tied, whoever got there sooner' },
+  ],
+  limites: 'Shows the top 20 and your last 50 games. Players marked as simulated are sample players.',
+  entendido: 'Got it',
+  tuResumen: 'Your summary',
+  puesto: 'Rank',
+  victorias: 'Wins',
+  partidas: 'Games',
+  mejor: 'Best game',
+  entraConTuCuenta: 'Sign in to your account',
+  paraGuardar: 'to save your games and see your summary here.',
+  clasificacion: 'Leaderboard',
+  errorClasificacion: 'Could not load the leaderboard.',
+  jugador: 'Player',
+  simulado: 'simulated',
+  deDoce: (n: number) => `${n} of 12`,
+  notaSimulados: 'Sample players, from beginner to mid level, so you have someone to measure up against. Beat them.',
+  nadieAun: 'Nobody has finished a game yet.',
+  seElPrimero: 'Be the first.',
+  cargando: 'Loading…',
+  tusPartidas: 'Your games',
+  comoInvitado: 'Guest games are not saved.',
+  fecha: 'Date',
+  resultado: 'Result',
+  enemigosDerrotados: 'Enemies defeated',
+  comodines: 'Jokers',
+  victoria: 'Victory',
+  derrota: 'Defeat',
+  ningunaAun: 'You have not finished any game yet.',
+  juegaUna: 'Play one.',
+};
 
 @Component({
   selector: 'app-clasificacion',
@@ -13,11 +115,11 @@ import { Sesion } from '../sesion';
     <app-menu />
     <main>
       <header class="cabecera">
-        <p class="terminal"><span>~/regicide $</span> estadísticas</p>
+        <p class="terminal"><span>~/regicide $</span> {{ t().terminal }}</p>
         <div class="titular">
-          <h1>Estadísticas</h1>
+          <h1>{{ t().titulo }}</h1>
           <button type="button" class="boton ayuda-boton" (click)="explicacion.showModal()">
-            <span class="interrogacion" aria-hidden="true">?</span> ¿Cómo se calculan?
+            <span class="interrogacion" aria-hidden="true">?</span> {{ t().comoSeCalculan }}
           </button>
         </div>
       </header>
@@ -26,19 +128,18 @@ import { Sesion } from '../sesion';
       <dialog #explicacion class="explicacion" aria-labelledby="explicacion-titulo" (click)="cerrarFuera($event)">
         <form method="dialog" class="cabeza">
           <div>
-            <p class="etiqueta">Estadísticas</p>
-            <h2 id="explicacion-titulo">Cómo se calculan</h2>
+            <p class="etiqueta">{{ t().titulo }}</p>
+            <h2 id="explicacion-titulo">{{ t().tituloExplicacion }}</h2>
           </div>
-          <button class="cerrar" aria-label="Cerrar">×</button>
+          <button class="cerrar" [attr.aria-label]="t().cerrar">×</button>
         </form>
 
         <p class="nota">
-          <strong>Solo cuentan las partidas terminadas con cuenta</strong>: al derrotar al último rey o al no poder
-          defenderte. Las de invitado y las abandonadas con Nueva Partida no se guardan.
+          <strong>{{ t().soloCuentan }}</strong>{{ t().soloCuentanResto }}
         </p>
 
         <dl class="cifras">
-          @for (cifra of cifras; track cifra.nombre) {
+          @for (cifra of t().cifras; track cifra.simbolo) {
             <div>
               <dt><span aria-hidden="true">{{ cifra.simbolo }}</span> {{ cifra.nombre }}</dt>
               <dd>{{ cifra.texto }}</dd>
@@ -46,65 +147,64 @@ import { Sesion } from '../sesion';
           }
         </dl>
 
-        <h3 class="etiqueta">Orden de la clasificación</h3>
+        <h3 class="etiqueta">{{ t().orden }}</h3>
         <ol class="orden">
-          <li><strong>Más victorias</strong> <span>gana quien más veces ha tomado el castillo</span></li>
-          <li><strong>Mejor partida</strong> <span>si empatan, quien llegó más lejos</span></li>
-          <li><strong>Menos partidas</strong> <span>si sigue el empate, quien lo logró antes</span></li>
+          @for (criterio of t().criterios; track $index) {
+            <li><strong>{{ criterio.nombre }}</strong> <span>{{ criterio.texto }}</span></li>
+          }
         </ol>
 
         <form method="dialog" class="pie-dialogo">
           <p>
-            Se muestran los 20 primeros y tus 50 últimas partidas. Los marcados como simulados son jugadores de
-            ejemplo.
+            {{ t().limites }}
           </p>
-          <button class="boton-principal">Entendido</button>
+          <button class="boton-principal">{{ t().entendido }}</button>
         </form>
       </dialog>
 
       @if (resumen(); as resumen) {
-        <ul class="resumen" aria-label="Tu resumen">
+        <ul class="resumen" [attr.aria-label]="t().tuResumen">
           <li>
-            <span class="etiqueta">Puesto</span>
+            <span class="etiqueta">{{ t().puesto }}</span>
             <span class="cifra">{{ resumen.puesto ? '#' + resumen.puesto : '—' }}</span>
           </li>
           <li>
-            <span class="etiqueta">Victorias</span>
+            <span class="etiqueta">{{ t().victorias }}</span>
             <span class="cifra rojo">{{ resumen.victorias }}</span>
           </li>
           <li>
-            <span class="etiqueta">Partidas</span>
+            <span class="etiqueta">{{ t().partidas }}</span>
             <span class="cifra">{{ resumen.partidas }}</span>
           </li>
           <li>
-            <span class="etiqueta">Mejor partida</span>
+            <span class="etiqueta">{{ t().mejor }}</span>
             <span class="cifra">{{ resumen.mejor }}<small>/12</small></span>
             <span class="progreso" aria-hidden="true"><span [style.width.%]="(resumen.mejor / 12) * 100"></span></span>
           </li>
         </ul>
       } @else if (!sesion.nombre()) {
         <p class="caja invitado">
-          <a routerLink="/entrar">Entra con tu cuenta</a> para guardar tus partidas y ver aquí tu resumen.
+          <a routerLink="/entrar">{{ t().entraConTuCuenta }}</a> {{ t().paraGuardar }}
         </p>
       }
 
       <div class="columnas">
         <section class="caja">
-          <h2 class="etiqueta">Clasificación</h2>
+          <h2 class="etiqueta">{{ t().clasificacion }}</h2>
 
           @if (clasificacion.error()) {
-            <p class="error" role="alert">No se ha podido cargar la clasificación.</p>
+            <p class="error" role="alert">{{ t().errorClasificacion }}</p>
           } @else if (clasificacion.value(); as puestos) {
             @if (puestos.length) {
               <div class="tabla">
                 <table>
                   <thead>
                     <tr>
-                      <th scope="col">Puesto</th>
-                      <th scope="col">Jugador</th>
-                      <th scope="col">Victorias</th>
-                      <th scope="col">Partidas</th>
-                      <th scope="col">Mejor partida</th>
+                      <th scope="col">{{ t().puesto }}</th>
+                      <th scope="col">{{ t().jugador }}</th>
+                      <th scope="col">{{ t().victorias }}</th>
+                      <th scope="col">{{ t().partidas }}</th>
+                      <th scope="col">{{ t().mejor }}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -114,12 +214,12 @@ import { Sesion } from '../sesion';
                         <th scope="row">
                           {{ puesto.nombre }}
                           @if (puesto.simulado) {
-                            <span class="marca-simulado">simulado</span>
+                            <span class="marca-simulado">{{ t().simulado }}</span>
                           }
                         </th>
                         <td>{{ puesto.victorias }}</td>
                         <td>{{ puesto.partidas }}</td>
-                        <td>{{ puesto.mejorPartida }} de 12</td>
+                        <td>{{ t().deDoce(puesto.mejorPartida) }}</td>
                       </tr>
                     }
                   </tbody>
@@ -127,41 +227,40 @@ import { Sesion } from '../sesion';
               </div>
               @if (haySimulados(puestos)) {
                 <p class="nota-simulados">
-                  <span class="marca-simulado">simulado</span> Jugadores de ejemplo, de principiante a nivel medio, para que tengas
-                  con quién medirte. Supéralos.
+                  <span class="marca-simulado">{{ t().simulado }}</span> {{ t().notaSimulados }}
                 </p>
               }
             } @else {
-              <p>Aún no ha terminado nadie una partida. <a routerLink="/partida">Sé el primero.</a></p>
+              <p>{{ t().nadieAun }} <a routerLink="/partida">{{ t().seElPrimero }}</a></p>
             }
           } @else {
-            <p class="ayuda">Cargando…</p>
+            <p class="ayuda">{{ t().cargando }}</p>
           }
         </section>
 
         <section class="caja">
-          <h2 class="etiqueta">Tus partidas</h2>
+          <h2 class="etiqueta">{{ t().tusPartidas }}</h2>
           @if (!sesion.nombre()) {
-            <p class="ayuda">Como invitado no se guarda ninguna partida.</p>
+            <p class="ayuda">{{ t().comoInvitado }}</p>
           } @else if (misPartidas.value(); as partidas) {
             @if (partidas.length) {
               <div class="tabla">
                 <table>
                   <thead>
                     <tr>
-                      <th scope="col">Fecha</th>
-                      <th scope="col">Resultado</th>
-                      <th scope="col">Enemigos derrotados</th>
-                      <th scope="col">Comodines</th>
+                      <th scope="col">{{ t().fecha }}</th>
+                      <th scope="col">{{ t().resultado }}</th>
+                      <th scope="col">{{ t().enemigosDerrotados }}</th>
+                      <th scope="col">{{ t().comodines }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     @for (partida of partidas; track partida.terminadaEn) {
                       <tr>
-                        <td>{{ partida.terminadaEn | date: 'd MMM y, HH:mm' }}</td>
+                        <td>{{ partida.terminadaEn | date: 'd MMM y, HH:mm' : undefined : idioma.actual() }}</td>
                         <td>
                           <span class="resultado" [class.gana]="partida.resultado === 'VICTORIA'">
-                            {{ partida.resultado === 'VICTORIA' ? 'Victoria' : 'Derrota' }}
+                            {{ partida.resultado === 'VICTORIA' ? t().victoria : t().derrota }}
                           </span>
                         </td>
                         <td>
@@ -169,7 +268,7 @@ import { Sesion } from '../sesion';
                             <span class="progreso" aria-hidden="true">
                               <span [style.width.%]="(partida.enemigosDerrotados / 12) * 100"></span>
                             </span>
-                            {{ partida.enemigosDerrotados }} de 12
+                            {{ t().deDoce(partida.enemigosDerrotados) }}
                           </span>
                         </td>
                         <td>{{ partida.comodinesUsados }}</td>
@@ -179,7 +278,7 @@ import { Sesion } from '../sesion';
                 </table>
               </div>
             } @else {
-              <p>Todavía no has terminado ninguna partida. <a routerLink="/partida">Juega una.</a></p>
+              <p>{{ t().ningunaAun }} <a routerLink="/partida">{{ t().juegaUna }}</a></p>
             }
           }
         </section>
@@ -618,19 +717,14 @@ import { Sesion } from '../sesion';
 })
 export class Clasificacion {
   protected readonly sesion = inject(Sesion);
+  protected readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
   protected readonly clasificacion = httpResource<PuestoEnClasificacion[]>(() => '/api/leaderboard');
   protected readonly misPartidas = httpResource<ResumenPartida[]>(() => (this.sesion.nombre() ? '/api/games/me' : undefined));
 
   protected haySimulados(puestos: PuestoEnClasificacion[]): boolean {
     return puestos.some((puesto) => puesto.simulado);
   }
-
-  protected readonly cifras = [
-    { simbolo: '♥', nombre: 'Victorias', texto: 'Partidas en las que derrotaste a los 12 enemigos del castillo.' },
-    { simbolo: '♠', nombre: 'Partidas', texto: 'Todas las terminadas, ganadas o perdidas.' },
-    { simbolo: '♦', nombre: 'Mejor partida', texto: 'Más enemigos derrotados en una sola partida, de 0 a 12.' },
-    { simbolo: '♣', nombre: 'Comodines', texto: 'Cuántos de los 2 comodines usaste en esa partida.' },
-  ];
 
   /** Las cifras de arriba salen de tus partidas; el puesto, de la clasificación. */
   protected readonly resumen = computed(() => {

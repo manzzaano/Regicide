@@ -10,6 +10,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
+import java.util.Locale;
+
 /**
  * Lee el JWT de la cabecera Authorization del CONNECT de STOMP. Sin cabecera, el jugador entra
  * como invitado; con un token caducado, falso o de una sesión cerrada, el decoder lanza una
@@ -19,6 +21,8 @@ import org.springframework.stereotype.Component;
 class AutenticacionStomp implements ChannelInterceptor {
 
     private static final String PREFIJO = "Bearer ";
+    static final String IDIOMA = "idioma";
+    static final Locale POR_DEFECTO = Locale.of("es");
 
     private final JwtDecoder decoder;
 
@@ -40,6 +44,10 @@ class AutenticacionStomp implements ChannelInterceptor {
         }
         if (cabeceras.getCommand() != StompCommand.CONNECT) {
             return mensaje;
+        }
+        String idioma = cabeceras.getFirstNativeHeader("Accept-Language");
+        if (idioma != null && cabeceras.getSessionAttributes() != null) {
+            cabeceras.getSessionAttributes().put(IDIOMA, idioma.toLowerCase(Locale.ROOT).startsWith("en") ? Locale.ENGLISH : POR_DEFECTO);
         }
         String autorizacion = cabeceras.getFirstNativeHeader("Authorization");
         if (autorizacion != null) {

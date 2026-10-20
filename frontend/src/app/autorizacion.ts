@@ -1,16 +1,24 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
+import { Idioma } from './idioma';
 import { Sesion } from './sesion';
 
-/** Envía el JWT a la API y, si el servidor lo rechaza (caducado o falso), cierra la sesión. */
+/**
+ * Pide a la API los textos en el idioma de la interfaz, le envía el JWT y, si el servidor lo
+ * rechaza (caducado o falso), cierra la sesión.
+ */
 export const autorizacion: HttpInterceptorFn = (peticion, siguiente) => {
-  const sesion = inject(Sesion);
-  const token = sesion.token();
-  if (!token || !peticion.url.startsWith('/api/')) {
+  if (!peticion.url.startsWith('/api/')) {
     return siguiente(peticion);
   }
-  return siguiente(peticion.clone({ setHeaders: { Authorization: `Bearer ${token}` } })).pipe(
+  const sesion = inject(Sesion);
+  const token = sesion.token();
+  const idioma = { 'Accept-Language': inject(Idioma).actual() };
+  if (!token) {
+    return siguiente(peticion.clone({ setHeaders: idioma }));
+  }
+  return siguiente(peticion.clone({ setHeaders: { ...idioma, Authorization: `Bearer ${token}` } })).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status === 401) {
         sesion.olvidar();

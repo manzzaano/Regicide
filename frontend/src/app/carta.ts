@@ -1,4 +1,5 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { Idioma } from './idioma';
 import { Carta as DatosCarta, nombreCarta } from './modelo';
 
 @Component({
@@ -22,10 +23,11 @@ import { Carta as DatosCarta, nombreCarta } from './modelo';
 })
 export class Carta {
   readonly carta = input.required<DatosCarta>();
+  private readonly idioma = inject(Idioma);
 
   protected readonly imagen = computed(() => {
     const { numero, palo } = this.carta();
     return `cartas/${palo.toLowerCase()}/${numero}.webp`;
   });
-  protected readonly nombre = computed(() => nombreCarta(this.carta()));
+  protected readonly nombre = computed(() => nombreCarta(this.carta(), this.idioma.actual()));
 }

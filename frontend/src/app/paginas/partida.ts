@@ -1,10 +1,86 @@
 import { Component, OnInit, effect, inject, linkedSignal, signal } from '@angular/core';
 import { Carta } from '../carta';
 import { FinDePartida } from '../fin-de-partida';
+import { Idioma } from '../idioma';
 import { Juego } from '../juego';
 import { Menu } from '../menu';
 import { Carta as DatosCarta, EstadoPartida, nombreCarta, nombrePalo, terminada } from '../modelo';
 import { Sesion } from '../sesion';
+
+const es = {
+  nueva: 'Nueva Partida',
+  partida: 'Partida',
+  mazos: 'Mazos',
+  nombresMazos: { castillo: 'CASTILLO', posada: 'POSADA', jugadas: 'JUGADAS', descartes: 'DESCARTES' },
+  enemigo: 'Enemigo',
+  vida: 'Vida',
+  ataque: 'Ataque',
+  porPicas: (n: number) => `−${n} por picas`,
+  derrotados: (n: number) => `${n} de 12 enemigos derrotados`,
+  ataca: '> ataca',
+  eligeCartas: 'elige cartas de tu mano',
+  defiendete: '> defiéndete',
+  descarta: (n: number) => `descarta al menos ${n} puntos`,
+  victoria: '> victoria',
+  ultimoRey: 'has derrotado al último rey',
+  derrota: '> derrota',
+  deDoce: (n: number) => `${n} de 12 enemigos`,
+  comodines: 'Comodines',
+  comodin: (n: number, usado: boolean) => `Comodín ${n}${usado ? ' (usado)' : ''}`,
+  pistaComodin: 'Descarta tu mano y roba 8 cartas',
+  cartas: (n: number) => `${n}/8 cartas`,
+  puntos: (n: number) => `· ${n} puntos`,
+  cancelar: 'Cancelar',
+  confirmarDefensa: 'Confirmar Defensa',
+  confirmarAtaque: 'Confirmar Ataque',
+  sinPoder: 'sin poder',
+  motivo: (palo: string) => `el enemigo es de ${palo}`,
+  conectando: 'Conectando con el servidor…',
+  cerrarAviso: 'Cerrar aviso',
+  jugadaNoValida: 'Jugada no válida',
+  enemigoDerrotado: 'Enemigo derrotado',
+  hasDerrotado: '¡Has derrotado al enemigo!',
+  manoVacia: 'Mano vacía',
+  sinCartas: 'No te quedan cartas en la mano.',
+  abandonar: '¿Abandonar esta partida y empezar otra?',
+};
+const en: typeof es = {
+  nueva: 'New Game',
+  partida: 'Game',
+  mazos: 'Decks',
+  nombresMazos: { castillo: 'CASTLE', posada: 'TAVERN', jugadas: 'PLAYED', descartes: 'DISCARD' },
+  enemigo: 'Enemy',
+  vida: 'Health',
+  ataque: 'Attack',
+  porPicas: (n: number) => `−${n} from spades`,
+  derrotados: (n: number) => `${n} of 12 enemies defeated`,
+  ataca: '> attack',
+  eligeCartas: 'choose cards from your hand',
+  defiendete: '> defend',
+  descarta: (n: number) => `discard at least ${n} points`,
+  victoria: '> victory',
+  ultimoRey: 'you defeated the last king',
+  derrota: '> defeat',
+  deDoce: (n: number) => `${n} of 12 enemies`,
+  comodines: 'Jokers',
+  comodin: (n: number, usado: boolean) => `Joker ${n}${usado ? ' (used)' : ''}`,
+  pistaComodin: 'Discard your hand and draw 8 cards',
+  cartas: (n: number) => `${n}/8 cards`,
+  puntos: (n: number) => `· ${n} points`,
+  cancelar: 'Cancel',
+  confirmarDefensa: 'Confirm Defense',
+  confirmarAtaque: 'Confirm Attack',
+  sinPoder: 'no power',
+  motivo: (palo: string) => `the enemy is ${palo}`,
+  conectando: 'Connecting to the server…',
+  cerrarAviso: 'Close notice',
+  jugadaNoValida: 'Invalid move',
+  enemigoDerrotado: 'Enemy defeated',
+  hasDerrotado: 'You defeated the enemy!',
+  manoVacia: 'Empty hand',
+  sinCartas: 'You have no cards left in your hand.',
+  abandonar: 'Abandon this game and start another one?',
+};
 
 interface Mensaje {
   id: number;
@@ -23,6 +99,8 @@ interface Mensaje {
 export class Partida implements OnInit {
   protected readonly juego = inject(Juego);
   protected readonly sesion = inject(Sesion);
+  protected readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 
   /** Posiciones de la mano elegidas, en el orden en que se eligieron; se vacía con cada estado nuevo. */
   protected readonly elegidas = linkedSignal<EstadoPartida | null, number[]>({
@@ -58,7 +136,7 @@ export class Partida implements OnInit {
     effect(() => {
       const error = this.juego.error();
       if (error) {
-        this.encolar('Jugada no válida', error, true);
+        this.encolar(this.t().jugadaNoValida, error, true);
       }
     });
   }
@@ -86,12 +164,13 @@ export class Partida implements OnInit {
     return estado.enemigo ? Math.max(0, this.base(estado.enemigo.carta).ataque - estado.enemigo.ataque) : 0;
   }
 
-  protected mazos(estado: EstadoPartida): { nombre: string; cartas: number }[] {
+  protected mazos(estado: EstadoPartida): { clave: string; nombre: string; cartas: number }[] {
+    const nombres = this.t().nombresMazos;
     return [
-      { nombre: 'CASTILLO', cartas: estado.enemigosRestantes },
-      { nombre: 'POSADA', cartas: estado.cartasEnPosada },
-      { nombre: 'JUGADAS', cartas: estado.cartasJugadas.length },
-      { nombre: 'DESCARTES', cartas: estado.cartasEnDescarte },
+      { clave: 'castillo', nombre: nombres.castillo, cartas: estado.enemigosRestantes },
+      { clave: 'posada', nombre: nombres.posada, cartas: estado.cartasEnPosada },
+      { clave: 'jugadas', nombre: nombres.jugadas, cartas: estado.cartasJugadas.length },
+      { clave: 'descartes', nombre: nombres.descartes, cartas: estado.cartasEnDescarte },
     ];
   }
 
@@ -138,7 +217,7 @@ export class Partida implements OnInit {
   }
 
   protected nuevaPartida(estado: EstadoPartida | null): void {
-    if (!estado || terminada(estado) || confirm('¿Abandonar esta partida y empezar otra?')) {
+    if (!estado || terminada(estado) || confirm(this.t().abandonar)) {
       this.juego.nuevaPartida();
     }
   }
@@ -158,10 +237,10 @@ export class Partida implements OnInit {
       return;
     }
     if (anterior && estado.enemigosRestantes < anterior.enemigosRestantes) {
-      this.encolar('Enemigo derrotado', '¡Has derrotado al enemigo!');
+      this.encolar(this.t().enemigoDerrotado, this.t().hasDerrotado);
     }
     if (!estado.mano.length && (!anterior || anterior.mano.length)) {
-      this.encolar('Mano vacía', 'No te quedan cartas en la mano.');
+      this.encolar(this.t().manoVacia, this.t().sinCartas);
     }
   }
 

@@ -81,6 +81,7 @@ flowchart LR
 | 5 | Docker Compose y CI | Terminada |
 | 6 | Publicación | Terminada |
 | 7 | Seguridad de las cuentas | Terminada |
+| 8 | La web en inglés | Terminada |
 
 Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
 
@@ -211,6 +212,34 @@ Lo que dejo fuera, a propósito:
 - **Límite en memoria.** Se pierde al reiniciar y solo vale con un backend, que es lo que hay.
 
 Los tokens emitidos antes de esta fase no llevan versión de sesión y dejan de valer: hay que volver a entrar una vez. El backend suma 45 tests de cuentas y seguridad (160 en total) y el frontend 13 (58).
+
+### Fase 8. La web en inglés
+
+El portfolio lo pueden leer en otros países, así que la web pasa a tener dos idiomas: español, el de siempre, e inglés.
+
+1. Un selector ES/EN siempre a mano, que recuerde lo elegido.
+2. Todos los textos de la interfaz en los dos idiomas, también las reglas y la política de privacidad.
+3. Los mensajes del servidor (jugadas no válidas, errores de cuentas y correos) en el idioma del jugador.
+4. Que el cliente deje de reconocer errores por su texto.
+
+Terminada cuando cada pantalla se ve entera en inglés, sin scroll en escritorio, y los tests cubren los mensajes en los dos idiomas.
+
+**Resultado.**
+
+| Pieza | Cómo |
+|---|---|
+| Elegir idioma | El servicio `Idioma` guarda `es` o `en` en una señal y en `localStorage`. La primera vez se elige por el idioma del navegador: español si empieza por `es`, inglés si no. Cambia el `lang` de la página. El selector está en el menú y, en la portada, que no tiene menú, en el pie del panel |
+| Textos de la interfaz | Cada componente tiene sus textos en dos objetos, `es` y `en: typeof es`, así que si falta una clave en inglés no compila. Lo que va con números son funciones (`derrotados(n)`). La privacidad, que es texto largo, va en un bloque por idioma. Los títulos de pestaña cambian sin volver a navegar con una `TitleStrategy` propia |
+| Mensajes del servidor | El motor ya no lanza textos sino claves (`jugada.combinacion`) con sus argumentos, y un `MessageSource` de Spring las traduce con `messages.properties` y `messages_en.properties`. La API lee `Accept-Language`, que el interceptor añade a cada petición. En STOMP la cabecera va en el CONNECT y se guarda en la sesión del WebSocket. Los correos salen en el idioma de la petición que los provoca |
+| Errores con código | Los errores de la partida llevan `codigo` además de `mensaje`. El cliente sabe que no hay partida guardada por `partida.sin-guardada`, no comparando el texto en español |
+
+Lo que dejo fuera, a propósito:
+
+- **i18n de Angular (`@angular/localize`).** Compila una web por idioma y cambiar de idioma recarga la página; para unos cientos de textos, dos objetos por componente son más simples y el cambio es al instante.
+- **Reconectar al cambiar de idioma a mitad de partida.** Los errores siguen en el idioma con el que se conectó hasta la siguiente conexión; reconectar a un invitado le haría perder la partida.
+- **URLs por idioma (`/en/...`).** Solo importarían para buscadores, y el juego no vive de ellos.
+
+El backend suma 2 tests de idioma (162 en total) y el frontend 4 (62).
 
 ## Reglas: cambios respecto a v1
 
