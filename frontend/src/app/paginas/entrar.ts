@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Menu } from '../menu';
 import { Sesion } from '../sesion';
 
@@ -18,17 +18,20 @@ function mensajeDeError(error: unknown): string {
 
 @Component({
   selector: 'app-entrar',
-  imports: [Menu],
+  imports: [Menu, RouterLink],
   template: `
     <app-menu />
-    <main>
-      <section class="caja tarjeta">
+    <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
+    <main class="entrar">
+      <section class="panel">
         <div class="pestanas" role="group" aria-label="Elige una opción">
           <button type="button" [attr.aria-pressed]="!creando()" (click)="cambiar(false)">Entrar</button>
           <button type="button" [attr.aria-pressed]="creando()" (click)="cambiar(true)">Crear cuenta</button>
         </div>
         <h1>{{ creando() ? 'Crea tu cuenta' : 'Entra con tu cuenta' }}</h1>
-        <p class="ayuda">Con cuenta, tu partida se guarda tras cada jugada y apareces en la clasificación.</p>
+        <p class="ayuda">
+          {{ creando() ? 'Solo un nombre y una contraseña, sin correo.' : 'Sigue la partida donde la dejaste.' }}
+        </p>
 
         <form (submit)="enviar($event)">
           <label>
@@ -49,17 +52,23 @@ function mensajeDeError(error: unknown): string {
           }
           <label>
             Contraseña
-            <input
-              class="campo"
-              name="contrasena"
-              type="password"
-              [attr.autocomplete]="creando() ? 'new-password' : 'current-password'"
-              required
-              [attr.minlength]="creando() ? 8 : null"
-              maxlength="72"
-              [value]="contrasena()"
-              (input)="contrasena.set($any($event.target).value)"
-            />
+            <!-- El campo va antes que el botón para que siga siendo el control de la etiqueta. -->
+            <span class="clave">
+              <input
+                class="campo"
+                name="contrasena"
+                [type]="visible() ? 'text' : 'password'"
+                [attr.autocomplete]="creando() ? 'new-password' : 'current-password'"
+                required
+                [attr.minlength]="creando() ? 8 : null"
+                maxlength="72"
+                [value]="contrasena()"
+                (input)="contrasena.set($any($event.target).value)"
+              />
+              <button type="button" class="ver" [attr.aria-pressed]="visible()" (click)="visible.set(!visible())">
+                {{ visible() ? 'Ocultar' : 'Mostrar' }}
+              </button>
+            </span>
           </label>
           @if (creando()) {
             <p class="pista">Al menos 8 caracteres.</p>
@@ -69,79 +78,147 @@ function mensajeDeError(error: unknown): string {
             <p class="error" role="alert">{{ error }}</p>
           }
 
-          <button class="boton" type="submit" [disabled]="enviando()">
-            {{ creando() ? 'Crear cuenta' : 'Entrar' }}
+          <button class="boton-principal enviar" type="submit" [disabled]="enviando()">
+            {{ creando() ? 'Crear cuenta' : 'Entrar' }} <span aria-hidden="true">→</span>
           </button>
         </form>
+
+        <div class="pie">
+          <a class="enlace" routerLink="/partida">Seguir como invitado <span aria-hidden="true">→</span></a>
+        </div>
       </section>
     </main>
   `,
   styles: `
-    main {
-      padding: 0 16px;
+    /* El formulario solo, centrado en lo que deja el menú y con la escala de la portada. */
+    /* El main llena lo que deja el menú, sin restar su alto a mano, para que no aparezca scroll. */
+    :host {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
     }
-    .tarjeta {
-      max-width: 400px;
-      margin: 40px auto;
+    .entrar {
+      display: grid;
+      flex: 1;
+      place-items: center;
+      padding: clamp(24px, 4vh, 56px) 16px;
+      font-size: clamp(15px, calc(0.55vw + 0.6vh + 4px), 24px);
     }
-    .tarjeta {
-      padding: 24px;
+    .panel {
+      width: min(100%, 30em);
+      padding: 1.4em;
+      border: 1px solid var(--borde-caja);
+      border-top: 2px solid var(--rojo);
+      border-radius: 0.7em;
+      background: rgb(18 18 18 / 0.85);
+      box-shadow: var(--sombra);
+      backdrop-filter: blur(12px);
+      font-size: 0.8em;
     }
     .pestanas {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px;
-      margin-bottom: 20px;
-      padding: 4px;
-      border-radius: 10px;
-      background: rgb(255 255 255 / 0.06);
+      margin-bottom: 1.4em;
+      border-bottom: 1px solid var(--linea);
     }
     .pestanas button {
-      min-height: 38px;
+      min-height: 2.8em;
+      margin-bottom: -1px;
       border: 0;
-      border-radius: 7px;
+      border-bottom: 2px solid transparent;
       background: none;
       color: var(--texto-suave);
-      font-weight: 500;
+      font: 500 1em var(--sans);
       cursor: pointer;
-      transition: background 150ms, color 150ms;
+      transition:
+        color 150ms,
+        border-color 150ms;
+    }
+    .pestanas button:hover {
+      color: var(--texto);
     }
     .pestanas button[aria-pressed='true'] {
-      background: var(--hover);
+      border-color: var(--rojo);
       color: var(--texto);
     }
     h1 {
-      margin: 0 0 6px;
+      margin: 0 0 0.25em;
       color: var(--titulo);
-      font-size: 28px;
+      font-size: 1.75em;
       font-weight: 800;
     }
     .ayuda {
-      margin: 0 0 20px;
+      margin: 0 0 1.3em;
       color: var(--texto-suave);
     }
     .pista {
-      margin: -8px 0 14px;
+      margin: -0.5em 0 0.9em;
       color: var(--texto-suave);
-      font-size: 13px;
+      font-size: 0.85em;
     }
     label {
       display: grid;
-      gap: 6px;
-      margin-bottom: 14px;
-      font-size: 14px;
+      gap: 0.4em;
+      margin-bottom: 0.9em;
       font-weight: 600;
     }
     .campo {
       font-weight: normal;
     }
+    .clave {
+      position: relative;
+      display: block;
+    }
+    .clave .campo {
+      padding-right: 5.5em;
+    }
+    .ver {
+      position: absolute;
+      top: 50%;
+      right: 6px;
+      padding: 0.35em 0.6em;
+      border: 0;
+      border-radius: 6px;
+      background: none;
+      color: var(--texto-suave);
+      font: 500 0.75em var(--mono);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transform: translateY(-50%);
+    }
+    .ver:hover {
+      background: var(--hover);
+      color: var(--texto);
+    }
     .error {
       color: var(--rojo);
       font-weight: bold;
     }
-    .boton {
+    .enviar {
+      justify-content: space-between;
       width: 100%;
-      margin-top: 6px;
+      min-height: 3.4em;
+      margin-top: 0.4em;
+      padding-inline: 1.3em;
+    }
+    .enviar span,
+    .enlace span {
+      transition: transform 200ms var(--curva);
+    }
+    .enviar:hover span,
+    .enlace:hover span {
+      transform: translateX(4px);
+    }
+    .pie {
+      margin-top: 1.2em;
+      padding-top: 1em;
+      border-top: 1px solid var(--linea);
+    }
+    .enlace {
+      color: var(--rojo);
+      font-weight: 600;
+      text-decoration: none;
     }
   `,
 })
@@ -154,6 +231,7 @@ export class Entrar {
   protected readonly contrasena = signal('');
   protected readonly error = signal<string | null>(null);
   protected readonly enviando = signal(false);
+  protected readonly visible = signal(false);
 
   protected cambiar(creando: boolean): void {
     this.creando.set(creando);
