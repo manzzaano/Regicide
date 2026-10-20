@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { Idioma } from './idioma';
 import { Sesion } from './sesion';
 
@@ -10,6 +10,7 @@ const es = {
   estadisticas: 'Estadísticas',
   cuenta: 'Tu cuenta',
   salir: 'Salir',
+  seguroSalir: '¿Cerrar la sesión?',
   invitado: 'invitado',
   entrar: 'Entrar',
   otroIdioma: 'Read in English',
@@ -21,6 +22,7 @@ const en: typeof es = {
   estadisticas: 'Stats',
   cuenta: 'Your account',
   salir: 'Sign out',
+  seguroSalir: 'Sign out?',
   invitado: 'guest',
   entrar: 'Sign in',
   otroIdioma: 'Leer en español',
@@ -42,7 +44,7 @@ const en: typeof es = {
           <ng-content />
           @if (sesion.nombre(); as nombre) {
             <a class="jugador" routerLink="/cuenta" [title]="t().cuenta">{{ nombre }}</a>
-            <button type="button" class="enlace" (click)="sesion.salir()">{{ t().salir }}</button>
+            <button type="button" class="enlace" (click)="salir()">{{ t().salir }}</button>
           } @else {
             <span class="jugador">{{ t().invitado }}</span>
             <a class="enlace" routerLink="/entrar" routerLinkActive="activo" ariaCurrentWhenActive="page">{{ t().entrar }}</a>
@@ -155,4 +157,13 @@ export class Menu {
   protected readonly sesion = inject(Sesion);
   protected readonly idioma = inject(Idioma);
   protected readonly t = this.idioma.textos({ es, en });
+  private readonly router = inject(Router);
+
+  // A la portada: la página de la cuenta y la partida guardada ya no son de nadie.
+  protected salir(): void {
+    if (confirm(this.t().seguroSalir)) {
+      this.sesion.salir();
+      void this.router.navigateByUrl('/');
+    }
+  }
 }
