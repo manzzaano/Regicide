@@ -215,7 +215,7 @@ import { Carta as DatosCarta } from '../modelo';
     .contenido {
       grid-area: contenido;
       display: grid;
-      gap: 16px;
+      gap: clamp(40px, 7vh, 80px);
     }
     section {
       scroll-margin-top: 96px;
