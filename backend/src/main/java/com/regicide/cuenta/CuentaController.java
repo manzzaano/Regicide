@@ -322,11 +322,14 @@ class CuentaController {
     }
 
     // En el idioma de la petición, que siempre hace el propio jugador. El texto se arma aquí y no en
-    // el hilo del envío, donde ya no se sabe el idioma.
+    // el hilo del envío, donde ya no se sabe el idioma. El botón, si lo hay, va en la clave del
+    // asunto acabada en .boton.
     private void enviar(String para, String asunto, String texto, Usuario usuario, String enlace) {
         Locale idioma = LocaleContextHolder.getLocale();
-        correos.enviar(para, textos.getMessage(asunto, null, idioma),
-                textos.getMessage(texto, new Object[] {usuario.getNombre(), enlace}, idioma));
+        String cuerpo = textos.getMessage(texto, new Object[] {usuario.getNombre(), enlace}, idioma);
+        String boton = textos.getMessage(asunto.replace(".asunto", ".boton"), null, null, idioma);
+        correos.enviar(para, textos.getMessage(asunto, null, idioma), cuerpo,
+                Correos.html(cuerpo, enlace, boton, textos.getMessage("correo.pie", null, idioma)));
     }
 
     private Mensaje mensaje(String clave) {
