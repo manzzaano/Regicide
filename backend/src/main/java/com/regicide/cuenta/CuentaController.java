@@ -98,6 +98,9 @@ class CuentaController {
     // cruzan, la restricción unique de la tabla frena al segundo con un 500 en vez de un 409.
     @PostMapping("/register")
     ResponseEntity<?> registrar(@Valid @RequestBody Registro registro, HttpServletRequest peticion) {
+        if (NombresProhibidos.ofensivo(registro.nombre())) {
+            return ResponseEntity.badRequest().body(new Mensaje("Ese nombre no está permitido. Elige otro."));
+        }
         Optional<String> problema = contrasenas.problema(registro.nombre(), registro.contrasena());
         if (problema.isPresent()) {
             return ResponseEntity.badRequest().body(new Mensaje(problema.get()));
