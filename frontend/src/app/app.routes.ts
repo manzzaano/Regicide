@@ -18,5 +18,15 @@ export const routes: Routes = [
     canActivate: [() => inject(Sesion).nombre() !== null || inject(Router).parseUrl('/entrar')],
     loadComponent: () => import('./paginas/cuenta').then((m) => m.Cuenta),
   },
+  {
+    path: 'restablecer',
+    title: 'Contraseña nueva · REGICIDE',
+    loadComponent: () => import('./paginas/enlaces').then((m) => m.Restablecer),
+  },
+  {
+    path: 'confirmar-correo',
+    title: 'Confirmar el correo · REGICIDE',
+    loadComponent: () => import('./paginas/enlaces').then((m) => m.ConfirmarCorreo),
+  },
   { path: '**', redirectTo: '' },
 ];

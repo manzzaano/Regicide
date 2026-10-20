@@ -57,7 +57,7 @@ public class ClienteHttp {
 
     public static final String CONTRASENA = "una frase de paso bastante larga";
 
-    public record Jugador(String nombre, String token, String codigoRecuperacion) {
+    public record Jugador(String nombre, String token) {
     }
 
     /** Registra un jugador con un nombre que no se repite entre tests. */
@@ -65,7 +65,7 @@ public class ClienteHttp {
         String nombre = "j" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         Respuesta respuesta = post("/api/auth/register",
                 "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"" + CONTRASENA + "\"}");
-        return new Jugador(nombre, respuesta.campo("token"), respuesta.campo("codigoRecuperacion"));
+        return new Jugador(nombre, respuesta.campo("token"));
     }
 
     private Respuesta enviar(HttpRequest peticion) throws Exception {

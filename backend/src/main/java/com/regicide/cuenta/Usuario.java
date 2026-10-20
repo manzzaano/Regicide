@@ -10,9 +10,10 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.HexFormat;
-import java.util.Locale;
 
 @Entity
 @Table(name = "usuarios")
@@ -33,8 +34,19 @@ public class Usuario {
 
     private int versionSesion;
 
-    // SHA-256 del código; el código en claro solo lo ve el jugador una vez.
-    private String codigoRecuperacion;
+    // Solo para recuperar la contraseña. Hasta que se confirma con el enlace, espera en correoPendiente.
+    private String correo;
+
+    private String correoPendiente;
+
+    // De cada enlace se guarda su SHA-256: quien lea la base de datos no puede usarlos.
+    private String enlaceCorreo;
+
+    private Instant enlaceCorreoCaduca;
+
+    private String enlaceContrasena;
+
+    private Instant enlaceContrasenaCaduca;
 
     protected Usuario() {
     }
@@ -70,35 +82,65 @@ public class Usuario {
         versionSesion++;
     }
 
-    /** Genera un código de recuperación nuevo, que sustituye al anterior, y lo devuelve en claro. */
-    String nuevoCodigoRecuperacion() {
-        StringBuilder codigo = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            if (i > 0 && i % 4 == 0) {
-                codigo.append('-');
-            }
-            codigo.append(ALFABETO.charAt(AZAR.nextInt(ALFABETO.length())));
+    public String getCorreo() {
+        return correo;
+    }
+
+    public String getCorreoPendiente() {
+        return correoPendiente;
+    }
+
+    /** Guarda el correo hasta que se confirme y devuelve el enlace de confirmación; null lo quita. */
+    String cambiarCorreo(String nuevo) {
+        if (nuevo == null) {
+            correo = null;
+            correoPendiente = null;
+            enlaceCorreo = null;
+            return null;
         }
-        codigoRecuperacion = resumen(codigo.toString());
-        return codigo.toString();
+        correoPendiente = nuevo;
+        String enlace = nuevoEnlace();
+        enlaceCorreo = resumen(enlace);
+        enlaceCorreoCaduca = Instant.now().plus(Duration.ofHours(24));
+        return enlace;
     }
 
-    boolean codigoRecuperacionValido(String codigo) {
-        return codigoRecuperacion != null && MessageDigest.isEqual(
-                codigoRecuperacion.getBytes(StandardCharsets.US_ASCII),
-                resumen(codigo).getBytes(StandardCharsets.US_ASCII));
+    boolean confirmarCorreo() {
+        if (enlaceCorreoCaduca == null || enlaceCorreoCaduca.isBefore(Instant.now())) {
+            return false;
+        }
+        correo = correoPendiente;
+        correoPendiente = null;
+        enlaceCorreo = null;
+        return true;
     }
 
-    // Base32 de Crockford: 16 caracteres son 80 bits. Sin I, L, O ni U para que no se confundan al copiarlo.
-    private static final String ALFABETO = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+    /** Enlace para poner una contraseña nueva, válido 30 minutos y una sola vez. */
+    String nuevoEnlaceContrasena() {
+        String enlace = nuevoEnlace();
+        enlaceContrasena = resumen(enlace);
+        enlaceContrasenaCaduca = Instant.now().plus(Duration.ofMinutes(30));
+        return enlace;
+    }
+
+    boolean gastarEnlaceContrasena() {
+        boolean vigente = enlaceContrasenaCaduca != null && enlaceContrasenaCaduca.isAfter(Instant.now());
+        enlaceContrasena = null;
+        return vigente;
+    }
+
     private static final SecureRandom AZAR = new SecureRandom();
 
-    // Mayúsculas o minúsculas, con o sin guiones, y O, I o L leídas como 0 y 1.
-    private static String resumen(String codigo) {
-        String normalizado = codigo.toUpperCase(Locale.ROOT).replaceAll("[^0-9A-Z]", "")
-                .replace('O', '0').replace('I', '1').replace('L', '1');
+    // 256 bits en base64 sin relleno, que caben en una URL.
+    private static String nuevoEnlace() {
+        byte[] bytes = new byte[32];
+        AZAR.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    static String resumen(String enlace) {
         try {
-            byte[] hash = MessageDigest.getInstance("SHA-256").digest(normalizado.getBytes(StandardCharsets.US_ASCII));
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(enlace.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException imposible) {
             throw new IllegalStateException(imposible);

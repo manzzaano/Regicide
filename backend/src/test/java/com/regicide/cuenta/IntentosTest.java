@@ -51,6 +51,16 @@ class IntentosTest {
     }
 
     @Test
+    void comoMuchoTresEnlacesPorNombre() {
+        assertThat(intentos.pedirEnlace("ana", "1.2.3.4")).isTrue();
+        assertThat(intentos.pedirEnlace("ana", "5.6.7.8")).isTrue();
+        assertThat(intentos.pedirEnlace("ana", "9.9.9.9")).isTrue();
+
+        assertThat(intentos.pedirEnlace("ana", "1.2.3.4")).isFalse();
+        assertThat(intentos.agotadosPorNombre("ana")).isFalse();
+    }
+
+    @Test
     void losRegistrosTienenSuPropioLimitePorIp() {
         assertThat(intentos.registrar("1.2.3.4")).isTrue();
         assertThat(intentos.registrar("1.2.3.4")).isTrue();
