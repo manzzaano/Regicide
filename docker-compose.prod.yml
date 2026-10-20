@@ -8,6 +8,9 @@ services:
     restart: unless-stopped
     environment:
       REGICIDE_ORIGENESPERMITIDOS: https://${DOMINIO:?Falta DOMINIO en .env}
+      # Oracle para las máquinas gratuitas que pasan 7 días con la CPU, la red y la memoria por debajo del 20 %.
+      # Reservar y tocar 3 GB de heap al arrancar deja la memoria en torno al 30 % aunque nadie juegue.
+      JAVA_TOOL_OPTIONS: -Xms3g -Xmx3g -XX:+AlwaysPreTouch
 
   frontend:
     restart: unless-stopped
