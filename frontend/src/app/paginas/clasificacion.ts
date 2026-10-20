@@ -197,7 +197,7 @@ const en: typeof es = {
           } @else if (clasificacion.value(); as puestos) {
             @if (puestos.length) {
               <div class="tabla">
-                <table>
+                <table class="ranking">
                   <thead>
                     <tr>
                       <th scope="col">{{ t().puesto }}</th>
@@ -703,6 +703,30 @@ const en: typeof es = {
       }
       .tabla {
         overflow-y: auto;
+      }
+    }
+    @media (max-width: 560px) {
+      th,
+      td {
+        padding: 8px 4px;
+      }
+      thead th {
+        font-size: 10px;
+        letter-spacing: 0.04em;
+      }
+      /* La marca de simulado debajo del nombre, para que la tabla quepa sin deslizarla. */
+      th[scope='row'] {
+        white-space: normal;
+      }
+      th[scope='row'] .marca-simulado {
+        display: table;
+        margin: 4px 0 0;
+      }
+    }
+    /* Sin sitio para las cinco columnas: fuera las partidas jugadas, que es lo que menos dice. */
+    @media (max-width: 420px) {
+      .ranking > * > tr > :nth-child(4) {
+        display: none;
       }
     }
     @media (max-width: 700px) {
