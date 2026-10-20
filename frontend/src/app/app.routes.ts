@@ -28,5 +28,10 @@ export const routes: Routes = [
     title: 'Confirmar el correo · REGICIDE',
     loadComponent: () => import('./paginas/enlaces').then((m) => m.ConfirmarCorreo),
   },
+  {
+    path: 'privacidad',
+    title: 'Privacidad · REGICIDE',
+    loadComponent: () => import('./paginas/privacidad').then((m) => m.Privacidad),
+  },
   { path: '**', redirectTo: '' },
 ];

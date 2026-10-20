@@ -88,6 +88,7 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
             </label>
             <p class="pista">
               Solo para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.
+                <a class="privacidad" routerLink="/privacidad">Privacidad</a>
             </p>
           }
 
@@ -263,6 +264,9 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
     }
     .aviso {
       color: var(--texto);
+    }
+    .privacidad {
+      color: var(--texto-suave);
     }
   `,
 })
