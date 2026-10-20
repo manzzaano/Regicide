@@ -1,6 +1,6 @@
 # Compila con el JDK y ejecuta solo con el JRE. Los tests no se pasan aquí: necesitan Docker
 # (Testcontainers) y ya los pasa el CI.
-FROM eclipse-temurin:21-jdk-alpine AS compilacion
+FROM eclipse-temurin:25-jdk-alpine AS compilacion
 WORKDIR /app
 COPY mvnw pom.xml ./
 COPY .mvn .mvn
@@ -9,7 +9,7 @@ RUN ./mvnw -q -B dependency:go-offline
 COPY src src
 RUN ./mvnw -q -B package -DskipTests
 
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 RUN addgroup -S regicide && adduser -S regicide -G regicide
 COPY --from=compilacion /app/target/regicide-backend-*.jar regicide.jar
