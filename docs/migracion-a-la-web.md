@@ -77,7 +77,7 @@ flowchart LR
 | 2 | Backend: la partida por WebSocket | Terminada |
 | 3 | Cuentas y clasificación | Terminada |
 | 4 | Frontend en Angular | Terminada |
-| 5 | Docker Compose y CI | Pendiente |
+| 5 | Docker Compose y CI | Terminada |
 | 6 | Publicación | Pendiente |
 
 Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
@@ -152,6 +152,8 @@ Además de los tests, revisé todas las fases contra un servidor arrancado: un c
 4. Dependabot.
 
 Terminada cuando `docker compose up --build` levanta el sistema desde cero y el CI está en verde.
+
+**Resultado.** Cada parte tiene un Dockerfile en dos etapas. El backend se compila con el JDK y se ejecuta solo con el JRE y un usuario sin privilegios. El frontend se compila con Node y lo sirve nginx, que además pasa `/api` y `/ws` al backend: el navegador ve un único origen, como con `ng serve` en desarrollo, y no necesita CORS. `docker compose up --build` levanta PostgreSQL 18, el backend y el frontend en `http://localhost:8081`, y cada servicio espera a que el anterior esté sano de verdad: PostgreSQL con `pg_isready`, el backend pidiendo la clasificación, que consulta la base de datos, y el frontend pidiendo esa misma ruta a través de nginx. Sin `DB_PASSWORD` o `JWT_SECRET` en `.env`, Compose no arranca; `.env.example` trae los dos. El CI de GitHub Actions pasa los 114 tests del backend con PostgreSQL en Testcontainers, los tests y el build del frontend y `npm audit`; en los pull requests revisa además las dependencias nuevas, y al final levanta Compose desde cero y comprueba la web, una ruta de Angular, la clasificación y el registro. Dependabot propone cada semana, contra `dev`, actualizaciones de Maven, npm (Angular en un solo pull request), las imágenes de Docker y las acciones. Al preparar el CI salió que `mvnw` no tenía permiso de ejecución en git, así que en Linux no habría arrancado.
 
 ### Fase 6. Publicación
 

@@ -8,7 +8,7 @@ La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manz
 
 La migración va por fases y cada una llega a `master` con un pull request. El plan, las decisiones y el estado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
-En `master` están el backend y el frontend. El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Falta empaquetarlo con Docker Compose y publicarlo.
+En `master` están el backend y el frontend. El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Todo se levanta con Docker Compose y cada cambio pasa por GitHub Actions. Falta publicarlo.
 
 ## Cómo se juega
 
@@ -24,7 +24,14 @@ Si derrotas a un enemigo con la vida justa, pasa encima de la posada y lo puedes
 
 ## Cómo ejecutarlo
 
-Requisitos: JDK 21, Node 22.22 o superior y Docker (los tests del backend levantan su propio PostgreSQL con Testcontainers).
+Con Docker, todo de una vez:
+
+```bash
+cp .env.example .env      # cambia la contraseña y el secreto
+docker compose up --build  # http://localhost:8081
+```
+
+Para desarrollar, cada parte por separado. Requisitos: JDK 21, Node 22.22 o superior y Docker (los tests del backend levantan su propio PostgreSQL con Testcontainers).
 
 ```bash
 cd backend
@@ -62,6 +69,7 @@ npx ng serve                # http://localhost:4200, redirige /api y /ws al back
 regicide/
 ├── backend/   Spring Boot: el motor del juego (com.regicide.juego), las cuentas (com.regicide.cuenta) y la partida por WebSocket (com.regicide.partida)
 ├── frontend/  Angular: las pantallas y la conexión STOMP; no calcula ninguna regla
+├── .github/   CI con GitHub Actions y Dependabot
 └── docs/      caso de estudio de la migración
 ```
 
