@@ -11,7 +11,7 @@ describe('Entrar', () => {
     nombre: ReturnType<typeof signal<string | null>>;
     entrar: ReturnType<typeof vi.fn>;
     registrarse: ReturnType<typeof vi.fn>;
-    recuperar: ReturnType<typeof vi.fn>;
+    olvide: ReturnType<typeof vi.fn>;
   };
   let pantalla: HTMLElement;
   let fixture: ReturnType<typeof TestBed.createComponent<Entrar>>;
@@ -39,8 +39,8 @@ describe('Entrar', () => {
     sesion = {
       nombre: signal(null),
       entrar: vi.fn(() => of(undefined)),
-      registrarse: vi.fn(() => of('ABCD-EFGH-JKMN-PQRS')),
-      recuperar: vi.fn(() => of('TVWX-YZ01-2345-6789')),
+      registrarse: vi.fn(() => of(undefined)),
+      olvide: vi.fn(() => of('Si la cuenta tiene un correo confirmado, te hemos enviado un enlace.')),
     };
     TestBed.configureTestingModule({
       imports: [Entrar],
@@ -62,37 +62,28 @@ describe('Entrar', () => {
     expect(navegar).toHaveBeenCalledWith('/partida');
   });
 
-  it('al crear la cuenta enseña el código de recuperación antes de ir a la partida', async () => {
+  it('al crear la cuenta el correo es opcional y lleva a la partida', async () => {
     await pulsar('Crear cuenta');
+    expect(pantalla.textContent).toContain('si la olvidas no se puede recuperar la cuenta');
     escribir('Nombre', 'ana');
     escribir('Contraseña', 'una frase de paso larga');
+    escribir('Correo', 'ana@example.com');
 
     await enviar();
 
-    expect(sesion.registrarse).toHaveBeenCalledWith('ana', 'una frase de paso larga');
-    expect(pantalla.textContent).toContain('ABCD-EFGH-JKMN-PQRS');
-    expect(navegar).not.toHaveBeenCalled();
-
-    await pulsar('Lo he guardado');
-
+    expect(sesion.registrarse).toHaveBeenCalledWith('ana', 'una frase de paso larga', 'ana@example.com');
     expect(navegar).toHaveBeenCalledWith('/partida');
   });
 
-  it('recupera la cuenta con el código y vuelve a entrar con la contraseña nueva', async () => {
+  it('para recuperar la cuenta solo pide el nombre y enseña la respuesta del servidor', async () => {
     await pulsar('¿Has olvidado la contraseña?');
+    expect(pantalla.querySelector('input[type="password"]')).toBeNull();
     escribir('Nombre', 'ana');
-    escribir('Código de recuperación', 'ABCD-EFGH-JKMN-PQRS');
-    escribir('Contraseña nueva', 'una frase de paso larga');
 
     await enviar();
 
-    expect(sesion.recuperar).toHaveBeenCalledWith('ana', 'ABCD-EFGH-JKMN-PQRS', 'una frase de paso larga');
-    expect(pantalla.textContent).toContain('TVWX-YZ01-2345-6789');
-
-    await pulsar('Lo he guardado');
-
-    expect(pantalla.querySelector('h1')!.textContent).toContain('Entra con tu cuenta');
-    expect(pantalla.textContent).toContain('Ya puedes entrar con tu contraseña nueva');
+    expect(sesion.olvide).toHaveBeenCalledWith('ana');
+    expect(pantalla.querySelector('[role="status"]')!.textContent).toContain('te hemos enviado un enlace');
     expect(navegar).not.toHaveBeenCalled();
   });
 

@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,7 +24,7 @@ import static com.regicide.ClienteHttp.CONTRASENA;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(BaseDeDatosDePrueba.class)
+@Import({BaseDeDatosDePrueba.class, CorreosDePrueba.class})
 class CuentaTest {
 
     private static final String NUEVA = "otra frase de paso igual de larga";
@@ -34,13 +35,18 @@ class CuentaTest {
     @Autowired
     private Usuarios usuarios;
 
+    @Autowired
+    private CorreosDePrueba.Buzon buzon;
+
     private ClienteHttp api;
     private String nombre;
+    private String correo;
 
     @BeforeEach
     void preparar() {
         api = new ClienteHttp(puerto);
         nombre = "ana_" + UUID.randomUUID().toString().substring(0, 8);
+        correo = nombre + "@example.com";
     }
 
     private Respuesta registrar(String nombre, String contrasena) throws Exception {
@@ -51,9 +57,36 @@ class CuentaTest {
         return api.post("/api/auth/login", "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"" + contrasena + "\"}");
     }
 
-    private Respuesta recuperar(String nombre, String codigo, String nueva) throws Exception {
-        return api.post("/api/auth/recuperar",
-                "{\"nombre\":\"" + nombre + "\",\"codigo\":\"" + codigo + "\",\"nueva\":\"" + nueva + "\"}");
+    private Respuesta registrar(String nombre, String contrasena, String correo) throws Exception {
+        return api.post("/api/auth/register", "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"" + contrasena
+                + "\",\"correo\":\"" + correo + "\"}");
+    }
+
+    private Respuesta confirmar(String enlace) throws Exception {
+        return api.post("/api/auth/correo/confirmar", "{\"enlace\":\"" + enlace + "\"}");
+    }
+
+    private Respuesta olvide(String nombre) throws Exception {
+        return api.post("/api/auth/olvide", "{\"nombre\":\"" + nombre + "\"}");
+    }
+
+    private Respuesta restablecer(String enlace, String nueva) throws Exception {
+        return api.post("/api/auth/restablecer", "{\"enlace\":\"" + enlace + "\",\"nueva\":\"" + nueva + "\"}");
+    }
+
+    private Map<String, Object> cuenta(String token) throws Exception {
+        return api.get("/api/auth/cuenta", token).json();
+    }
+
+    /** Registra a la jugadora con su correo ya confirmado y devuelve su token. */
+    private String conCorreoConfirmado() throws Exception {
+        registrar(nombre, CONTRASENA, correo);
+        confirmar(ultimo().enlace());
+        return entrar(nombre, CONTRASENA).campo("token");
+    }
+
+    private CorreosDePrueba.Enviado ultimo() {
+        return buzon.para(correo).getLast();
     }
 
     private int misPartidas(String token) throws Exception {
@@ -61,12 +94,20 @@ class CuentaTest {
     }
 
     @Test
-    void alRegistrarseSeRecibeUnTokenYUnCodigoDeRecuperacion() throws Exception {
+    void alRegistrarseSeRecibeUnTokenYElCorreoEsOpcional() throws Exception {
         Respuesta respuesta = registrar(nombre, CONTRASENA);
 
         assertThat(respuesta.estado()).isEqualTo(201);
         assertThat(respuesta.campo("token")).isNotBlank();
-        assertThat(respuesta.campo("codigoRecuperacion")).matches("[0-9A-Z]{4}(-[0-9A-Z]{4}){3}");
+        assertThat(cuenta(respuesta.campo("token"))).containsEntry("correo", null).containsEntry("correoPendiente", null);
+    }
+
+    @Test
+    void unNombreOfensivoSeRechaza() throws Exception {
+        Respuesta respuesta = registrar("p0lla" + nombre, CONTRASENA);
+
+        assertThat(respuesta.estado()).isEqualTo(400);
+        assertThat(respuesta.campo("mensaje")).isEqualTo("Ese nombre no está permitido. Elige otro.");
     }
 
     @Test
@@ -224,57 +265,82 @@ class CuentaTest {
     }
 
     @Test
-    void conElCodigoDeRecuperacionSeCambiaLaContrasenaYElCodigoSeGasta() throws Exception {
-        Jugador ana = api.registrarJugadorNuevo();
+    void elCorreoNoCuentaHastaQueSeConfirmaConElEnlace() throws Exception {
+        registrar(nombre, CONTRASENA, correo);
+        String token = entrar(nombre, CONTRASENA).campo("token");
+        assertThat(cuenta(token)).containsEntry("correo", null).containsEntry("correoPendiente", correo);
 
-        // En minúsculas y sin guiones también vale, como lo copiaría alguien a mano.
-        Respuesta respuesta = recuperar(ana.nombre(), ana.codigoRecuperacion().toLowerCase().replace("-", ""), NUEVA);
+        String enlace = buzon.para(correo).getFirst().enlace();
 
-        assertThat(respuesta.estado()).isEqualTo(200);
-        assertThat(respuesta.campo("codigoRecuperacion")).isNotEqualTo(ana.codigoRecuperacion());
-        assertThat(respuesta.json()).doesNotContainKey("token");
-        assertThat(misPartidas(ana.token())).isEqualTo(401);
-        assertThat(entrar(ana.nombre(), NUEVA).estado()).isEqualTo(200);
-        assertThat(recuperar(ana.nombre(), ana.codigoRecuperacion(), CONTRASENA).estado()).isEqualTo(401);
-        assertThat(recuperar(ana.nombre(), respuesta.campo("codigoRecuperacion"), CONTRASENA).estado()).isEqualTo(200);
+        assertThat(confirmar(enlace).estado()).isEqualTo(204);
+        assertThat(cuenta(token)).containsEntry("correo", correo).containsEntry("correoPendiente", null);
+        assertThat(confirmar(enlace).campo("mensaje")).isEqualTo("El enlace no es válido o ha caducado. Pide otro.");
     }
 
     @Test
-    void unCodigoIncorrectoYUnNombreQueNoExisteDanElMismoMensaje() throws Exception {
-        Jugador ana = api.registrarJugadorNuevo();
+    void unCorreoMalEscritoSeRechaza() throws Exception {
+        Respuesta respuesta = registrar(nombre, CONTRASENA, "ana.example.com");
 
-        Respuesta codigoMalo = recuperar(ana.nombre(), "0000-0000-0000-0000", NUEVA);
-        Respuesta sinCuenta = recuperar(nombre, "0000-0000-0000-0000", NUEVA);
-
-        assertThat(codigoMalo.estado()).isEqualTo(401);
-        assertThat(codigoMalo.cuerpo()).isEqualTo(sinCuenta.cuerpo());
-        assertThat(codigoMalo.campo("mensaje")).isEqualTo("Nombre o código de recuperación incorrectos");
+        assertThat(respuesta.estado()).isEqualTo(400);
+        assertThat(respuesta.campo("mensaje")).isEqualTo("El correo no es válido");
     }
 
     @Test
-    void losJugadoresSimuladosNoSePuedenRecuperar() throws Exception {
-        assertThat(recuperar("lucia_mtz", "0000-0000-0000-0000", NUEVA).estado()).isEqualTo(401);
+    void conElEnlaceDelCorreoSePoneOtraContrasenaYSeCierranLasSesiones() throws Exception {
+        String token = conCorreoConfirmado();
+
+        assertThat(olvide(nombre).estado()).isEqualTo(202);
+        String enlace = ultimo().enlace();
+
+        assertThat(restablecer(enlace, "corta").estado()).isEqualTo(400);
+        assertThat(restablecer(enlace, NUEVA).estado()).isEqualTo(204);
+        assertThat(misPartidas(token)).isEqualTo(401);
+        assertThat(entrar(nombre, NUEVA).estado()).isEqualTo(200);
+        assertThat(ultimo().asunto()).isEqualTo("Tu contraseña de Regicide ha cambiado");
+        assertThat(restablecer(enlace, CONTRASENA).estado()).isEqualTo(400);
     }
 
     @Test
-    void trasDiezCodigosIncorrectosSeBloqueaLaRecuperacion() throws Exception {
-        Jugador ana = api.registrarJugadorNuevo();
-        for (int i = 0; i < Intentos.POR_NOMBRE; i++) {
-            recuperar(ana.nombre(), "0000-0000-0000-0000", NUEVA);
+    void sinCorreoConfirmadoNoSeEnviaNadaYLaRespuestaEsLaMisma() throws Exception {
+        registrar(nombre, CONTRASENA, correo);
+        Respuesta sinConfirmar = olvide(nombre);
+        Respuesta sinCuenta = olvide("nadie_" + nombre);
+
+        assertThat(sinConfirmar.estado()).isEqualTo(202);
+        assertThat(sinConfirmar.cuerpo()).isEqualTo(sinCuenta.cuerpo());
+        assertThat(buzon.para(correo)).extracting(CorreosDePrueba.Enviado::asunto)
+                .containsExactly("Confirma tu correo en Regicide");
+    }
+
+    @Test
+    void comoMuchoTresEnlacesPorNombreCadaQuinceMinutos() throws Exception {
+        conCorreoConfirmado();
+        for (int i = 0; i < 5; i++) {
+            assertThat(olvide(nombre).estado()).isEqualTo(202);
         }
 
-        assertThat(recuperar(ana.nombre(), ana.codigoRecuperacion(), NUEVA).estado()).isEqualTo(429);
+        assertThat(buzon.para(correo)).filteredOn(enviado -> enviado.asunto().startsWith("Restablece")).hasSize(3);
     }
 
     @Test
-    void pedirOtroCodigoInvalidaElAnterior() throws Exception {
-        Jugador ana = api.registrarJugadorNuevo();
+    void cambiarOQuitarElCorreoPideLaContrasenaYAvisaAlAnterior() throws Exception {
+        String token = conCorreoConfirmado();
 
-        Respuesta respuesta = api.post("/api/auth/codigo", "{\"contrasena\":\"" + CONTRASENA + "\"}", ana.token());
+        assertThat(api.post("/api/auth/correo", "{\"correo\":\"\",\"contrasena\":\"" + NUEVA + "\"}", token).estado())
+                .isEqualTo(403);
+        Respuesta respuesta = api.post("/api/auth/correo", "{\"correo\":\"\",\"contrasena\":\"" + CONTRASENA + "\"}", token);
 
-        assertThat(respuesta.estado()).isEqualTo(200);
-        assertThat(recuperar(ana.nombre(), ana.codigoRecuperacion(), NUEVA).estado()).isEqualTo(401);
-        assertThat(recuperar(ana.nombre(), respuesta.campo("codigoRecuperacion"), NUEVA).estado()).isEqualTo(200);
+        assertThat(respuesta.json()).containsEntry("correo", null);
+        assertThat(ultimo().asunto()).isEqualTo("Has quitado el correo de tu cuenta de Regicide");
+    }
+
+    @Test
+    void alCambiarLaContrasenaSeAvisaPorCorreo() throws Exception {
+        String token = conCorreoConfirmado();
+
+        api.post("/api/auth/contrasena", "{\"actual\":\"" + CONTRASENA + "\",\"nueva\":\"" + NUEVA + "\"}", token);
+
+        assertThat(ultimo().asunto()).isEqualTo("Tu contraseña de Regicide ha cambiado");
     }
 
     @Test

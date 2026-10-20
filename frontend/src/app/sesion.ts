@@ -9,6 +9,12 @@ interface DatosDelToken {
   exp: number;
 }
 
+export interface DatosDeCuenta {
+  nombre: string;
+  correo: string | null;
+  correoPendiente: string | null;
+}
+
 function leer(token: string): DatosDelToken | null {
   try {
     const carga = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
@@ -43,23 +49,29 @@ export class Sesion {
       .pipe(map(({ token }) => this.guardar(token)));
   }
 
-  /** Crea la cuenta, deja la sesión iniciada y devuelve el código de recuperación, que solo se ve esta vez. */
-  registrarse(nombre: string, contrasena: string): Observable<string> {
+  /** Crea la cuenta y deja la sesión iniciada. Con correo, el servidor envía el enlace para confirmarlo. */
+  registrarse(nombre: string, contrasena: string, correo = ''): Observable<void> {
     return this.http
-      .post<{ token: string; codigoRecuperacion: string }>('/api/auth/register', { nombre, contrasena })
-      .pipe(
-        map(({ token, codigoRecuperacion }) => {
-          this.guardar(token);
-          return codigoRecuperacion;
-        }),
-      );
+      .post<{ token: string }>('/api/auth/register', { nombre, contrasena, ...(correo ? { correo } : {}) })
+      .pipe(map(({ token }) => this.guardar(token)));
   }
 
-  /** Pone una contraseña nueva con el código de recuperación; devuelve otro código y no inicia sesión. */
-  recuperar(nombre: string, codigo: string, nueva: string): Observable<string> {
-    return this.http
-      .post<{ codigoRecuperacion: string }>('/api/auth/recuperar', { nombre, codigo, nueva })
-      .pipe(map(({ codigoRecuperacion }) => codigoRecuperacion));
+  /** Pide el enlace para restablecer la contraseña; devuelve el mensaje del servidor, que es siempre el mismo. */
+  olvide(nombre: string): Observable<string> {
+    return this.http.post<{ mensaje: string }>('/api/auth/olvide', { nombre }).pipe(map(({ mensaje }) => mensaje));
+  }
+
+  /** Pone la contraseña nueva con el enlace del correo. No inicia sesión. */
+  restablecer(enlace: string, nueva: string): Observable<void> {
+    return this.http.post<void>('/api/auth/restablecer', { enlace, nueva });
+  }
+
+  confirmarCorreo(enlace: string): Observable<void> {
+    return this.http.post<void>('/api/auth/correo/confirmar', { enlace });
+  }
+
+  cuenta(): Observable<DatosDeCuenta> {
+    return this.http.get<DatosDeCuenta>('/api/auth/cuenta');
   }
 
   /** Las demás sesiones se cierran; esta sigue con el token nuevo que manda el servidor. */
@@ -69,10 +81,9 @@ export class Sesion {
       .pipe(map(({ token }) => this.guardar(token)));
   }
 
-  nuevoCodigo(contrasena: string): Observable<string> {
-    return this.http
-      .post<{ codigoRecuperacion: string }>('/api/auth/codigo', { contrasena })
-      .pipe(map(({ codigoRecuperacion }) => codigoRecuperacion));
+  /** Un correo vacío lo quita. */
+  cambiarCorreo(correo: string, contrasena: string): Observable<DatosDeCuenta> {
+    return this.http.post<DatosDeCuenta>('/api/auth/correo', { correo, contrasena });
   }
 
   borrarCuenta(contrasena: string): Observable<void> {

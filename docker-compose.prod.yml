@@ -1,25 +1,38 @@
 # En el servidor: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # Caddy pide el certificado HTTPS para DOMINIO y pasa todo al nginx del frontend.
+
+# Los logs llevan IPs: como mucho 3 ficheros de 10 MB por contenedor, y el más viejo se sobrescribe.
+x-logs: &logs
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
 services:
   db:
     restart: unless-stopped
+    logging: *logs
 
   backend:
     restart: unless-stopped
+    logging: *logs
     environment:
       REGICIDE_ORIGENESPERMITIDOS: https://${DOMINIO:?Falta DOMINIO en .env}
+      REGICIDE_URLPUBLICA: https://${DOMINIO}
       # Oracle para las máquinas gratuitas que pasan 7 días con la CPU, la red y la memoria por debajo del 20 %.
       # Reservar y tocar 3 GB de heap al arrancar deja la memoria en torno al 30 % aunque nadie juegue.
       JAVA_TOOL_OPTIONS: -Xms3g -Xmx3g -XX:+AlwaysPreTouch
 
   frontend:
     restart: unless-stopped
+    logging: *logs
     # Solo se llega a través de Caddy.
     ports: !reset []
 
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    logging: *logs
     environment:
       DOMINIO: ${DOMINIO}
     ports:

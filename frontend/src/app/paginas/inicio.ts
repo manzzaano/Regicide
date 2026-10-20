@@ -56,6 +56,7 @@ import { Sesion } from '../sesion';
             <p>Guarda tu partida y entra en la clasificación.</p>
             <a class="enlace" routerLink="/entrar">Entrar o crear cuenta <span aria-hidden="true">→</span></a>
           }
+          <a class="privacidad" routerLink="/privacidad">Privacidad · sin cookies</a>
         </div>
       </section>
     </main>
@@ -259,6 +260,11 @@ import { Sesion } from '../sesion';
     }
     .pie p {
       margin: 0;
+      color: var(--texto-suave);
+      font-size: 0.75em;
+    }
+    .privacidad {
+      justify-self: start;
       color: var(--texto-suave);
       font-size: 0.75em;
     }

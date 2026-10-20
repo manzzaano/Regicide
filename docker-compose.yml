@@ -24,6 +24,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en .env}
       # El WebSocket comprueba el origen del navegador, que es el puerto del frontend.
       REGICIDE_ORIGENESPERMITIDOS: http://localhost:8081
+      REGICIDE_URLPUBLICA: http://localhost:8081
+      # Opcional: sin ella, los correos de recuperación no se envían.
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy

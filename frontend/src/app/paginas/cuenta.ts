@@ -1,17 +1,16 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
-import { CodigoRecuperacion } from '../codigo-recuperacion';
 import { Menu } from '../menu';
-import { Sesion } from '../sesion';
+import { DatosDeCuenta, Sesion } from '../sesion';
 import { mensajeDeError } from './entrar';
 
-type Accion = 'contrasena' | 'codigo' | 'borrar';
+type Accion = 'contrasena' | 'correo' | 'borrar';
 
-/** Cambiar la contraseña, pedir otro código de recuperación o borrar la cuenta. Todo pide la contraseña actual. */
+/** Cambiar la contraseña, el correo de recuperación o borrar la cuenta. Todo pide la contraseña actual. */
 @Component({
   selector: 'app-cuenta',
-  imports: [CodigoRecuperacion, Menu],
+  imports: [Menu],
   template: `
     <app-menu />
     <main class="cuenta">
@@ -47,23 +46,34 @@ type Accion = 'contrasena' | 'codigo' | 'borrar';
         </section>
 
         <div class="lateral">
-          <section class="panel" aria-labelledby="titulo-codigo">
-            <h2 id="titulo-codigo">Código de recuperación</h2>
-            @if (codigo(); as nuevo) {
-              <app-codigo-recuperacion [codigo]="nuevo" (guardado)="codigo.set(null)" />
-            } @else {
-              <p class="ayuda">Si has perdido el tuyo, pide otro. El anterior dejará de valer.</p>
-              <form (submit)="nuevoCodigo($event)">
-                <label>
-                  Contraseña actual
-                  <input class="campo" name="contrasena-codigo" type="password" autocomplete="current-password" required maxlength="128" (input)="paraCodigo.set($any($event.target).value)" [value]="paraCodigo()" />
-                </label>
-                @if (errorDe('codigo'); as error) {
-                  <p class="error" role="alert">{{ error }}</p>
-                }
-                <button class="boton" type="submit" [disabled]="enviando()">Pedir otro código</button>
-              </form>
+          <section class="panel" aria-labelledby="titulo-correo">
+            <h2 id="titulo-correo">Correo de recuperación</h2>
+            @if (datos(); as datos) {
+              @if (datos.correo) {
+                <p class="ayuda">Confirmado: <strong>{{ datos.correo }}</strong></p>
+              }
+              @if (datos.correoPendiente) {
+                <p class="ayuda">Sin confirmar: <strong>{{ datos.correoPendiente }}</strong>. Abre el enlace que te hemos enviado.</p>
+              }
+              @if (!datos.correo && !datos.correoPendiente) {
+                <p class="ayuda">Solo sirve para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.</p>
+              }
             }
+            <form (submit)="cambiarCorreo($event)">
+              <label>
+                Correo nuevo
+                <input class="campo" name="correo" type="email" autocomplete="email" maxlength="254" (input)="correo.set($any($event.target).value)" [value]="correo()" />
+              </label>
+              <p class="pista">Déjalo vacío para quitar el correo.</p>
+              <label>
+                Contraseña actual
+                <input class="campo" name="contrasena-correo" type="password" autocomplete="current-password" required maxlength="128" (input)="paraCorreo.set($any($event.target).value)" [value]="paraCorreo()" />
+              </label>
+              @if (errorDe('correo'); as error) {
+                <p class="error" role="alert">{{ error }}</p>
+              }
+              <button class="boton" type="submit" [disabled]="enviando()">Guardar correo</button>
+            </form>
           </section>
 
           <section class="panel peligro" aria-labelledby="titulo-borrar">
@@ -154,6 +164,10 @@ type Accion = 'contrasena' | 'codigo' | 'borrar';
       color: var(--rojo);
       font-weight: bold;
     }
+    .ayuda strong {
+      color: var(--texto);
+      overflow-wrap: anywhere;
+    }
     .hecho {
       color: var(--texto);
     }
@@ -169,11 +183,16 @@ export class Cuenta {
 
   protected readonly actual = signal('');
   protected readonly nueva = signal('');
-  protected readonly paraCodigo = signal('');
+  protected readonly correo = signal('');
+  protected readonly paraCorreo = signal('');
   protected readonly paraBorrar = signal('');
-  protected readonly codigo = signal<string | null>(null);
+  protected readonly datos = signal<DatosDeCuenta | null>(null);
   protected readonly enviando = signal(false);
   protected readonly resultado = signal<{ accion: Accion; error?: string } | null>(null);
+
+  constructor() {
+    this.sesion.cuenta().subscribe({ next: (datos) => this.datos.set(datos), error: () => {} });
+  }
 
   protected errorDe(accion: Accion): string | undefined {
     const resultado = this.resultado();
@@ -187,10 +206,11 @@ export class Cuenta {
     });
   }
 
-  protected nuevoCodigo(evento: Event): void {
-    this.hacer(evento, 'codigo', this.sesion.nuevoCodigo(this.paraCodigo()), (codigo) => {
-      this.paraCodigo.set('');
-      this.codigo.set(codigo);
+  protected cambiarCorreo(evento: Event): void {
+    this.hacer(evento, 'correo', this.sesion.cambiarCorreo(this.correo().trim(), this.paraCorreo()), (datos) => {
+      this.correo.set('');
+      this.paraCorreo.set('');
+      this.datos.set(datos);
     });
   }
 

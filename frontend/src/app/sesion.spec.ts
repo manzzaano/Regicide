@@ -37,29 +37,37 @@ describe('Sesion', () => {
     expect(localStorage.getItem('token')).toBe(token);
   });
 
-  it('al registrarse queda con la sesión iniciada y recibe el código de recuperación', () => {
+  it('al registrarse queda con la sesión iniciada', () => {
     const sesion = crear();
-    let codigo = '';
 
-    sesion.registrarse('ana', 'una frase de paso larga').subscribe((c) => (codigo = c));
-    http
-      .expectOne('/api/auth/register')
-      .flush({ token: tokenDePrueba('ana'), codigoRecuperacion: 'ABCD-EFGH-JKMN-PQRS' }, { status: 201, statusText: 'Created' });
+    sesion.registrarse('ana', 'una frase de paso larga').subscribe();
+    const peticion = http.expectOne('/api/auth/register');
+    expect(peticion.request.body).toEqual({ nombre: 'ana', contrasena: 'una frase de paso larga' });
+    peticion.flush({ token: tokenDePrueba('ana') }, { status: 201, statusText: 'Created' });
 
     expect(sesion.nombre()).toBe('ana');
-    expect(codigo).toBe('ABCD-EFGH-JKMN-PQRS');
   });
 
-  it('recuperar la contraseña no inicia sesión', () => {
+  it('el correo solo se envía si se ha escrito', () => {
     const sesion = crear();
-    let codigo = '';
 
-    sesion.recuperar('ana', 'ABCD-EFGH-JKMN-PQRS', 'una frase de paso larga').subscribe((c) => (codigo = c));
-    const peticion = http.expectOne('/api/auth/recuperar');
-    expect(peticion.request.body).toEqual({ nombre: 'ana', codigo: 'ABCD-EFGH-JKMN-PQRS', nueva: 'una frase de paso larga' });
-    peticion.flush({ codigoRecuperacion: 'TVWX-YZ01-2345-6789' });
+    sesion.registrarse('ana', 'una frase de paso larga', 'ana@example.com').subscribe();
 
-    expect(codigo).toBe('TVWX-YZ01-2345-6789');
+    expect(http.expectOne('/api/auth/register').request.body).toEqual({
+      nombre: 'ana',
+      contrasena: 'una frase de paso larga',
+      correo: 'ana@example.com',
+    });
+  });
+
+  it('restablecer la contraseña no inicia sesión', () => {
+    const sesion = crear();
+
+    sesion.restablecer('enlace', 'una frase de paso larga').subscribe();
+    const peticion = http.expectOne('/api/auth/restablecer');
+    expect(peticion.request.body).toEqual({ enlace: 'enlace', nueva: 'una frase de paso larga' });
+    peticion.flush(null, { status: 204, statusText: 'No Content' });
+
     expect(sesion.nombre()).toBeNull();
   });
 

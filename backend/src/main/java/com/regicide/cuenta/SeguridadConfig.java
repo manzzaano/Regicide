@@ -53,7 +53,9 @@ class SeguridadConfig {
             PathPatternRequestMatcher.withDefaults().matcher("/ws"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/register"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/login"),
-            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/recuperar"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/olvide"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/restablecer"),
+            PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, "/api/auth/correo/confirmar"),
             PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/api/leaderboard"));
 
     private final SecretKey clave;
