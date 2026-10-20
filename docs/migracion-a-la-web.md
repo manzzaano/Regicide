@@ -194,6 +194,7 @@ Terminada cuando cada punto tiene su test y la web funciona con la política de 
 | No delatar qué nombres existen (OWASP) | Mismo mensaje y mismo tiempo: con un nombre que no existe se compara contra un hash de relleno. El registro sí dice que el nombre está ocupado, porque los nombres ya se ven en la clasificación |
 | Cerrar sesión invalida el token (ASVS 7.4.1) | Cada token lleva la versión de sesión del usuario; salir la sube y todos los tokens anteriores, en cualquier dispositivo, dejan de valer. El WebSocket lo vuelve a comprobar en cada jugada |
 | Cambiar la contraseña pide la actual y cierra las demás sesiones (ASVS 6.2.2, 6.2.3, 7.4.3) | El dispositivo que la cambia recibe un token nuevo |
+| Nombres ofensivos fuera | La clasificación es pública, así que el registro rechaza nombres con insultos, obscenidades o mensajes de odio en español e inglés. Se buscan raíces sin guiones bajos y deshaciendo el leet (`p0lla`), con excepciones para palabras normales que las contienen (computadora, cálculo) |
 | Borrar la cuenta (ASVS 7.4.2) | Pide la contraseña y borra en cascada las partidas |
 | Recuperar sin preguntas secretas (ASVS 6.4.2) | Con un correo opcional que solo sirve para esto y no cuenta hasta que se confirma con un enlace (24 horas). "He olvidado la contraseña" pide solo el nombre y responde siempre lo mismo; el enlace caduca en 30 minutos, vale una vez, no inicia sesión y cierra todas las sesiones. Como mucho 3 enlaces por nombre cada 15 minutos |
 | Enlaces que no se filtran | 256 bits al azar; el servidor guarda su SHA-256. Van tras la almohadilla de la URL, así que no llegan a los logs ni al Referer, y la página los quita de la barra de direcciones |
@@ -209,7 +210,7 @@ Lo que dejo fuera, a propósito:
 - **Have I Been Pwned caído.** Si no responde en 3 segundos, la contraseña se da por buena: un servicio externo no puede impedir registrarse.
 - **Límite en memoria.** Se pierde al reiniciar y solo vale con un backend, que es lo que hay.
 
-Los tokens emitidos antes de esta fase no llevan versión de sesión y dejan de valer: hay que volver a entrar una vez. El backend suma 22 tests de cuentas y seguridad (137 en total) y el frontend 13 (58).
+Los tokens emitidos antes de esta fase no llevan versión de sesión y dejan de valer: hay que volver a entrar una vez. El backend suma 45 tests de cuentas y seguridad (160 en total) y el frontend 13 (58).
 
 ## Reglas: cambios respecto a v1
 

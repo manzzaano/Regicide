@@ -103,6 +103,14 @@ class CuentaTest {
     }
 
     @Test
+    void unNombreOfensivoSeRechaza() throws Exception {
+        Respuesta respuesta = registrar("p0lla" + nombre, CONTRASENA);
+
+        assertThat(respuesta.estado()).isEqualTo(400);
+        assertThat(respuesta.campo("mensaje")).isEqualTo("Ese nombre no está permitido. Elige otro.");
+    }
+
+    @Test
     void noSePuedeRepetirNombre() throws Exception {
         registrar(nombre, CONTRASENA);
 
