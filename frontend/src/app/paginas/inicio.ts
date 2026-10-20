@@ -23,6 +23,7 @@ const es = {
   estadisticas: 'Estadísticas',
   cuenta: 'Tu cuenta',
   salir: 'Salir',
+  seguroSalir: '¿Cerrar la sesión?',
   guarda: 'Guarda tu partida y entra en la clasificación.',
   entrar: 'Entrar o crear cuenta',
   privacidad: 'Privacidad · sin cookies',
@@ -47,6 +48,7 @@ const en: typeof es = {
   estadisticas: 'Stats',
   cuenta: 'Your account',
   salir: 'Sign out',
+  seguroSalir: 'Sign out?',
   guarda: 'Save your game and get on the leaderboard.',
   entrar: 'Sign in or create an account',
   privacidad: 'Privacy · no cookies',
@@ -97,7 +99,7 @@ const en: typeof es = {
         <div class="pie">
           @if (sesion.nombre()) {
             <a class="enlace" routerLink="/cuenta">{{ t().cuenta }} <span aria-hidden="true">→</span></a>
-            <button type="button" class="enlace" (click)="sesion.salir()">{{ t().salir }} <span aria-hidden="true">→</span></button>
+            <button type="button" class="enlace" (click)="salir()">{{ t().salir }} <span aria-hidden="true">→</span></button>
           } @else {
             <p>{{ t().guarda }}</p>
             <a class="enlace" routerLink="/entrar">{{ t().entrar }} <span aria-hidden="true">→</span></a>
@@ -362,4 +364,10 @@ export class Inicio {
   protected readonly sesion = inject(Sesion);
   protected readonly idioma = inject(Idioma);
   protected readonly t = this.idioma.textos({ es, en });
+
+  protected salir(): void {
+    if (confirm(this.t().seguroSalir)) {
+      this.sesion.salir();
+    }
+  }
 }
