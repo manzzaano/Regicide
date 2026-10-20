@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
 import { Menu } from '../menu';
@@ -6,6 +6,7 @@ import { Carta as DatosCarta } from '../modelo';
 
 @Component({
   selector: 'app-reglas',
+  host: { '(window:scroll)': 'marcar()' },
   imports: [Carta, Menu, RouterLink],
   template: `
     <app-menu />
@@ -607,30 +608,37 @@ export class Reglas {
   ];
 
   private readonly elemento = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private readonly destruyendo = inject(DestroyRef);
+  // Tras un clic en el índice, la sección elegida manda hasta que termina el desplazamiento.
+  private saltando = false;
 
   constructor() {
-    // Marca en el índice la sección que cruza la franja central de la pantalla.
-    afterNextRender(() => {
-      const observador = new IntersectionObserver(
-        (entradas) => {
-          for (const entrada of entradas) {
-            if (entrada.isIntersecting) {
-              this.activa.set(entrada.target.id);
-            }
-          }
-        },
-        { rootMargin: '-40% 0px -55% 0px' },
-      );
-      this.elemento.querySelectorAll('.contenido > section[id]').forEach((seccion) => observador.observe(seccion));
-      this.destruyendo.onDestroy(() => observador.disconnect());
-    });
+    afterNextRender(() => this.marcar());
+  }
+
+  // La sección activa es la última cuyo borde de arriba ya ha pasado bajo el menú. Al llegar al
+  // final de la página manda la última, que nunca llega a subir tanto.
+  protected marcar(): void {
+    if (this.saltando) {
+      return;
+    }
+    const secciones = [...this.elemento.querySelectorAll<HTMLElement>('.contenido > section[id]')];
+    const alFinal = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
+    const pasadas = secciones.filter((seccion) => seccion.getBoundingClientRect().top <= 120);
+    const activa = alFinal ? secciones.at(-1) : (pasadas.at(-1) ?? secciones[0]);
+    if (activa) {
+      this.activa.set(activa.id);
+    }
   }
 
   // El enlace lleva el ancla por si se abre en otra pestaña; aquí se desplaza sin pasar por el router.
   protected ir(evento: MouseEvent, id: string): void {
     evento.preventDefault();
-    this.elemento.querySelector(`#${id}`)?.scrollIntoView({ behavior: 'smooth' });
     this.activa.set(id);
+    this.saltando = true;
+    const soltar = () => (this.saltando = false);
+    addEventListener('scrollend', soltar, { once: true });
+    // Si ya estaba ahí no hay desplazamiento ni scrollend.
+    setTimeout(soltar, 1200);
+    this.elemento.querySelector(`#${id}`)?.scrollIntoView({ behavior: 'smooth' });
   }
 }
