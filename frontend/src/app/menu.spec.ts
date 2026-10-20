@@ -8,12 +8,13 @@ describe('Menu', () => {
   let sesion: { nombre: ReturnType<typeof signal<string | null>>; salir: ReturnType<typeof vi.fn> };
   let navegar: ReturnType<typeof vi.spyOn>;
   let salir: HTMLButtonElement;
+  let fixture: ReturnType<typeof TestBed.createComponent<Menu>>;
 
   beforeEach(() => {
     sesion = { nombre: signal('ana'), salir: vi.fn() };
     TestBed.configureTestingModule({ providers: [provideRouter([]), { provide: Sesion, useValue: sesion }] });
     navegar = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    const fixture = TestBed.createComponent(Menu);
+    fixture = TestBed.createComponent(Menu);
     fixture.detectChanges();
     salir = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find((b) => b.textContent!.includes('Salir'))!;
   });
@@ -31,5 +32,18 @@ describe('Menu', () => {
     salir.click();
     expect(sesion.salir).not.toHaveBeenCalled();
     expect(navegar).not.toHaveBeenCalled();
+  });
+
+  it('el botón del menú lo abre y elegir algo lo cierra', () => {
+    const alternar = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>('.alternar')!;
+    alternar.click();
+    fixture.detectChanges();
+    expect(alternar.getAttribute('aria-expanded')).toBe('true');
+    expect(alternar.textContent!.trim()).toBe('Cerrar');
+
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+    salir.click();
+    fixture.detectChanges();
+    expect(alternar.getAttribute('aria-expanded')).toBe('false');
   });
 });

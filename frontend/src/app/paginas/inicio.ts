@@ -363,6 +363,26 @@ const en: typeof es = {
       .palos {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+      /* En el móvil el panel con Jugar va justo después del texto, antes de los palos. */
+      .inicio {
+        row-gap: 0;
+        justify-items: start;
+      }
+      .portada {
+        display: contents;
+      }
+      .palos {
+        order: 1;
+        justify-self: stretch;
+        margin-top: 2em;
+      }
+      .panel {
+        justify-self: stretch;
+        margin-top: 2em;
+      }
+      .abanico {
+        margin: 0.8em 0 1.2em 1.8em;
+      }
     }
     @keyframes abrir {
       from {
