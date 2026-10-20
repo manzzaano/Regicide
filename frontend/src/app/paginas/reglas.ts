@@ -615,19 +615,18 @@ export class Reglas {
     afterNextRender(() => this.marcar());
   }
 
-  // La sección activa es la última cuyo borde de arriba ya ha pasado bajo el menú. Al llegar al
-  // final de la página manda la última, que nunca llega a subir tanto.
+  // La sección activa es la última cuyo borde de arriba ya ha pasado una línea bajo el menú. Las
+  // últimas nunca suben tanto, así que en el último tramo de scroll la línea baja hasta el pie de
+  // la pantalla: cada sección se marca por turno y al final queda la última.
   protected marcar(): void {
     if (this.saltando) {
       return;
     }
     const secciones = [...this.elemento.querySelectorAll<HTMLElement>('.contenido > section[id]')];
-    const alFinal = innerHeight + scrollY >= document.documentElement.scrollHeight - 4;
-    const pasadas = secciones.filter((seccion) => seccion.getBoundingClientRect().top <= 120);
-    const activa = alFinal ? secciones.at(-1) : (pasadas.at(-1) ?? secciones[0]);
-    if (activa) {
-      this.activa.set(activa.id);
-    }
+    const queda = document.documentElement.scrollHeight - innerHeight - scrollY;
+    const linea = Math.max(120, innerHeight - queda);
+    const pasadas = secciones.filter((seccion) => seccion.getBoundingClientRect().top <= linea);
+    this.activa.set((pasadas.at(-1) ?? secciones[0]).id);
   }
 
   // El enlace lleva el ancla por si se abre en otra pestaña; aquí se desplaza sin pasar por el router.
