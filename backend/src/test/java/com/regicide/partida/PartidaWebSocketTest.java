@@ -105,6 +105,19 @@ class PartidaWebSocketTest {
     }
 
     @Test
+    void enInglesElErrorLlegaEnInglesConElMismoCodigo() throws Exception {
+        try (ClienteStomp jugador = new ClienteStomp(puerto, null, "en-US,en;q=0.9")) {
+            jugador.enviar("empezar");
+            jugador.estado();
+
+            jugador.enviar("defender", "{\"cartas\":[0]}");
+
+            assertThat(jugador.errorConCodigo())
+                    .isEqualTo(new MensajeDeError("jugada.no-toca-defender", "It is not time to defend"));
+        }
+    }
+
+    @Test
     void unMensajeMalFormadoDevuelveUnError() throws Exception {
         try (ClienteStomp jugador = new ClienteStomp(puerto)) {
             jugador.enviar("empezar");

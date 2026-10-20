@@ -18,20 +18,20 @@ class Contrasenas {
         this.filtraciones = filtraciones;
     }
 
-    /** El problema de la contraseña para enseñárselo al jugador, o vacío si vale. */
+    /** La clave del texto con el problema de la contraseña, o vacío si vale. */
     Optional<String> problema(String nombre, String contrasena) {
         if (contrasena == null) {
-            return Optional.of("Falta la contraseña");
+            return Optional.of("contrasena.falta");
         }
         int caracteres = contrasena.codePointCount(0, contrasena.length());
         if (caracteres < 15 || caracteres > 128) {
-            return Optional.of("La contraseña debe tener de 15 a 128 caracteres");
+            return Optional.of("contrasena.longitud");
         }
         if (contrasena.equalsIgnoreCase(nombre)) {
-            return Optional.of("La contraseña no puede ser tu nombre");
+            return Optional.of("contrasena.es-el-nombre");
         }
         if (filtraciones.check(contrasena).isCompromised()) {
-            return Optional.of("Esa contraseña aparece en filtraciones de datos conocidas; elige otra");
+            return Optional.of("contrasena.filtrada");
         }
         return Optional.empty();
     }

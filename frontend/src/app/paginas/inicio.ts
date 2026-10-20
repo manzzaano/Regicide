@@ -1,7 +1,57 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
+import { Idioma } from '../idioma';
 import { Sesion } from '../sesion';
+
+const es = {
+  modo: 'modo solitario',
+  subtitulo:
+    'Derrota a los 12 enemigos del castillo: cuatro sotas, cuatro reinas y cuatro reyes. Ataca con las cartas de tu mano, aprovecha el poder de cada palo y aguanta sus golpes descartando. Tienes dos comodines para salir de un apuro.',
+  poderes: 'Poderes de los palos',
+  palos: [
+    { simbolo: '♣', nombre: 'Tréboles', efecto: 'Doble de daño', rojo: false },
+    { simbolo: '♦', nombre: 'Diamantes', efecto: 'Robas cartas', rojo: true },
+    { simbolo: '♠', nombre: 'Picas', efecto: 'Baja su ataque', rojo: false },
+    { simbolo: '♥', nombre: 'Corazones', efecto: 'Recuperas cartas', rojo: true },
+  ],
+  invitado: 'Invitado',
+  conCuenta: 'Cuenta · partida guardada',
+  sinCuenta: 'Invitado · sin guardar',
+  jugar: 'Jugar',
+  reglas: '¿Cómo jugar?',
+  estadisticas: 'Estadísticas',
+  cuenta: 'Tu cuenta',
+  salir: 'Salir',
+  guarda: 'Guarda tu partida y entra en la clasificación.',
+  entrar: 'Entrar o crear cuenta',
+  privacidad: 'Privacidad · sin cookies',
+  otroIdioma: 'English',
+};
+const en: typeof es = {
+  modo: 'solo mode',
+  subtitulo:
+    'Defeat the 12 enemies in the castle: four jacks, four queens and four kings. Attack with the cards in your hand, use the power of each suit and take their hits by discarding. You have two jokers to get out of a tight spot.',
+  poderes: 'Suit powers',
+  palos: [
+    { simbolo: '♣', nombre: 'Clubs', efecto: 'Double damage', rojo: false },
+    { simbolo: '♦', nombre: 'Diamonds', efecto: 'Draw cards', rojo: true },
+    { simbolo: '♠', nombre: 'Spades', efecto: 'Lower its attack', rojo: false },
+    { simbolo: '♥', nombre: 'Hearts', efecto: 'Recover cards', rojo: true },
+  ],
+  invitado: 'Guest',
+  conCuenta: 'Account · game saved',
+  sinCuenta: 'Guest · not saved',
+  jugar: 'Play',
+  reglas: 'How to play',
+  estadisticas: 'Stats',
+  cuenta: 'Your account',
+  salir: 'Sign out',
+  guarda: 'Save your game and get on the leaderboard.',
+  entrar: 'Sign in or create an account',
+  privacidad: 'Privacy · no cookies',
+  otroIdioma: 'Español',
+};
 
 /** VistaInicio.fxml de v1 (título, quién juega y los botones) con la portada de leosoftware.dev. */
 @Component({
@@ -17,15 +67,11 @@ import { Sesion } from '../sesion';
           <app-carta [carta]="{ numero: 13, palo: 'CORAZONES' }" />
           <app-carta [carta]="{ numero: 12, palo: 'TREBOLES' }" />
         </div>
-        <p class="terminal"><span>~/regicide $</span> modo solitario</p>
+        <p class="terminal"><span>~/regicide $</span> {{ t().modo }}</p>
         <h1 class="titulo">REGICIDE<span class="punto">/</span></h1>
-        <p class="subtitulo">
-          Derrota a los 12 enemigos del castillo: cuatro sotas, cuatro reinas y cuatro reyes. Ataca con las cartas de
-          tu mano, aprovecha el poder de cada palo y aguanta sus golpes descartando. Tienes dos comodines para salir de
-          un apuro.
-        </p>
-<ul class="palos" aria-label="Poderes de los palos">
-          @for (palo of palos; track palo.nombre) {
+        <p class="subtitulo">{{ t().subtitulo }}</p>
+<ul class="palos" [attr.aria-label]="t().poderes">
+          @for (palo of t().palos; track palo.simbolo) {
             <li [class.rojo]="palo.rojo">
               <span class="simbolo" aria-hidden="true">{{ palo.simbolo }}</span>
               <span class="nombre">{{ palo.nombre }}</span>
@@ -39,24 +85,29 @@ import { Sesion } from '../sesion';
         <div class="ficha">
           <span class="avatar" aria-hidden="true">{{ sesion.nombre()?.charAt(0)?.toUpperCase() ?? '?' }}</span>
           <div>
-            <h2 class="jugador" id="titulo-panel">{{ sesion.nombre() ?? 'Invitado' }}</h2>
-            <p class="estado">{{ sesion.nombre() ? 'Cuenta · partida guardada' : 'Invitado · sin guardar' }}</p>
+            <h2 class="jugador" id="titulo-panel">{{ sesion.nombre() ?? t().invitado }}</h2>
+            <p class="estado">{{ sesion.nombre() ? t().conCuenta : t().sinCuenta }}</p>
           </div>
         </div>
-        <a class="boton-principal jugar" routerLink="/partida">Jugar <span aria-hidden="true">→</span></a>
+        <a class="boton-principal jugar" routerLink="/partida">{{ t().jugar }} <span aria-hidden="true">→</span></a>
         <div class="secundarios">
-          <a class="boton" routerLink="/reglas">¿Cómo jugar?</a>
-          <a class="boton" routerLink="/clasificacion">Estadísticas</a>
+          <a class="boton" routerLink="/reglas">{{ t().reglas }}</a>
+          <a class="boton" routerLink="/clasificacion">{{ t().estadisticas }}</a>
         </div>
         <div class="pie">
           @if (sesion.nombre()) {
-            <a class="enlace" routerLink="/cuenta">Tu cuenta <span aria-hidden="true">→</span></a>
-            <button type="button" class="enlace" (click)="sesion.salir()">Salir <span aria-hidden="true">→</span></button>
+            <a class="enlace" routerLink="/cuenta">{{ t().cuenta }} <span aria-hidden="true">→</span></a>
+            <button type="button" class="enlace" (click)="sesion.salir()">{{ t().salir }} <span aria-hidden="true">→</span></button>
           } @else {
-            <p>Guarda tu partida y entra en la clasificación.</p>
-            <a class="enlace" routerLink="/entrar">Entrar o crear cuenta <span aria-hidden="true">→</span></a>
+            <p>{{ t().guarda }}</p>
+            <a class="enlace" routerLink="/entrar">{{ t().entrar }} <span aria-hidden="true">→</span></a>
           }
-          <a class="privacidad" routerLink="/privacidad">Privacidad · sin cookies</a>
+          <span class="enlaces-pie">
+            <a class="privacidad" routerLink="/privacidad">{{ t().privacidad }}</a>
+            <button type="button" class="privacidad" [lang]="idioma.actual() === 'es' ? 'en' : 'es'" (click)="idioma.cambiar()">
+              {{ t().otroIdioma }}
+            </button>
+          </span>
         </div>
       </section>
     </main>
@@ -263,10 +314,20 @@ import { Sesion } from '../sesion';
       color: var(--texto-suave);
       font-size: 0.75em;
     }
+    .enlaces-pie {
+      display: flex;
+      justify-content: space-between;
+      gap: 1em;
+    }
     .privacidad {
-      justify-self: start;
+      padding: 0;
+      border: 0;
+      background: none;
       color: var(--texto-suave);
-      font-size: 0.75em;
+      font: inherit;
+      font-size: 0.75em !important;
+      text-decoration: underline;
+      cursor: pointer;
     }
     .enlace {
       justify-self: start;
@@ -299,10 +360,6 @@ import { Sesion } from '../sesion';
 })
 export class Inicio {
   protected readonly sesion = inject(Sesion);
-  protected readonly palos = [
-    { simbolo: '♣', nombre: 'Tréboles', efecto: 'Doble de daño', rojo: false },
-    { simbolo: '♦', nombre: 'Diamantes', efecto: 'Robas cartas', rojo: true },
-    { simbolo: '♠', nombre: 'Picas', efecto: 'Baja su ataque', rojo: false },
-    { simbolo: '♥', nombre: 'Corazones', efecto: 'Recuperas cartas', rojo: true },
-  ];
+  protected readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 }

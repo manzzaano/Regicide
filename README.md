@@ -8,9 +8,9 @@ La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manz
 
 ## Estado
 
-La migración está terminada: las seis fases, y una séptima de seguridad de las cuentas, llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+La migración está terminada: las seis fases, una séptima de seguridad de las cuentas y una octava que añade el inglés llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
-El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Todo se levanta con Docker Compose, cada cambio pasa por GitHub Actions y la web publicada corre en una máquina gratuita de Oracle Cloud con Caddy para el HTTPS.
+El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar, en español o en inglés. Todo se levanta con Docker Compose, cada cambio pasa por GitHub Actions y la web publicada corre en una máquina gratuita de Oracle Cloud con Caddy para el HTTPS.
 
 ## Cómo se juega
 
@@ -56,7 +56,7 @@ export JWT_SECRET=un-secreto-largo-de-al-menos-32-caracteres
 ./mvnw spring-boot:run   # http://localhost:8080, WebSocket en ws://localhost:8080/ws
 ```
 
-La API REST tiene `POST /api/auth/register` (`{"nombre", "contrasena", "correo"}`, el correo es opcional; responde `{"token"}`), `POST /api/auth/login` (responde `{"token"}`), `POST /api/auth/olvide` (`{"nombre"}`), `POST /api/auth/restablecer` (`{"enlace", "nueva"}`), `POST /api/auth/correo/confirmar` (`{"enlace"}`) y `GET /api/leaderboard`, que son públicas. Con `Authorization: Bearer <token>`: `GET /api/games/me`, `GET /api/auth/cuenta`, `POST /api/auth/salir` (cierra la sesión en todos los dispositivos), `POST /api/auth/contrasena` (`{"actual", "nueva"}`), `POST /api/auth/correo` (`{"correo", "contrasena"}`, vacío lo quita) y `POST /api/auth/borrar` (`{"contrasena"}`). Las contraseñas van de 15 a 128 caracteres y no pueden estar en filtraciones conocidas; qué cubre cada medida está en la fase 7 del caso de estudio.
+La API REST tiene `POST /api/auth/register` (`{"nombre", "contrasena", "correo"}`, el correo es opcional; responde `{"token"}`), `POST /api/auth/login` (responde `{"token"}`), `POST /api/auth/olvide` (`{"nombre"}`), `POST /api/auth/restablecer` (`{"enlace", "nueva"}`), `POST /api/auth/correo/confirmar` (`{"enlace"}`) y `GET /api/leaderboard`, que son públicas. Con `Authorization: Bearer <token>`: `GET /api/games/me`, `GET /api/auth/cuenta`, `POST /api/auth/salir` (cierra la sesión en todos los dispositivos), `POST /api/auth/contrasena` (`{"actual", "nueva"}`), `POST /api/auth/correo` (`{"correo", "contrasena"}`, vacío lo quita) y `POST /api/auth/borrar` (`{"contrasena"}`). Las contraseñas van de 15 a 128 caracteres y no pueden estar en filtraciones conocidas; qué cubre cada medida está en la fase 7 del caso de estudio. Los mensajes de error y los correos salen en inglés con `Accept-Language: en` y en español en cualquier otro caso; los errores de la partida por STOMP llevan además un `codigo` estable (`{"codigo", "mensaje"}`).
 
 La base de datos trae seis jugadores de ejemplo (migraciones `V3` y `V4`), de principiante a nivel medio, para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
 

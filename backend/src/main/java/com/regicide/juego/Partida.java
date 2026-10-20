@@ -140,7 +140,7 @@ public class Partida {
         List<Carta> cartas = cartasEn(posiciones);
         int ataque = enemigo().ataque();
         if (cartas.stream().mapToInt(Carta::valor).sum() < ataque) {
-            throw new JugadaNoValida("Tienes que descartar al menos " + ataque + " puntos");
+            throw new JugadaNoValida("jugada.descartar-al-menos", ataque);
         }
         mano.removeAll(cartas);
         descarte.addAll(cartas);
@@ -151,10 +151,10 @@ public class Partida {
     /** Al empezar el paso 1 o el paso 4: descarta la mano entera y roba hasta 8 cartas. */
     public void usarComodin() {
         if (fase != Fase.ATAQUE && fase != Fase.DEFENSA) {
-            throw new JugadaNoValida("La partida ha terminado");
+            throw new JugadaNoValida("jugada.terminada");
         }
         if (comodines == 0) {
-            throw new JugadaNoValida("No te quedan comodines");
+            throw new JugadaNoValida("jugada.sin-comodines");
         }
         comodines--;
         descarte.addAll(mano);
@@ -178,24 +178,24 @@ public class Partida {
 
     private void exigirFase(Fase esperada) {
         if (fase == Fase.VICTORIA || fase == Fase.DERROTA) {
-            throw new JugadaNoValida("La partida ha terminado");
+            throw new JugadaNoValida("jugada.terminada");
         }
         if (fase != esperada) {
-            throw new JugadaNoValida("Ahora no toca " + (esperada == Fase.ATAQUE ? "atacar" : "defenderse"));
+            throw new JugadaNoValida(esperada == Fase.ATAQUE ? "jugada.no-toca-atacar" : "jugada.no-toca-defender");
         }
     }
 
     private List<Carta> cartasEn(List<Integer> posiciones) {
         if (posiciones.isEmpty()) {
-            throw new JugadaNoValida("Elige al menos una carta");
+            throw new JugadaNoValida("jugada.elige-carta");
         }
         if (new HashSet<>(posiciones).size() != posiciones.size()) {
-            throw new JugadaNoValida("No puedes elegir la misma carta dos veces");
+            throw new JugadaNoValida("jugada.carta-repetida");
         }
         List<Carta> cartas = new ArrayList<>();
         for (int posicion : posiciones) {
             if (posicion < 0 || posicion >= mano.size()) {
-                throw new JugadaNoValida("Esa carta no está en tu mano");
+                throw new JugadaNoValida("jugada.carta-fuera");
             }
             cartas.add(mano.get(posicion));
         }
@@ -210,14 +210,14 @@ public class Partida {
         }
         if (cartas.stream().anyMatch(Carta::esCompanero)) {
             if (cartas.size() > 2) {
-                throw new JugadaNoValida("El as solo se puede jugar con una carta más");
+                throw new JugadaNoValida("jugada.as-con-una");
             }
             return;
         }
         boolean mismoNumero = cartas.stream().map(Carta::numero).distinct().count() == 1;
         int total = cartas.stream().mapToInt(Carta::valor).sum();
         if (!mismoNumero || total > 10) {
-            throw new JugadaNoValida("Combina cartas del mismo número que sumen 10 o menos, o un as con otra carta");
+            throw new JugadaNoValida("jugada.combinacion");
         }
     }
 

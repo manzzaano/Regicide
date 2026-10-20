@@ -129,6 +129,22 @@ class CuentaTest {
     }
 
     @Test
+    void enInglesLosErroresYLosCorreosLleganEnIngles() throws Exception {
+        ClienteHttp ingles = api.enIngles();
+
+        assertThat(ingles.post("/api/auth/register", "{\"nombre\":\"a b\",\"contrasena\":\"" + CONTRASENA + "\"}")
+                .campo("mensaje")).isEqualTo("The name must have 3 to 20 letters, numbers or underscores");
+        assertThat(ingles.post("/api/auth/register", "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"corta\"}")
+                .campo("mensaje")).isEqualTo("The password must have 15 to 128 characters");
+
+        ingles.post("/api/auth/register", "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"" + CONTRASENA
+                + "\",\"correo\":\"" + correo + "\"}");
+
+        assertThat(ultimo().asunto()).isEqualTo("Confirm your email on Regicide");
+        assertThat(ultimo().texto()).startsWith("Hi " + nombre + ",");
+    }
+
+    @Test
     void laContrasenaTieneDe15A128Caracteres() throws Exception {
         assertThat(registrar(nombre, "catorce-letras").campo("mensaje"))
                 .isEqualTo("La contraseña debe tener de 15 a 128 caracteres");

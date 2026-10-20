@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { autorizacion } from './autorizacion';
+import { Idioma } from './idioma';
 import { Sesion } from './sesion';
 import { tokenDePrueba } from './pruebas';
 
@@ -38,11 +39,20 @@ describe('autorizacion', () => {
     expect(servidor.expectOne('https://otro.example/datos').request.headers.has('Authorization')).toBe(false);
   });
 
-  it('sin sesión no añade nada', () => {
+  it('sin sesión solo pide el idioma', () => {
     sesion.olvidar();
     http.get('/api/leaderboard').subscribe();
 
-    expect(servidor.expectOne('/api/leaderboard').request.headers.has('Authorization')).toBe(false);
+    const cabeceras = servidor.expectOne('/api/leaderboard').request.headers;
+    expect(cabeceras.has('Authorization')).toBe(false);
+    expect(cabeceras.get('Accept-Language')).toBe('es');
+  });
+
+  it('pide los textos en el idioma elegido', () => {
+    TestBed.inject(Idioma).actual.set('en');
+    http.get('/api/games/me').subscribe();
+
+    expect(servidor.expectOne('/api/games/me').request.headers.get('Accept-Language')).toBe('en');
   });
 
   it('si el servidor rechaza el token, cierra la sesión', () => {

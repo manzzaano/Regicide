@@ -1,5 +1,6 @@
 import { Injectable, InjectionToken, effect, inject, signal } from '@angular/core';
 import { Client, StompConfig } from '@stomp/stompjs';
+import { Idioma } from './idioma';
 import { EstadoPartida, terminada } from './modelo';
 import { Sesion } from './sesion';
 
@@ -11,8 +12,21 @@ export const CREAR_CLIENTE = new InjectionToken<(config: StompConfig) => Cliente
   factory: () => (config) => new Client(config),
 });
 
-// ponytail: se reconoce por el texto que envía el servidor; un código de error haría falta si hubiera más casos así.
-const SIN_PARTIDA_GUARDADA = 'No tienes ninguna partida guardada';
+const es = {
+  partidaPerdida: 'Se ha cortado la conexión y la partida se ha perdido: sin cuenta no se guarda. Empiezas otra.',
+  sinServidor: 'No se ha podido conectar con el servidor',
+  reintentando: 'Sin conexión con el servidor. Reintentando…',
+};
+const en: typeof es = {
+  partidaPerdida: 'The connection dropped and the game is lost: guest games are not saved. Starting a new one.',
+  sinServidor: 'Could not connect to the server',
+  reintentando: 'No connection to the server. Retrying…',
+};
+
+interface MensajeDeError {
+  codigo: string;
+  mensaje: string;
+}
 
 function urlDelWebSocket(): string {
   return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws`;
@@ -26,6 +40,8 @@ function urlDelWebSocket(): string {
 export class Juego {
   private readonly sesion = inject(Sesion);
   private readonly crearCliente = inject(CREAR_CLIENTE);
+  private readonly idioma = inject(Idioma);
+  private readonly t = this.idioma.textos({ es, en });
   private cliente: ClienteStomp | null = null;
   private retomando = false;
 
@@ -55,7 +71,11 @@ export class Juego {
     const token = this.sesion.token();
     this.cliente = this.crearCliente({
       brokerURL: urlDelWebSocket(),
-      connectHeaders: token ? { Authorization: `Bearer ${token}` } : {},
+      // El servidor contesta los errores en el idioma de la conexión; cambiarlo luego no reconecta.
+      connectHeaders: {
+        'Accept-Language': this.idioma.actual(),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       reconnectDelay: 3000,
       onConnect: () => this.alConectar(),
       onWebSocketClose: () => this.conectado.set(false),
@@ -95,7 +115,7 @@ export class Juego {
       this.retomando = false;
       this.estado.set(JSON.parse(mensaje.body) as EstadoPartida);
     });
-    this.cliente!.subscribe('/user/queue/errores', (mensaje) => this.alFallar(JSON.parse(mensaje.body).mensaje));
+    this.cliente!.subscribe('/user/queue/errores', (mensaje) => this.alFallar(JSON.parse(mensaje.body) as MensajeDeError));
 
     const anterior = this.estado();
     if (anterior && terminada(anterior)) {
@@ -107,13 +127,13 @@ export class Juego {
     } else {
       this.enviar('empezar');
       if (anterior) {
-        this.error.set('Se ha cortado la conexión y la partida se ha perdido: sin cuenta no se guarda. Empiezas otra.');
+        this.error.set(this.t().partidaPerdida);
       }
     }
   }
 
-  private alFallar(mensaje: string): void {
-    if (this.retomando && mensaje === SIN_PARTIDA_GUARDADA) {
+  private alFallar({ codigo, mensaje }: MensajeDeError): void {
+    if (this.retomando && codigo === 'partida.sin-guardada') {
       this.retomando = false;
       this.enviar('empezar');
       return;
@@ -126,13 +146,13 @@ export class Juego {
     if (this.sesion.token()) {
       this.sesion.olvidar();
     } else {
-      this.error.set('No se ha podido conectar con el servidor');
+      this.error.set(this.t().sinServidor);
     }
   }
 
   private enviar(accion: string, cuerpo?: object): void {
     if (!this.conectado()) {
-      this.error.set('Sin conexión con el servidor. Reintentando…');
+      this.error.set(this.t().reintentando);
       return;
     }
     this.error.set(null);

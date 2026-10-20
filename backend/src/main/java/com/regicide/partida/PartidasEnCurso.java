@@ -32,11 +32,11 @@ class PartidasEnCurso {
 
     EstadoPartida retomar(String sesion, String nombre) {
         if (nombre == null) {
-            throw new JugadaNoValida("Inicia sesión para retomar una partida");
+            throw new JugadaNoValida("partida.inicia-sesion");
         }
         Partida partida = historial.recuperar(nombre)
                 .map(guardada -> Partida.desde(guardada, new SecureRandom()))
-                .orElseThrow(() -> new JugadaNoValida("No tienes ninguna partida guardada"));
+                .orElseThrow(() -> new JugadaNoValida("partida.sin-guardada"));
         return abrir(sesion, nombre, partida);
     }
 
@@ -51,7 +51,7 @@ class PartidasEnCurso {
     EstadoPartida jugar(String sesion, String nombre, Consumer<Partida> accion) {
         Partida partida = porSesion.get(sesion);
         if (partida == null) {
-            throw new JugadaNoValida("No tienes ninguna partida empezada");
+            throw new JugadaNoValida("partida.sin-empezar");
         }
         accion.accept(partida);
         if (nombre != null) {

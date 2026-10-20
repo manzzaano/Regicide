@@ -31,7 +31,14 @@ class ClienteStomp implements AutoCloseable {
 
     /** Con token, el jugador se identifica en el CONNECT; sin él, entra como invitado. */
     ClienteStomp(int puerto, String token) throws Exception {
+        this(puerto, token, null);
+    }
+
+    ClienteStomp(int puerto, String token, String idioma) throws Exception {
         StompHeaders conexion = new StompHeaders();
+        if (idioma != null) {
+            conexion.add("Accept-Language", idioma);
+        }
         if (token != null) {
             conexion.add("Authorization", "Bearer " + token);
         }
@@ -80,7 +87,11 @@ class ClienteStomp implements AutoCloseable {
     }
 
     String error() throws InterruptedException {
-        return JSON.readValue(siguiente(errores), MensajeDeError.class).mensaje();
+        return errorConCodigo().mensaje();
+    }
+
+    MensajeDeError errorConCodigo() throws InterruptedException {
+        return JSON.readValue(siguiente(errores), MensajeDeError.class);
     }
 
     boolean sinMensajes() throws InterruptedException {

@@ -87,7 +87,7 @@ describe('Juego', () => {
     });
 
     it('se conecta sin token y empieza una partida', () => {
-      expect(cliente().config.connectHeaders).toEqual({});
+      expect(cliente().config.connectHeaders).toEqual({ 'Accept-Language': 'es' });
       expect(cliente().enviados).toEqual(['/app/partida/empezar']);
     });
 
@@ -110,7 +110,7 @@ describe('Juego', () => {
     });
 
     it('muestra el error del servidor hasta la siguiente jugada', () => {
-      cliente().recibir('/user/queue/errores', { mensaje: 'Esa carta no está en tu mano' });
+      cliente().recibir('/user/queue/errores', { codigo: 'jugada.carta-fuera', mensaje: 'Esa carta no está en tu mano' });
       expect(juego.error()).toBe('Esa carta no está en tu mano');
 
       juego.atacar([0]);
@@ -138,7 +138,7 @@ describe('Juego', () => {
       TestBed.tick();
 
       expect(clientes[0].activo).toBe(false);
-      expect(cliente().config.connectHeaders).toEqual({ Authorization: `Bearer ${sesion.token()}` });
+      expect(cliente().config.connectHeaders).toEqual({ 'Accept-Language': 'es', Authorization: `Bearer ${sesion.token()}` });
       expect(juego.estado()).toBeNull();
     });
   });
@@ -152,12 +152,12 @@ describe('Juego', () => {
     });
 
     it('se conecta con el token y retoma la partida guardada', () => {
-      expect(cliente().config.connectHeaders).toEqual({ Authorization: `Bearer ${sesion.token()}` });
+      expect(cliente().config.connectHeaders).toEqual({ 'Accept-Language': 'es', Authorization: `Bearer ${sesion.token()}` });
       expect(cliente().enviados).toEqual(['/app/partida/retomar']);
     });
 
     it('si no hay partida guardada, empieza una sin mostrar error', () => {
-      cliente().recibir('/user/queue/errores', { mensaje: 'No tienes ninguna partida guardada' });
+      cliente().recibir('/user/queue/errores', { codigo: 'partida.sin-guardada', mensaje: 'No tienes ninguna partida guardada' });
 
       expect(cliente().enviados).toEqual(['/app/partida/retomar', '/app/partida/empezar']);
       expect(juego.error()).toBeNull();
@@ -184,7 +184,7 @@ describe('Juego', () => {
       TestBed.tick();
 
       expect(sesion.nombre()).toBeNull();
-      expect(cliente().config.connectHeaders).toEqual({});
+      expect(cliente().config.connectHeaders).toEqual({ 'Accept-Language': 'es' });
     });
   });
 });

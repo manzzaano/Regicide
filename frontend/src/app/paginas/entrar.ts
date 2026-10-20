@@ -1,22 +1,75 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { Menu } from '../menu';
+import { Idioma, Lengua } from '../idioma';
 import { Sesion } from '../sesion';
 
-export function mensajeDeError(error: unknown): string {
+/** El mensaje del servidor, que ya llega en el idioma pedido, o uno propio si no hay. */
+export function mensajeDeError(error: unknown, lengua: Lengua): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
-      return 'No se ha podido conectar con el servidor';
+      return lengua === 'es' ? 'No se ha podido conectar con el servidor' : 'Could not connect to the server';
     }
     if (typeof error.error?.mensaje === 'string') {
       return error.error.mensaje;
     }
   }
-  return 'Algo ha fallado. Inténtalo de nuevo.';
+  return lengua === 'es' ? 'Algo ha fallado. Inténtalo de nuevo.' : 'Something went wrong. Try again.';
 }
 
 type Modo = 'entrar' | 'crear' | 'recuperar';
+
+const es = {
+  opciones: 'Elige una opción',
+  entrar: 'Entrar',
+  crear: 'Crear cuenta',
+  titulo: { entrar: 'Entra con tu cuenta', crear: 'Crea tu cuenta', recuperar: 'Recupera tu cuenta' },
+  ayuda: {
+    entrar: 'Sigue la partida donde la dejaste.',
+    crear: 'Solo un nombre y una contraseña. El correo es opcional.',
+    recuperar: 'Te enviaremos un enlace al correo de tu cuenta, si le añadiste uno.',
+  },
+  boton: { entrar: 'Entrar', crear: 'Crear cuenta', recuperar: 'Enviar enlace' },
+  nombre: 'Nombre',
+  pistaNombre: 'De 3 a 20 letras sin tildes, números o guiones bajos.',
+  contrasena: 'Contraseña',
+  ocultar: 'Ocultar',
+  mostrar: 'Mostrar',
+  pistaContrasena: 'De 15 a 128 caracteres. Mejor una frase que recuerdes.',
+  correo: 'Correo',
+  opcional: '(opcional)',
+  pistaCorreo: 'Solo para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.',
+  privacidad: 'Privacidad',
+  volver: 'Volver a entrar',
+  olvidada: '¿Has olvidado la contraseña?',
+  invitado: 'Seguir como invitado',
+};
+const en: typeof es = {
+  opciones: 'Choose an option',
+  entrar: 'Sign in',
+  crear: 'Create account',
+  titulo: { entrar: 'Sign in to your account', crear: 'Create your account', recuperar: 'Recover your account' },
+  ayuda: {
+    entrar: 'Pick up your game where you left it.',
+    crear: 'Just a name and a password. The email is optional.',
+    recuperar: 'We will send a link to your account email, if you added one.',
+  },
+  boton: { entrar: 'Sign in', crear: 'Create account', recuperar: 'Send link' },
+  nombre: 'Name',
+  pistaNombre: '3 to 20 letters without accents, numbers or underscores.',
+  contrasena: 'Password',
+  ocultar: 'Hide',
+  mostrar: 'Show',
+  pistaContrasena: '15 to 128 characters. A sentence you remember works best.',
+  correo: 'Email',
+  opcional: '(optional)',
+  pistaCorreo: 'Only to recover your password. Without an email, a forgotten password cannot be recovered.',
+  privacidad: 'Privacy',
+  volver: 'Back to sign in',
+  olvidada: 'Forgot your password?',
+  invitado: 'Play as a guest',
+};
 
 @Component({
   selector: 'app-entrar',
@@ -26,16 +79,16 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
     <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
     <main class="entrar">
       <section class="panel">
-        <div class="pestanas" role="group" aria-label="Elige una opción">
-          <button type="button" [attr.aria-pressed]="modo() === 'entrar'" (click)="cambiar('entrar')">Entrar</button>
-          <button type="button" [attr.aria-pressed]="modo() === 'crear'" (click)="cambiar('crear')">Crear cuenta</button>
+        <div class="pestanas" role="group" [attr.aria-label]="t().opciones">
+          <button type="button" [attr.aria-pressed]="modo() === 'entrar'" (click)="cambiar('entrar')">{{ t().entrar }}</button>
+          <button type="button" [attr.aria-pressed]="modo() === 'crear'" (click)="cambiar('crear')">{{ t().crear }}</button>
         </div>
-        <h1>{{ titulo() }}</h1>
+        <h1>{{ t().titulo[modo()] }}</h1>
 
-        <p class="ayuda">{{ ayuda() }}</p>
+        <p class="ayuda">{{ t().ayuda[modo()] }}</p>
         <form (submit)="enviar($event)">
           <label>
-            Nombre
+            {{ t().nombre }}
             <input
               class="campo"
               name="nombre"
@@ -48,11 +101,11 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
             />
           </label>
           @if (modo() === 'crear') {
-            <p class="pista">De 3 a 20 letras sin tildes, números o guiones bajos.</p>
+            <p class="pista">{{ t().pistaNombre }}</p>
           }
           @if (modo() !== 'recuperar') {
             <label>
-              Contraseña
+              {{ t().contrasena }}
               <!-- El campo va antes que el botón para que siga siendo el control de la etiqueta. -->
               <span class="clave">
                 <input
@@ -67,15 +120,15 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
                   (input)="contrasena.set($any($event.target).value)"
                 />
                 <button type="button" class="ver" [attr.aria-pressed]="visible()" (click)="visible.set(!visible())">
-                  {{ visible() ? 'Ocultar' : 'Mostrar' }}
+                  {{ visible() ? t().ocultar : t().mostrar }}
                 </button>
               </span>
             </label>
           }
           @if (modo() === 'crear') {
-            <p class="pista">De 15 a 128 caracteres. Mejor una frase que recuerdes.</p>
+            <p class="pista">{{ t().pistaContrasena }}</p>
             <label>
-              <span>Correo <span class="opcional">(opcional)</span></span>
+              <span>{{ t().correo }} <span class="opcional">{{ t().opcional }}</span></span>
               <input
                 class="campo"
                 name="correo"
@@ -87,8 +140,8 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
               />
             </label>
             <p class="pista">
-              Solo para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.
-                <a class="privacidad" routerLink="/privacidad">Privacidad</a>
+              {{ t().pistaCorreo }}
+              <a class="privacidad" routerLink="/privacidad">{{ t().privacidad }}</a>
             </p>
           }
 
@@ -100,20 +153,20 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
           }
 
           <button class="boton-principal enviar" type="submit" [disabled]="enviando()">
-            {{ boton() }} <span aria-hidden="true">→</span>
+            {{ t().boton[modo()] }} <span aria-hidden="true">→</span>
           </button>
         </form>
 
         <div class="pie">
           @if (modo() === 'recuperar') {
             <button type="button" class="enlace" (click)="cambiar('entrar')">
-              <span aria-hidden="true">←</span> Volver a entrar
+              <span aria-hidden="true">←</span> {{ t().volver }}
             </button>
           } @else {
             @if (modo() === 'entrar') {
-              <button type="button" class="enlace" (click)="cambiar('recuperar')">¿Has olvidado la contraseña?</button>
+              <button type="button" class="enlace" (click)="cambiar('recuperar')">{{ t().olvidada }}</button>
             }
-            <a class="enlace" routerLink="/partida">Seguir como invitado <span aria-hidden="true">→</span></a>
+            <a class="enlace" routerLink="/partida">{{ t().invitado }} <span aria-hidden="true">→</span></a>
           }
         </div>
       </section>
@@ -273,6 +326,8 @@ type Modo = 'entrar' | 'crear' | 'recuperar';
 export class Entrar {
   private readonly sesion = inject(Sesion);
   private readonly router = inject(Router);
+  private readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 
   protected readonly modo = signal<Modo>('entrar');
   protected readonly nombre = signal('');
@@ -283,18 +338,6 @@ export class Entrar {
   protected readonly enviando = signal(false);
   protected readonly visible = signal(false);
 
-  protected readonly titulo = computed(
-    () => ({ entrar: 'Entra con tu cuenta', crear: 'Crea tu cuenta', recuperar: 'Recupera tu cuenta' })[this.modo()],
-  );
-  protected readonly ayuda = computed(
-    () =>
-      ({
-        entrar: 'Sigue la partida donde la dejaste.',
-        crear: 'Solo un nombre y una contraseña. El correo es opcional.',
-        recuperar: 'Te enviaremos un enlace al correo de tu cuenta, si le añadiste uno.',
-      })[this.modo()],
-  );
-  protected readonly boton = computed(() => ({ entrar: 'Entrar', crear: 'Crear cuenta', recuperar: 'Enviar enlace' })[this.modo()]);
 
   protected cambiar(modo: Modo): void {
     this.modo.set(modo);
@@ -308,7 +351,7 @@ export class Entrar {
     this.error.set(null);
     this.aviso.set(null);
     const fallo = (error: unknown) => {
-      this.error.set(mensajeDeError(error));
+      this.error.set(mensajeDeError(error, this.idioma.actual()));
       this.enviando.set(false);
     };
     const aLaPartida = () => void this.router.navigateByUrl('/partida');

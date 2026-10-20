@@ -28,9 +28,20 @@ public class ClienteHttp {
 
     private final HttpClient http = HttpClient.newHttpClient();
     private final String base;
+    private final String idioma;
 
     public ClienteHttp(int puerto) {
-        this.base = "http://localhost:" + puerto;
+        this("http://localhost:" + puerto, null);
+    }
+
+    private ClienteHttp(String base, String idioma) {
+        this.base = base;
+        this.idioma = idioma;
+    }
+
+    /** El mismo cliente, pidiendo los textos en inglés. */
+    public ClienteHttp enIngles() {
+        return new ClienteHttp(base, "en-GB,en;q=0.9");
     }
 
     public Respuesta post(String ruta, String json) throws Exception {
@@ -69,6 +80,9 @@ public class ClienteHttp {
     }
 
     private Respuesta enviar(HttpRequest peticion) throws Exception {
+        if (idioma != null) {
+            peticion = HttpRequest.newBuilder(peticion, (nombre, valor) -> true).header("Accept-Language", idioma).build();
+        }
         HttpResponse<String> respuesta = http.send(peticion, HttpResponse.BodyHandlers.ofString());
         return new Respuesta(respuesta.statusCode(), respuesta.body());
     }
