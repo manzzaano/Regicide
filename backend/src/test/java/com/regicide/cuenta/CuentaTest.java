@@ -9,6 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -114,6 +119,21 @@ class CuentaTest {
     @Test
     void conUnJugadorSimuladoNoSeEntra() throws Exception {
         assertThat(entrar("lucia_mtz", "!").estado()).isEqualTo(401);
+    }
+
+    @Test
+    void laApiSoloAdmiteLosOrigenesPermitidos() throws Exception {
+        assertThat(origenAdmitido("http://localhost:4200")).hasValue("http://localhost:4200");
+        assertThat(origenAdmitido("https://otra-web.example")).isEmpty();
+    }
+
+    private Optional<String> origenAdmitido(String origen) throws Exception {
+        HttpRequest peticion = HttpRequest.newBuilder(URI.create("http://localhost:" + puerto + "/api/leaderboard"))
+                .header("Origin", origen)
+                .GET()
+                .build();
+        return HttpClient.newHttpClient().send(peticion, HttpResponse.BodyHandlers.discarding())
+                .headers().firstValue("Access-Control-Allow-Origin");
     }
 
     @Test
