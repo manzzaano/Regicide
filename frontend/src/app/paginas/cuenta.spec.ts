@@ -10,7 +10,8 @@ describe('Cuenta', () => {
   let sesion: {
     nombre: ReturnType<typeof signal<string | null>>;
     cambiarContrasena: ReturnType<typeof vi.fn>;
-    nuevoCodigo: ReturnType<typeof vi.fn>;
+    cuenta: ReturnType<typeof vi.fn>;
+    cambiarCorreo: ReturnType<typeof vi.fn>;
     borrarCuenta: ReturnType<typeof vi.fn>;
   };
   let pantalla: HTMLElement;
@@ -38,7 +39,8 @@ describe('Cuenta', () => {
     sesion = {
       nombre: signal('ana'),
       cambiarContrasena: vi.fn(() => of(undefined)),
-      nuevoCodigo: vi.fn(() => of('ABCD-EFGH-JKMN-PQRS')),
+      cuenta: vi.fn(() => of({ nombre: 'ana', correo: null, correoPendiente: null })),
+      cambiarCorreo: vi.fn(() => of({ nombre: 'ana', correo: null, correoPendiente: 'ana@example.com' })),
       borrarCuenta: vi.fn(() => of(undefined)),
     };
     TestBed.configureTestingModule({
@@ -72,13 +74,18 @@ describe('Cuenta', () => {
     expect(seccion('Borrar la cuenta').querySelector('[role="alert"]')).toBeNull();
   });
 
-  it('pide otro código de recuperación y lo enseña', async () => {
-    escribir('Código de recuperación', 'actual', 'una frase de paso larga');
+  it('sin correo avisa de que la cuenta no se podrá recuperar', () => {
+    expect(seccion('Correo de recuperación').textContent).toContain('no se puede recuperar la cuenta');
+  });
 
-    await enviar('Código de recuperación');
+  it('guarda el correo con la contraseña y lo enseña pendiente de confirmar', async () => {
+    escribir('Correo de recuperación', 'Correo nuevo', ' ana@example.com ');
+    escribir('Correo de recuperación', 'actual', 'una frase de paso larga');
 
-    expect(sesion.nuevoCodigo).toHaveBeenCalledWith('una frase de paso larga');
-    expect(pantalla.textContent).toContain('ABCD-EFGH-JKMN-PQRS');
+    await enviar('Correo de recuperación');
+
+    expect(sesion.cambiarCorreo).toHaveBeenCalledWith('ana@example.com', 'una frase de paso larga');
+    expect(seccion('Correo de recuperación').textContent).toContain('Sin confirmar: ana@example.com');
   });
 
   it('al borrar la cuenta vuelve a la portada', async () => {

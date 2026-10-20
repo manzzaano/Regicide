@@ -57,10 +57,19 @@ class Intentos {
 
     /** Los registros tienen su propia cuenta por IP: crear cuentas no bloquea el login. */
     boolean registrar(String ip) {
-        if (agotados("registro:" + ip, porIp)) {
+        return permitir("registro:" + ip, porIp);
+    }
+
+    /** Como mucho 3 enlaces por nombre cada 15 minutos, para no llenar el buzón de nadie. */
+    boolean pedirEnlace(String nombre, String ip) {
+        return permitir("enlace:" + ip, porIp) & permitir("enlace:" + nombre, 3);
+    }
+
+    private boolean permitir(String clave, int limite) {
+        if (agotados(clave, limite)) {
             return false;
         }
-        sumar("registro:" + ip);
+        sumar(clave);
         return true;
     }
 
