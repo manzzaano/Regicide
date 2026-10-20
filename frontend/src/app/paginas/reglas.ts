@@ -639,6 +639,8 @@ const en: typeof es = {
         border-left: 0;
         border-bottom: 1px solid var(--linea);
         background: var(--fondo);
+        /* Se difumina por la derecha: así se ve que hay más pestañas al deslizar. */
+        mask-image: linear-gradient(90deg, #000 80%, transparent);
       }
       .indice a {
         flex: none;
@@ -653,6 +655,16 @@ const en: typeof es = {
       .jugadas,
       .palos {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+    @media (max-width: 420px) {
+      .palos {
+        grid-template-columns: 1fr;
+      }
+      .comodines .fila {
+        flex-direction: column;
+        align-items: start;
+        gap: 16px;
       }
     }
   `,

@@ -46,7 +46,7 @@
         @for (enemigo of estado.enemigo ? [estado.enemigo] : []; track enemigo.carta.palo + enemigo.carta.numero) {
           <app-carta class="carta-enemigo" [carta]="enemigo.carta" />
           <p class="nombre-enemigo">
-            {{ nombreCarta(enemigo.carta, idioma.actual()) }} · {{ enemigo.vida }} / {{ base(enemigo.carta).vida }}
+            {{ nombreCarta(enemigo.carta, idioma.actual()) }}<span class="vida-base"> · {{ enemigo.vida }} / {{ base(enemigo.carta).vida }}</span>
           </p>
         } @empty {
           <div class="carta-enemigo hueco"></div>
@@ -162,7 +162,7 @@
               <app-carta [carta]="carta" />
               @if (sinPoder(carta, estado)) {
                 <span class="cinta">
-                  {{ simbolos[carta.palo] }} {{ t().sinPoder }}
+                  {{ simbolos[carta.palo] }} <span class="texto-cinta">{{ t().sinPoder }}</span>
                   <span class="motivo">{{ t().motivo(nombrePalo(carta.palo, idioma.actual()).toLowerCase()) }}</span>
                 </span>
               }

@@ -413,9 +413,11 @@ dd {
   rotate: 5deg;
 }
 
-.comodines .carta:hover:not(:disabled) {
-  rotate: 0deg;
-  transform: translateY(-10px) scale(1.06);
+@media (hover: hover) {
+  .comodines .carta:hover:not(:disabled) {
+    rotate: 0deg;
+    transform: translateY(-10px) scale(1.06);
+  }
 }
 
 .giro {
@@ -555,26 +557,29 @@ dd {
   animation-delay: calc(var(--i, 0) * 45ms);
 }
 
-/* La que está bajo el ratón se endereza, crece y pasa por encima; las vecinas se apartan para dejarla ver. */
-.abanico-mano .carta:hover:not(:disabled) {
-  z-index: 20;
-  transform: translateY(calc(var(--ancho) * -0.12)) scale(1.15);
-}
+/* Solo con ratón: en el móvil el último toque dejaba la carta ampliada y las vecinas apartadas. */
+@media (hover: hover) {
+  /* La que está bajo el ratón se endereza, crece y pasa por encima; las vecinas se apartan para dejarla ver. */
+  .abanico-mano .carta:hover:not(:disabled) {
+    z-index: 20;
+    transform: translateY(calc(var(--ancho) * -0.12)) scale(1.15);
+  }
 
-.abanico-mano .carta:hover:not(:disabled) + .carta {
-  translate: calc(var(--ancho) * 0.18) 0;
-}
+  .abanico-mano .carta:hover:not(:disabled) + .carta {
+    translate: calc(var(--ancho) * 0.18) 0;
+  }
 
-.abanico-mano .carta:hover:not(:disabled) + .carta + .carta {
-  translate: calc(var(--ancho) * 0.08) 0;
-}
+  .abanico-mano .carta:hover:not(:disabled) + .carta + .carta {
+    translate: calc(var(--ancho) * 0.08) 0;
+  }
 
-.abanico-mano .carta:has(+ .carta:hover:not(:disabled)) {
-  translate: calc(var(--ancho) * -0.18) 0;
-}
+  .abanico-mano .carta:has(+ .carta:hover:not(:disabled)) {
+    translate: calc(var(--ancho) * -0.18) 0;
+  }
 
-.abanico-mano .carta:has(+ .carta + .carta:hover:not(:disabled)) {
-  translate: calc(var(--ancho) * -0.08) 0;
+  .abanico-mano .carta:has(+ .carta + .carta:hover:not(:disabled)) {
+    translate: calc(var(--ancho) * -0.08) 0;
+  }
 }
 
 .abanico-mano .carta:disabled {
@@ -706,9 +711,11 @@ dd {
   text-transform: none;
 }
 
-.sin-poder:hover .motivo {
-  display: block;
-  white-space: normal;
+@media (hover: hover) {
+  .sin-poder:hover .motivo {
+    display: block;
+    white-space: normal;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -926,17 +933,101 @@ dd {
   }
 }
 
+/* Móvil en horizontal: poca altura, así que el enemigo se mide por el alto. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .carta-enemigo {
+    width: clamp(90px, 34vh, 160px);
+  }
+}
+
 @media (max-width: 560px) {
   .mesa {
     grid-template-columns: 1fr;
     grid-template-areas: 'enemigo' 'centro' 'mano' 'comodines' 'mazos';
+    gap: 12px;
+  }
+  /* La vida ya está en grande al lado. */
+  .vida-base {
+    display: none;
+  }
+  .nombre-enemigo {
+    font-size: 11px;
+  }
+  /* Los botones debajo de la mano, al alcance del pulgar. */
+  .info {
+    order: 1;
+  }
+  /* Ocho cartas, con su giro, caben en el ancho sin quedar tan tapadas que no se puedan tocar. */
+  .abanico-mano {
+    --ancho: clamp(46px, calc((100vw - 32px) / 6), 84px);
+  }
+  /* En cartas tan estrechas la cinta se queda en el palo; el gris ya dice que no tiene poder. */
+  .cinta {
+    padding: 2px 6px;
+  }
+  /* Fuera de la vista, pero el lector de pantalla lo sigue leyendo. */
+  .texto-cinta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .mesa > .comodines,
+  .mesa > .mazos {
+    justify-self: stretch;
+    min-width: 0;
+  }
+  .comodines .fila {
+    justify-content: center;
+  }
+  /* Sin ratón no hay pista al pasar por encima: se queda siempre a la vista. */
+  .pista {
+    position: static;
+    margin-top: 10px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--texto-suave);
+    text-align: center;
+    white-space: normal;
+    opacity: 1;
+    translate: 0 0;
+  }
+  .mazos dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mazo {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    row-gap: 6px;
+  }
+  .pila,
+  .progreso,
+  dt .barra {
+    display: none;
+  }
+  dt {
+    font-size: 10px;
+    letter-spacing: 0.04em;
   }
   .castillo li {
     width: min(20px, 5.6vw);
     font-size: 11px;
   }
-  /* Con 8 cartas de 64px, el solape normal no cabe en 360px. */
-  .abanico-mano .carta {
-    margin-inline: calc(var(--ancho) * -0.3);
+}
+
+/* Los móviles más estrechos: el enemigo y sus dos cifras en 320px. */
+@media (max-width: 360px) {
+  .enemigo {
+    gap: 8px;
+  }
+  .dato {
+    min-width: 64px;
+  }
+  .carta-enemigo {
+    width: 104px;
   }
 }

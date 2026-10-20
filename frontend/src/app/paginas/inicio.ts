@@ -27,6 +27,8 @@ const es = {
   guarda: 'Guarda tu partida y entra en la clasificación.',
   entrar: 'Entrar o crear cuenta',
   privacidad: 'Privacidad · sin cookies',
+  hechoPor: 'Hecho por',
+  codigo: 'Código en GitHub',
   otroIdioma: 'English',
 };
 const en: typeof es = {
@@ -52,6 +54,8 @@ const en: typeof es = {
   guarda: 'Save your game and get on the leaderboard.',
   entrar: 'Sign in or create an account',
   privacidad: 'Privacy · no cookies',
+  hechoPor: 'Made by',
+  codigo: 'Code on GitHub',
   otroIdioma: 'Español',
 };
 
@@ -110,6 +114,10 @@ const en: typeof es = {
               {{ t().otroIdioma }}
             </button>
           </span>
+          <p class="autoria">
+            {{ t().hechoPor }} <a href="https://leosoftware.dev">Ismael Manzano León</a> ·
+            <a href="https://github.com/manzzaano/Regicide">{{ t().codigo }}</a>
+          </p>
         </div>
       </section>
     </main>
@@ -321,6 +329,10 @@ const en: typeof es = {
       justify-content: space-between;
       gap: 1em;
     }
+    .panel .autoria a {
+      color: inherit;
+      font-size: inherit;
+    }
     .privacidad {
       padding: 0;
       border: 0;
@@ -350,6 +362,26 @@ const en: typeof es = {
       }
       .palos {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      /* En el móvil el panel con Jugar va justo después del texto, antes de los palos. */
+      .inicio {
+        row-gap: 0;
+        justify-items: start;
+      }
+      .portada {
+        display: contents;
+      }
+      .palos {
+        order: 1;
+        justify-self: stretch;
+        margin-top: 2em;
+      }
+      .panel {
+        justify-self: stretch;
+        margin-top: 2em;
+      }
+      .abanico {
+        margin: 0.8em 0 1.2em 1.8em;
       }
     }
     @keyframes abrir {
