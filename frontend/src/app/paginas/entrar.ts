@@ -1,10 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
+import { CodigoRecuperacion } from '../codigo-recuperacion';
 import { Menu } from '../menu';
 import { Sesion } from '../sesion';
 
-function mensajeDeError(error: unknown): string {
+export function mensajeDeError(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) {
       return 'No se ha podido conectar con el servidor';
@@ -16,76 +17,105 @@ function mensajeDeError(error: unknown): string {
   return 'Algo ha fallado. Inténtalo de nuevo.';
 }
 
+type Modo = 'entrar' | 'crear' | 'recuperar';
+
 @Component({
   selector: 'app-entrar',
-  imports: [Menu, RouterLink],
+  imports: [CodigoRecuperacion, Menu, RouterLink],
   template: `
     <app-menu />
     <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
     <main class="entrar">
       <section class="panel">
         <div class="pestanas" role="group" aria-label="Elige una opción">
-          <button type="button" [attr.aria-pressed]="!creando()" (click)="cambiar(false)">Entrar</button>
-          <button type="button" [attr.aria-pressed]="creando()" (click)="cambiar(true)">Crear cuenta</button>
+          <button type="button" [attr.aria-pressed]="modo() === 'entrar'" (click)="cambiar('entrar')">Entrar</button>
+          <button type="button" [attr.aria-pressed]="modo() === 'crear'" (click)="cambiar('crear')">Crear cuenta</button>
         </div>
-        <h1>{{ creando() ? 'Crea tu cuenta' : 'Entra con tu cuenta' }}</h1>
-        <p class="ayuda">
-          {{ creando() ? 'Solo un nombre y una contraseña, sin correo.' : 'Sigue la partida donde la dejaste.' }}
-        </p>
+        <h1>{{ titulo() }}</h1>
 
-        <form (submit)="enviar($event)">
-          <label>
-            Nombre
-            <input
-              class="campo"
-              name="nombre"
-              autocomplete="username"
-              required
-              [attr.pattern]="creando() ? '[A-Za-z0-9_]{3,20}' : null"
-              maxlength="20"
-              [value]="nombre()"
-              (input)="nombre.set($any($event.target).value)"
-            />
-          </label>
-          @if (creando()) {
-            <p class="pista">De 3 a 20 letras sin tildes, números o guiones bajos.</p>
-          }
-          <label>
-            Contraseña
-            <!-- El campo va antes que el botón para que siga siendo el control de la etiqueta. -->
-            <span class="clave">
+        @if (codigo(); as codigo) {
+          <app-codigo-recuperacion [codigo]="codigo" (guardado)="continuar()" />
+        } @else {
+          <p class="ayuda">{{ ayuda() }}</p>
+          <form (submit)="enviar($event)">
+            <label>
+              Nombre
               <input
                 class="campo"
-                name="contrasena"
-                [type]="visible() ? 'text' : 'password'"
-                [attr.autocomplete]="creando() ? 'new-password' : 'current-password'"
+                name="nombre"
+                autocomplete="username"
                 required
-                [attr.minlength]="creando() ? 8 : null"
-                maxlength="72"
-                [value]="contrasena()"
-                (input)="contrasena.set($any($event.target).value)"
+                [attr.pattern]="modo() === 'crear' ? '[A-Za-z0-9_]{3,20}' : null"
+                maxlength="20"
+                [value]="nombre()"
+                (input)="nombre.set($any($event.target).value)"
               />
-              <button type="button" class="ver" [attr.aria-pressed]="visible()" (click)="visible.set(!visible())">
-                {{ visible() ? 'Ocultar' : 'Mostrar' }}
+            </label>
+            @if (modo() === 'crear') {
+              <p class="pista">De 3 a 20 letras sin tildes, números o guiones bajos.</p>
+            }
+            @if (modo() === 'recuperar') {
+              <label>
+                Código de recuperación
+                <input
+                  class="campo codigo"
+                  name="codigo"
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                  maxlength="24"
+                  placeholder="XXXX-XXXX-XXXX-XXXX"
+                  [value]="codigoEscrito()"
+                  (input)="codigoEscrito.set($any($event.target).value)"
+                />
+              </label>
+            }
+            <label>
+              {{ modo() === 'recuperar' ? 'Contraseña nueva' : 'Contraseña' }}
+              <!-- El campo va antes que el botón para que siga siendo el control de la etiqueta. -->
+              <span class="clave">
+                <input
+                  class="campo"
+                  name="contrasena"
+                  [type]="visible() ? 'text' : 'password'"
+                  [attr.autocomplete]="modo() === 'entrar' ? 'current-password' : 'new-password'"
+                  required
+                  [attr.minlength]="modo() === 'entrar' ? null : 15"
+                  maxlength="128"
+                  [value]="contrasena()"
+                  (input)="contrasena.set($any($event.target).value)"
+                />
+                <button type="button" class="ver" [attr.aria-pressed]="visible()" (click)="visible.set(!visible())">
+                  {{ visible() ? 'Ocultar' : 'Mostrar' }}
+                </button>
+              </span>
+            </label>
+            @if (modo() !== 'entrar') {
+              <p class="pista">De 15 a 128 caracteres. Mejor una frase que recuerdes, como cuatro palabras al azar.</p>
+            }
+
+            @if (error(); as error) {
+              <p class="error" role="alert">{{ error }}</p>
+            }
+
+            <button class="boton-principal enviar" type="submit" [disabled]="enviando()">
+              {{ boton() }} <span aria-hidden="true">→</span>
+            </button>
+          </form>
+
+          <div class="pie">
+            @if (modo() === 'recuperar') {
+              <button type="button" class="enlace" (click)="cambiar('entrar')">
+                <span aria-hidden="true">←</span> Volver a entrar
               </button>
-            </span>
-          </label>
-          @if (creando()) {
-            <p class="pista">Al menos 8 caracteres.</p>
-          }
-
-          @if (error(); as error) {
-            <p class="error" role="alert">{{ error }}</p>
-          }
-
-          <button class="boton-principal enviar" type="submit" [disabled]="enviando()">
-            {{ creando() ? 'Crear cuenta' : 'Entrar' }} <span aria-hidden="true">→</span>
-          </button>
-        </form>
-
-        <div class="pie">
-          <a class="enlace" routerLink="/partida">Seguir como invitado <span aria-hidden="true">→</span></a>
-        </div>
+            } @else {
+              @if (modo() === 'entrar') {
+                <button type="button" class="enlace" (click)="cambiar('recuperar')">¿Has olvidado la contraseña?</button>
+              }
+              <a class="enlace" routerLink="/partida">Seguir como invitado <span aria-hidden="true">→</span></a>
+            }
+          </div>
+        }
       </section>
     </main>
   `,
@@ -211,14 +241,26 @@ function mensajeDeError(error: unknown): string {
       transform: translateX(4px);
     }
     .pie {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.6em 1em;
       margin-top: 1.2em;
       padding-top: 1em;
       border-top: 1px solid var(--linea);
     }
     .enlace {
+      padding: 0;
+      border: 0;
+      background: none;
       color: var(--rojo);
-      font-weight: 600;
+      font: 600 1em var(--sans);
       text-decoration: none;
+      cursor: pointer;
+    }
+    .codigo {
+      font-family: var(--mono);
+      letter-spacing: 0.06em;
     }
   `,
 })
@@ -226,31 +268,83 @@ export class Entrar {
   private readonly sesion = inject(Sesion);
   private readonly router = inject(Router);
 
-  protected readonly creando = signal(false);
+  protected readonly modo = signal<Modo>('entrar');
   protected readonly nombre = signal('');
   protected readonly contrasena = signal('');
+  protected readonly codigoEscrito = signal('');
   protected readonly error = signal<string | null>(null);
   protected readonly enviando = signal(false);
   protected readonly visible = signal(false);
+  /** El código de recuperación nuevo, tras crear la cuenta o recuperarla. */
+  protected readonly codigo = signal<string | null>(null);
+  private readonly recienRecuperada = signal(false);
 
-  protected cambiar(creando: boolean): void {
-    this.creando.set(creando);
+  protected readonly titulo = computed(() => {
+    const titulos = this.codigo()
+      ? { entrar: '', crear: 'Cuenta creada', recuperar: 'Contraseña cambiada' }
+      : { entrar: 'Entra con tu cuenta', crear: 'Crea tu cuenta', recuperar: 'Recupera tu cuenta' };
+    return titulos[this.modo()];
+  });
+  protected readonly ayuda = computed(() => {
+    switch (this.modo()) {
+      case 'crear':
+        return 'Solo un nombre y una contraseña, sin correo.';
+      case 'recuperar':
+        return 'Con el código que guardaste al crear la cuenta.';
+      default:
+        return this.recienRecuperada() ? 'Ya puedes entrar con tu contraseña nueva.' : 'Sigue la partida donde la dejaste.';
+    }
+  });
+  protected readonly boton = computed(() => ({ entrar: 'Entrar', crear: 'Crear cuenta', recuperar: 'Cambiar contraseña' })[this.modo()]);
+
+  protected cambiar(modo: Modo): void {
+    this.modo.set(modo);
     this.error.set(null);
+    this.recienRecuperada.set(false);
   }
 
   protected enviar(evento: Event): void {
     evento.preventDefault();
     this.enviando.set(true);
     this.error.set(null);
-    const peticion = this.creando()
-      ? this.sesion.registrarse(this.nombre(), this.contrasena())
-      : this.sesion.entrar(this.nombre(), this.contrasena());
-    peticion.subscribe({
-      next: () => void this.router.navigateByUrl('/partida'),
+    const terminar = {
       error: (error: unknown) => {
         this.error.set(mensajeDeError(error));
         this.enviando.set(false);
       },
-    });
+    };
+    switch (this.modo()) {
+      case 'entrar':
+        this.sesion.entrar(this.nombre(), this.contrasena()).subscribe({
+          ...terminar,
+          next: () => void this.router.navigateByUrl('/partida'),
+        });
+        break;
+      case 'crear':
+        this.sesion.registrarse(this.nombre(), this.contrasena()).subscribe({ ...terminar, next: (codigo) => this.mostrar(codigo) });
+        break;
+      case 'recuperar':
+        this.sesion
+          .recuperar(this.nombre(), this.codigoEscrito(), this.contrasena())
+          .subscribe({ ...terminar, next: (codigo) => this.mostrar(codigo) });
+    }
+  }
+
+  /** Tras guardar el código: a jugar si acaba de crear la cuenta, o a entrar con la contraseña nueva. */
+  protected continuar(): void {
+    this.codigo.set(null);
+    if (this.modo() === 'crear') {
+      void this.router.navigateByUrl('/partida');
+      return;
+    }
+    this.contrasena.set('');
+    this.codigoEscrito.set('');
+    this.modo.set('entrar');
+    this.recienRecuperada.set(true);
+  }
+
+  private mostrar(codigo: string): void {
+    this.codigo.set(codigo);
+    this.enviando.set(false);
   }
 }

@@ -1,4 +1,6 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
+import { Sesion } from './sesion';
 
 export const routes: Routes = [
   { path: '', title: 'REGICIDE - Modo Solitario', loadComponent: () => import('./paginas/inicio').then((m) => m.Inicio) },
@@ -10,5 +12,11 @@ export const routes: Routes = [
     loadComponent: () => import('./paginas/clasificacion').then((m) => m.Clasificacion),
   },
   { path: 'entrar', title: 'Entrar · REGICIDE', loadComponent: () => import('./paginas/entrar').then((m) => m.Entrar) },
+  {
+    path: 'cuenta',
+    title: 'Tu cuenta · REGICIDE',
+    canActivate: [() => inject(Sesion).nombre() !== null || inject(Router).parseUrl('/entrar')],
+    loadComponent: () => import('./paginas/cuenta').then((m) => m.Cuenta),
+  },
   { path: '**', redirectTo: '' },
 ];

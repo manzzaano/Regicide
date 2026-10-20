@@ -68,6 +68,16 @@ class PartidaConCuentaTest {
     }
 
     @Test
+    void losSimuladosVanDePrincipianteANivelMedioSinVictorias() throws Exception {
+        List<Map<String, Object>> simulados = lista(api.get("/api/leaderboard", null).cuerpo()).stream()
+                .filter(puesto -> Boolean.TRUE.equals(puesto.get("simulado")))
+                .toList();
+
+        assertThat(simulados).extracting(puesto -> puesto.get("mejorPartida")).containsExactly(6, 5, 4, 2, 1, 0);
+        assertThat(simulados).allSatisfy(puesto -> assertThat(puesto).containsEntry("victorias", 0));
+    }
+
+    @Test
     void unaPartidaAMediasSeRetomaDespuesDeDesconectarse() throws Exception {
         Jugador ana = api.registrarJugadorNuevo();
         EstadoPartida antes;
@@ -121,6 +131,20 @@ class PartidaConCuentaTest {
     @Test
     void conUnTokenFalsoElServidorRechazaLaConexion() {
         assertThatThrownBy(() -> new ClienteStomp(puerto, "token-falso")).isInstanceOf(ExecutionException.class);
+    }
+
+    @Test
+    void alCerrarLaSesionLaConexionAbiertaDejaDeAdmitirJugadas() throws Exception {
+        Jugador ana = api.registrarJugadorNuevo();
+        try (ClienteStomp jugador = new ClienteStomp(puerto, ana.token())) {
+            jugador.enviar("empezar");
+            jugador.estado();
+
+            api.post("/api/auth/salir", "{}", ana.token());
+            jugador.enviar("atacar", "{\"cartas\":[0]}");
+
+            assertThat(jugador.cerradaPorElServidor()).isTrue();
+        }
     }
 
     private static boolean terminada(EstadoPartida estado) {

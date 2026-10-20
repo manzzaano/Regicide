@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Lee el JWT de la cabecera Authorization del CONNECT de STOMP. Sin cabecera, el jugador entra
- * como invitado; con un token caducado o falso, el decoder lanza una excepción y Spring cierra
- * la conexión con un frame de error.
+ * como invitado; con un token caducado, falso o de una sesión cerrada, el decoder lanza una
+ * excepción y Spring responde con un frame de error.
  */
 @Component
 class AutenticacionStomp implements ChannelInterceptor {
@@ -29,7 +29,16 @@ class AutenticacionStomp implements ChannelInterceptor {
     @Override
     public Message<?> preSend(Message<?> mensaje, MessageChannel canal) {
         StompHeaderAccessor cabeceras = MessageHeaderAccessor.getAccessor(mensaje, StompHeaderAccessor.class);
-        if (cabeceras == null || cabeceras.getCommand() != StompCommand.CONNECT) {
+        if (cabeceras == null) {
+            return mensaje;
+        }
+        // Cada jugada vuelve a validar el token: si caduca o se cierra la sesión desde otro
+        // dispositivo, la conexión abierta tampoco sirve.
+        if (cabeceras.getCommand() == StompCommand.SEND && cabeceras.getUser() instanceof JwtAuthenticationToken token) {
+            decoder.decode(token.getToken().getTokenValue());
+            return mensaje;
+        }
+        if (cabeceras.getCommand() != StompCommand.CONNECT) {
             return mensaje;
         }
         String autorizacion = cabeceras.getFirstNativeHeader("Authorization");

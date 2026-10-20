@@ -28,22 +28,61 @@ describe('Sesion', () => {
     const sesion = crear();
     const token = tokenDePrueba('ana');
 
-    sesion.entrar('ana', 'contrasena-segura').subscribe();
+    sesion.entrar('ana', 'una frase de paso larga').subscribe();
     const peticion = http.expectOne('/api/auth/login');
-    expect(peticion.request.body).toEqual({ nombre: 'ana', contrasena: 'contrasena-segura' });
+    expect(peticion.request.body).toEqual({ nombre: 'ana', contrasena: 'una frase de paso larga' });
     peticion.flush({ token });
 
     expect(sesion.nombre()).toBe('ana');
     expect(localStorage.getItem('token')).toBe(token);
   });
 
-  it('al registrarse también queda con la sesión iniciada', () => {
+  it('al registrarse queda con la sesión iniciada y recibe el código de recuperación', () => {
     const sesion = crear();
+    let codigo = '';
 
-    sesion.registrarse('ana', 'contrasena-segura').subscribe();
-    http.expectOne('/api/auth/register').flush({ token: tokenDePrueba('ana') }, { status: 201, statusText: 'Created' });
+    sesion.registrarse('ana', 'una frase de paso larga').subscribe((c) => (codigo = c));
+    http
+      .expectOne('/api/auth/register')
+      .flush({ token: tokenDePrueba('ana'), codigoRecuperacion: 'ABCD-EFGH-JKMN-PQRS' }, { status: 201, statusText: 'Created' });
 
     expect(sesion.nombre()).toBe('ana');
+    expect(codigo).toBe('ABCD-EFGH-JKMN-PQRS');
+  });
+
+  it('recuperar la contraseña no inicia sesión', () => {
+    const sesion = crear();
+    let codigo = '';
+
+    sesion.recuperar('ana', 'ABCD-EFGH-JKMN-PQRS', 'una frase de paso larga').subscribe((c) => (codigo = c));
+    const peticion = http.expectOne('/api/auth/recuperar');
+    expect(peticion.request.body).toEqual({ nombre: 'ana', codigo: 'ABCD-EFGH-JKMN-PQRS', nueva: 'una frase de paso larga' });
+    peticion.flush({ codigoRecuperacion: 'TVWX-YZ01-2345-6789' });
+
+    expect(codigo).toBe('TVWX-YZ01-2345-6789');
+    expect(sesion.nombre()).toBeNull();
+  });
+
+  it('al cambiar la contraseña se queda con el token nuevo', () => {
+    localStorage.setItem('token', tokenDePrueba('ana'));
+    const sesion = crear();
+    const nuevo = tokenDePrueba('ana', 7200);
+
+    sesion.cambiarContrasena('una frase de paso larga', 'otra frase de paso larga').subscribe();
+    http.expectOne('/api/auth/contrasena').flush({ token: nuevo });
+
+    expect(sesion.token()).toBe(nuevo);
+    expect(localStorage.getItem('token')).toBe(nuevo);
+  });
+
+  it('al borrar la cuenta olvida el token', () => {
+    localStorage.setItem('token', tokenDePrueba('ana'));
+    const sesion = crear();
+
+    sesion.borrarCuenta('una frase de paso larga').subscribe();
+    http.expectOne('/api/auth/borrar').flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(sesion.nombre()).toBeNull();
   });
 
   it('recupera la sesión guardada al recargar la página', () => {
@@ -65,13 +104,25 @@ describe('Sesion', () => {
     expect(crear().nombre()).toBeNull();
   });
 
-  it('al salir borra el token', () => {
+  it('al salir avisa al servidor y luego borra el token', () => {
     localStorage.setItem('token', tokenDePrueba('ana'));
     const sesion = crear();
 
     sesion.salir();
+    expect(sesion.nombre()).toBe('ana');
+    http.expectOne('/api/auth/salir').flush(null, { status: 204, statusText: 'No Content' });
 
     expect(sesion.nombre()).toBeNull();
     expect(localStorage.getItem('token')).toBeNull();
+  });
+
+  it('borra el token aunque el servidor no responda al salir', () => {
+    localStorage.setItem('token', tokenDePrueba('ana'));
+    const sesion = crear();
+
+    sesion.salir();
+    http.expectOne('/api/auth/salir').error(new ProgressEvent('error'));
+
+    expect(sesion.nombre()).toBeNull();
   });
 });

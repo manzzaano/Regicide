@@ -127,7 +127,7 @@ import { Sesion } from '../sesion';
               </div>
               @if (haySimulados(puestos)) {
                 <p class="nota-simulados">
-                  <span class="marca-simulado">simulado</span> Jugadores de ejemplo sin ningún enemigo derrotado, para que tengas
+                  <span class="marca-simulado">simulado</span> Jugadores de ejemplo, de principiante a nivel medio, para que tengas
                   con quién medirte. Supéralos.
                 </p>
               }

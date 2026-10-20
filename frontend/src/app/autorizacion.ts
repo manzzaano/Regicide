@@ -13,7 +13,7 @@ export const autorizacion: HttpInterceptorFn = (peticion, siguiente) => {
   return siguiente(peticion.clone({ setHeaders: { Authorization: `Bearer ${token}` } })).pipe(
     catchError((error: unknown) => {
       if (error instanceof HttpErrorResponse && error.status === 401) {
-        sesion.salir();
+        sesion.olvidar();
       }
       return throwError(() => error);
     }),

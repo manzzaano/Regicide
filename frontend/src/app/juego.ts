@@ -124,7 +124,7 @@ export class Juego {
   // El servidor contesta con un frame ERROR si el token ha caducado o no es válido.
   private alRechazarLaConexion(): void {
     if (this.sesion.token()) {
-      this.sesion.salir();
+      this.sesion.olvidar();
     } else {
       this.error.set('No se ha podido conectar con el servidor');
     }

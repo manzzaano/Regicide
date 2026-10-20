@@ -58,7 +58,7 @@ flowchart LR
 | Esquema de base de datos con migraciones de Flyway | Cada cambio de tablas queda versionado | `ddl-auto: update` |
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
 | La interfaz solo tiene modo oscuro | Sigue la estética de mi portfolio y con un único tema es más fácil cuidar el contraste: el texto, el gris secundario y el rojo pasan de 4,5:1 (AA) sobre el fondo y las cajas | Un modo claro que habría que mantener y comprobar dos veces |
-| Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse; todos tienen 0 enemigos derrotados, así que cualquiera los supera, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
+| Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse. Su mejor partida va de 0 a 6 enemigos derrotados, sin victorias (migración `V4`), así que superarlos a todos pide pasar de la mitad del castillo, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
 | Todo en una máquina virtual gratuita de Oracle Cloud, con el mismo Docker Compose y Caddy delante | El servidor está siempre encendido, la base de datos no caduca y la web y la API comparten dominio, así que el WebSocket no cruza orígenes | Planes gratuitos que duermen el servidor sin visitas o borran la base de datos pasado un tiempo, y el frontend en Vercel con la API en otro dominio |
 
 ## Versiones
@@ -80,6 +80,7 @@ flowchart LR
 | 4 | Frontend en Angular | Terminada |
 | 5 | Docker Compose y CI | Terminada |
 | 6 | Publicación | Terminada |
+| 7 | Seguridad de las cuentas | Terminada |
 
 Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
 
@@ -166,6 +167,45 @@ Terminada cuando `docker compose up --build` levanta el sistema desde cero y el 
 Terminada cuando se puede jugar desde la URL publicada.
 
 **Resultado.** Se juega en [regicide.leosoftware.dev](https://regicide.leosoftware.dev). Comparé Render, Koyeb, Railway, Fly.io, Cloud Run, Neon, Supabase y Oracle Cloud. Los planes gratuitos de plataforma o duermen el servidor tras unos minutos sin visitas, y la partida por WebSocket se corta y tarda en volver, o limitan la base de datos en tiempo o en horas, o son créditos de prueba. Me quedé con una máquina Always Free de Oracle Cloud en Frankfurt (ARM, 2 núcleos y 12 GB) que ejecuta el mismo Docker Compose de la fase 5. Por eso cambié el punto 2 del plan: con el frontend en Vercel, la API y el WebSocket habrían estado en otro dominio, con CORS y orígenes cruzados, mientras que así nginx sigue sirviendo todo desde un único origen. `docker-compose.prod.yml` añade Caddy, que pide y renueva el certificado HTTPS de Let's Encrypt y redirige HTTP a HTTPS; deja el frontend sin puerto propio, limita el origen permitido al dominio publicado y reinicia los contenedores si se caen o si se reinicia la máquina. Los secretos se generaron en el propio servidor y no salen de su `.env`. En producción, el cliente STOMP de la fase 4 pasó 34 de los 35 casos; el que falla es el origen `localhost:4200`, que en producción ya no se admite. Chrome sin ventana jugó una partida completa desde la interfaz, y tras reiniciar la máquina la web volvió sola en menos de un minuto. Al fusionar la fase 5, el CI de `master` encontró un test que fallaba según el reparto: si la primera carta era el 10 de Tréboles, mataba a la sota justo y vaciaba las cartas jugadas que el test esperaba. Ahora ataca con la carta más baja. El despliegue es manual (`git pull` y `docker compose up -d --build` en el servidor), y Oracle puede recuperar una máquina gratuita si pasa una semana casi sin uso.
+
+### Fase 7. Seguridad de las cuentas
+
+Con la web publicada, repasé las cuentas frente al nivel 1 de OWASP ASVS 5.0 (y lo que del nivel 2 cuesta poco) y la guía de contraseñas del NIST (SP 800-63B, revisión 4), a la escala de un juego: sin correo, sin datos personales y con un solo servidor.
+
+1. Contraseñas según el NIST y cifradas con Argon2.
+2. Límite de intentos en el login y en la recuperación.
+3. Cerrar sesión de verdad: que un token deje de valer antes de caducar.
+4. Recuperar la cuenta sin correo.
+5. Cambiar la contraseña y borrar la cuenta.
+6. Cabeceras de seguridad en la web.
+
+Terminada cuando cada punto tiene su test y la web funciona con la política de contenido activada.
+
+**Resultado.**
+
+| Requisito | Cómo se cumple |
+|---|---|
+| Contraseñas de al menos 15 caracteres, hasta 128, sin reglas de composición (ASVS 6.2.1, 6.2.5; NIST) | Se cuentan caracteres, no bytes, así que las tildes y los emojis valen uno. La pista de la pantalla sugiere una frase |
+| Sin recortar la contraseña (ASVS 6.2.8) | BCrypt solo usaba los primeros 72 bytes; Argon2id no tiene ese límite |
+| Ni el nombre ni contraseñas filtradas (ASVS 6.2.4, 6.2.12; NIST) | Se comprueba contra Have I Been Pwned con k-anonimato: solo salen 5 caracteres del SHA-1 |
+| Cifrado lento y con sal (OWASP) | Argon2id con los parámetros mínimos de OWASP (19 MiB, 2 pasadas). Las contraseñas en BCrypt siguen valiendo y se pasan a Argon2 cuando su dueño entra |
+| Pegar y usar gestores de contraseñas (ASVS 6.2.7) | Los campos llevan `autocomplete` y el botón de mostrar |
+| Frenar los ataques a ciegas (ASVS 6.1.1, 6.3.1) | 10 fallos por nombre y 30 por IP cada 15 minutos, en el login, la recuperación y la contraseña actual. Al pasarse, 429 |
+| No delatar qué nombres existen (OWASP) | Mismo mensaje y mismo tiempo: con un nombre que no existe se compara contra un hash de relleno. El registro sí dice que el nombre está ocupado, porque los nombres ya se ven en la clasificación |
+| Cerrar sesión invalida el token (ASVS 7.4.1) | Cada token lleva la versión de sesión del usuario; salir la sube y todos los tokens anteriores, en cualquier dispositivo, dejan de valer. El WebSocket lo vuelve a comprobar en cada jugada |
+| Cambiar la contraseña pide la actual y cierra las demás sesiones (ASVS 6.2.2, 6.2.3, 7.4.3) | El dispositivo que la cambia recibe un token nuevo |
+| Borrar la cuenta (ASVS 7.4.2) | Pide la contraseña y borra en cascada las partidas |
+| Recuperar sin preguntas secretas (ASVS 6.4.2; NIST, códigos guardados) | Al registrarse, el jugador recibe un código de 80 bits que solo se muestra una vez. El servidor guarda su SHA-256, se gasta al usarlo, se emite otro y no inicia sesión |
+| Cabeceras de seguridad | nginx envía una política de contenido que solo admite scripts propios y prohíbe los iframes, `nosniff`, `no-referrer` y `Permissions-Policy`; Caddy añade HSTS. El build ya no mete en el HTML el script que cargaba el CSS crítico, que la política habría bloqueado |
+
+Lo que dejo fuera, a propósito:
+
+- **Correo.** Pedirlo sería guardar un dato personal y depender de un servicio de envío. Por eso el NIST pide avisar de una recuperación y aquí no hay a quién: el código de recuperación sustituye al correo.
+- **Cookie `HttpOnly` en vez de `localStorage`.** Obligaría a añadir CSRF y a cambiar la conexión STOMP. Lo compensan la política de contenido, que no deja ejecutar scripts ajenos, y que un token robado se puede revocar.
+- **Have I Been Pwned caído.** Si no responde en 3 segundos, la contraseña se da por buena: un servicio externo no puede impedir registrarse.
+- **Límite en memoria.** Se pierde al reiniciar y solo vale con un backend, que es lo que hay.
+
+Los tokens emitidos antes de esta fase no llevan versión de sesión y dejan de valer: hay que volver a entrar una vez. El backend suma 19 tests de cuentas y seguridad (134 en total) y el frontend 9 (54).
 
 ## Reglas: cambios respecto a v1
 

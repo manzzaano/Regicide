@@ -16,10 +16,11 @@ import { Sesion } from './sesion';
         </nav>
         <div class="acciones">
           <ng-content />
-          <span class="jugador">{{ sesion.nombre() ?? 'invitado' }}</span>
-          @if (sesion.nombre()) {
+          @if (sesion.nombre(); as nombre) {
+            <a class="jugador" routerLink="/cuenta" title="Tu cuenta">{{ nombre }}</a>
             <button type="button" class="enlace" (click)="sesion.salir()">Salir</button>
           } @else {
+            <span class="jugador">invitado</span>
             <a class="enlace" routerLink="/entrar" routerLinkActive="activo" ariaCurrentWhenActive="page">Entrar</a>
           }
         </div>
@@ -104,7 +105,11 @@ import { Sesion } from './sesion';
       font-family: var(--mono);
       font-size: 13px;
       letter-spacing: 0.15em;
+      text-decoration: none;
       text-transform: uppercase;
+    }
+    a.jugador:hover {
+      border-color: var(--rojo);
     }
     @media (max-width: 560px) {
       .acciones {

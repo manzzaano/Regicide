@@ -50,6 +50,7 @@ import { Sesion } from '../sesion';
         </div>
         <div class="pie">
           @if (sesion.nombre()) {
+            <a class="enlace" routerLink="/cuenta">Tu cuenta <span aria-hidden="true">→</span></a>
             <button type="button" class="enlace" (click)="sesion.salir()">Salir <span aria-hidden="true">→</span></button>
           } @else {
             <p>Guarda tu partida y entra en la clasificación.</p>

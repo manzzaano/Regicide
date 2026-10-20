@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, finalize, map } from 'rxjs';
 
 const CLAVE = 'token';
 
@@ -38,25 +38,64 @@ export class Sesion {
   });
 
   entrar(nombre: string, contrasena: string): Observable<void> {
-    return this.pedirToken('/api/auth/login', nombre, contrasena);
+    return this.http
+      .post<{ token: string }>('/api/auth/login', { nombre, contrasena })
+      .pipe(map(({ token }) => this.guardar(token)));
   }
 
-  registrarse(nombre: string, contrasena: string): Observable<void> {
-    return this.pedirToken('/api/auth/register', nombre, contrasena);
+  /** Crea la cuenta, deja la sesión iniciada y devuelve el código de recuperación, que solo se ve esta vez. */
+  registrarse(nombre: string, contrasena: string): Observable<string> {
+    return this.http
+      .post<{ token: string; codigoRecuperacion: string }>('/api/auth/register', { nombre, contrasena })
+      .pipe(
+        map(({ token, codigoRecuperacion }) => {
+          this.guardar(token);
+          return codigoRecuperacion;
+        }),
+      );
   }
 
+  /** Pone una contraseña nueva con el código de recuperación; devuelve otro código y no inicia sesión. */
+  recuperar(nombre: string, codigo: string, nueva: string): Observable<string> {
+    return this.http
+      .post<{ codigoRecuperacion: string }>('/api/auth/recuperar', { nombre, codigo, nueva })
+      .pipe(map(({ codigoRecuperacion }) => codigoRecuperacion));
+  }
+
+  /** Las demás sesiones se cierran; esta sigue con el token nuevo que manda el servidor. */
+  cambiarContrasena(actual: string, nueva: string): Observable<void> {
+    return this.http
+      .post<{ token: string }>('/api/auth/contrasena', { actual, nueva })
+      .pipe(map(({ token }) => this.guardar(token)));
+  }
+
+  nuevoCodigo(contrasena: string): Observable<string> {
+    return this.http
+      .post<{ codigoRecuperacion: string }>('/api/auth/codigo', { contrasena })
+      .pipe(map(({ codigoRecuperacion }) => codigoRecuperacion));
+  }
+
+  borrarCuenta(contrasena: string): Observable<void> {
+    return this.http.post<void>('/api/auth/borrar', { contrasena }).pipe(map(() => this.olvidar()));
+  }
+
+  /** Cierra la sesión en el servidor, en todos los dispositivos, y luego en este navegador. */
   salir(): void {
+    this.http
+      .post<void>('/api/auth/salir', {})
+      .pipe(finalize(() => this.olvidar()))
+      .subscribe({ error: () => {} });
+  }
+
+  /** Solo en este navegador: para cuando el servidor ya ha rechazado el token. */
+  olvidar(): void {
     localStorage.removeItem(CLAVE);
     this.token.set(null);
   }
 
-  private pedirToken(ruta: string, nombre: string, contrasena: string): Observable<void> {
-    return this.http.post<{ token: string }>(ruta, { nombre, contrasena }).pipe(
-      map(({ token }) => {
-        localStorage.setItem(CLAVE, token);
-        this.token.set(token);
-      }),
-    );
+  private guardar(token: string): void {
+    localStorage.setItem(CLAVE, token);
+    this.token.set(token);
   }
 
   private static tokenGuardado(): string | null {
