@@ -25,6 +25,8 @@ export interface PuestoEnClasificacion {
   victorias: number;
   partidas: number;
   mejorPartida: number;
+  /** Jugador de ejemplo que trae la base de datos; no es una cuenta real. */
+  simulado: boolean;
 }
 
 export interface ResumenPartida {

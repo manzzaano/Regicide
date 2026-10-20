@@ -54,7 +54,10 @@ import { Sesion } from '../sesion';
         </ol>
 
         <form method="dialog" class="pie-dialogo">
-          <p>Se muestran los 20 primeros y tus 50 últimas partidas.</p>
+          <p>
+            Se muestran los 20 primeros y tus 50 últimas partidas. Los marcados como simulados son jugadores de
+            ejemplo.
+          </p>
           <button class="boton-principal">Entendido</button>
         </form>
       </dialog>
@@ -106,9 +109,14 @@ import { Sesion } from '../sesion';
                   </thead>
                   <tbody>
                     @for (puesto of puestos; track puesto.nombre; let i = $index) {
-                      <tr [class.tuyo]="puesto.nombre === sesion.nombre()">
+                      <tr [class.tuyo]="puesto.nombre === sesion.nombre()" [class.simulado]="puesto.simulado">
                         <td><span class="puesto" [class.podio]="i < 3" [class.primero]="i === 0">{{ i + 1 }}</span></td>
-                        <th scope="row">{{ puesto.nombre }}</th>
+                        <th scope="row">
+                          {{ puesto.nombre }}
+                          @if (puesto.simulado) {
+                            <span class="marca-simulado">simulado</span>
+                          }
+                        </th>
                         <td>{{ puesto.victorias }}</td>
                         <td>{{ puesto.partidas }}</td>
                         <td>{{ puesto.mejorPartida }} de 12</td>
@@ -117,6 +125,12 @@ import { Sesion } from '../sesion';
                   </tbody>
                 </table>
               </div>
+              @if (haySimulados(puestos)) {
+                <p class="nota-simulados">
+                  <span class="marca-simulado">simulado</span> Jugadores de ejemplo sin ningún enemigo derrotado, para que tengas
+                  con quién medirte. Supéralos.
+                </p>
+              }
             } @else {
               <p>Aún no ha terminado nadie una partida. <a routerLink="/partida">Sé el primero.</a></p>
             }
@@ -459,7 +473,7 @@ import { Sesion } from '../sesion';
     }
     th,
     td {
-      padding: 10px 12px;
+      padding: 10px;
       text-align: left;
       white-space: nowrap;
       border-bottom: 1px solid var(--linea);
@@ -494,6 +508,30 @@ import { Sesion } from '../sesion';
       background: rgb(239 68 68 / 0.08);
       box-shadow: inset 3px 0 var(--rojo);
       font-weight: 600;
+    }
+    .simulado {
+      color: var(--texto-suave);
+    }
+    .marca-simulado {
+      margin-left: 8px;
+      padding: 2px 7px;
+      border: 1px dashed rgb(255 255 255 / 0.25);
+      border-radius: 999px;
+      color: var(--texto-suave);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      vertical-align: 2px;
+    }
+    .nota-simulados {
+      margin: 12px 0 0;
+      color: var(--texto-suave);
+      font-size: 13px;
+    }
+    .nota-simulados .marca-simulado {
+      margin: 0 6px 0 0;
     }
     .puesto {
       display: inline-grid;
@@ -582,6 +620,10 @@ export class Clasificacion {
   protected readonly sesion = inject(Sesion);
   protected readonly clasificacion = httpResource<PuestoEnClasificacion[]>(() => '/api/leaderboard');
   protected readonly misPartidas = httpResource<ResumenPartida[]>(() => (this.sesion.nombre() ? '/api/games/me' : undefined));
+
+  protected haySimulados(puestos: PuestoEnClasificacion[]): boolean {
+    return puestos.some((puesto) => puesto.simulado);
+  }
 
   protected readonly cifras = [
     { simbolo: '♥', nombre: 'Victorias', texto: 'Partidas en las que derrotaste a los 12 enemigos del castillo.' },
