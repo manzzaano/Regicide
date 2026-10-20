@@ -142,6 +142,7 @@ class CuentaTest {
 
         assertThat(ultimo().asunto()).isEqualTo("Confirm your email on Regicide");
         assertThat(ultimo().texto()).startsWith("Hi " + nombre + ",");
+        assertThat(ultimo().html()).contains("Hi " + nombre + ",", ">Confirm email</a>", "/confirmar-correo#" + ultimo().enlace());
     }
 
     @Test
