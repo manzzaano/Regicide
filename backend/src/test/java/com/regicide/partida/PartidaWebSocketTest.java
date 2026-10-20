@@ -1,6 +1,7 @@
 package com.regicide.partida;
 
 import com.regicide.BaseDeDatosDePrueba;
+import com.regicide.juego.Carta;
 import com.regicide.juego.Fase;
 import com.regicide.juego.JugadorSencillo;
 import com.regicide.juego.JugadorSencillo.Atacar;
@@ -11,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+
+import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -76,9 +79,12 @@ class PartidaWebSocketTest {
     void unAtaqueValidoDevuelveElEstadoNuevo() throws Exception {
         try (ClienteStomp jugador = new ClienteStomp(puerto)) {
             jugador.enviar("empezar");
-            int vida = jugador.estado().enemigo().vida();
+            EstadoPartida inicial = jugador.estado();
+            int vida = inicial.enemigo().vida();
+            // La más baja: el 10 de tréboles dobla a 20 y mataría a la sota justo, vaciando las cartas jugadas.
+            Carta menor = inicial.mano().stream().min(Comparator.comparingInt(Carta::valor)).orElseThrow();
 
-            jugador.enviar("atacar", "{\"cartas\":[0]}");
+            jugador.enviar("atacar", "{\"cartas\":[" + inicial.mano().indexOf(menor) + "]}");
 
             EstadoPartida estado = jugador.estado();
             assertThat(estado.cartasJugadas()).hasSize(1);
