@@ -5,7 +5,7 @@ RUN npm ci
 COPY . .
 RUN npx ng build
 
-FROM nginx:1.29-alpine
+FROM nginx:1.31-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=compilacion /app/dist/frontend/browser /usr/share/nginx/html
 # Pasa por nginx hasta el backend: comprueba el proxy, el backend y la base de datos a la vez.
