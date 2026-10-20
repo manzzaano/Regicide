@@ -276,7 +276,7 @@ import { Sesion } from '../sesion';
         grid-template-columns: 1fr;
       }
       .titulo {
-        font-size: min(7.5em, 20vw);
+        font-size: min(7.5em, 17vw);
       }
       .palos {
         grid-template-columns: repeat(2, minmax(0, 1fr));
