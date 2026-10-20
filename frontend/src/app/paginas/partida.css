@@ -1,0 +1,942 @@
+/* El reparto de la ventana de v1: mazos a la izquierda, enemigo en el centro y comodines a la derecha.
+   La selección ya se ve en la propia mano, así que su caja sobra; la mano ocupa todo el ancho abajo. */
+/* La barra arriba y la mesa ocupando el resto del alto, con las filas centradas en vertical. */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.mesa {
+  flex: 1;
+  display: grid;
+  /* safe: si no cabe, lo que sobra es el pie de la mano, nunca la parte de arriba. */
+  align-content: safe center;
+  width: 100%;
+  /* Laterales iguales: así la columna del enemigo y la mano queda en el centro exacto. */
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    'mazos enemigo comodines'
+    'mazos centro comodines'
+    'mano mano mano';
+  align-items: center;
+  gap: 18px 24px;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 0 16px 8px;
+}
+
+.mazos {
+  grid-area: mazos;
+  justify-self: start;
+  min-width: 230px;
+}
+
+dl {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.mazo {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  column-gap: 12px;
+}
+
+dt {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.barra {
+  color: var(--rojo);
+}
+
+dd {
+  margin: 0;
+}
+
+.cuenta {
+  display: inline-block;
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  animation: destello 700ms ease-out;
+}
+
+/* Reverso plano: cada capa se desplaza un poco, así la pila engorda con las cartas. */
+.pila {
+  position: relative;
+  width: 24px;
+  height: 34px;
+  animation: sacudir 320ms var(--curva);
+}
+
+.pila span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgb(239 68 68 / 0.45);
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(45deg, rgb(239 68 68 / 0.18) 0 2px, transparent 2px 5px),
+    var(--caja-fuerte);
+  transform: translate(calc(var(--capa) * 1.5px), calc(var(--capa) * -1.5px));
+}
+
+.progreso {
+  grid-column: 2 / -1;
+  height: 3px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--linea);
+  overflow: hidden;
+}
+
+.progreso span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  transition: width 600ms var(--curva);
+}
+
+.conectando {
+  grid-area: enemigo;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 80px 0;
+  font-family: var(--mono);
+}
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rojo);
+  animation: latido 1s ease-in-out infinite alternate;
+}
+
+/* Enemigo */
+
+.enemigo {
+  grid-area: enemigo;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.dato {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 150px;
+  margin: 0;
+}
+
+.dato .etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  color: inherit;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.numero {
+  font-family: var(--display);
+  font-size: 80px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: golpe 420ms var(--curva);
+}
+
+.vida {
+  color: var(--rojo);
+}
+
+.ataque {
+  color: var(--texto);
+}
+
+/* Barra de vida de juego de lucha: la parte roja baja enseguida y la estela blanca la sigue con retraso. */
+.barra-vida {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 8px;
+  background: var(--linea);
+  overflow: hidden;
+}
+
+.barra-vida span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 8px;
+}
+
+.estela {
+  background: rgb(255 255 255 / 0.75);
+  transition: width 700ms ease-in 350ms;
+}
+
+.resto {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+  transition: width 250ms ease-out;
+}
+
+.escudo {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.grieta {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  transition: stroke-dashoffset 500ms var(--curva);
+}
+
+.agrietado {
+  color: var(--rojo);
+}
+
+.agrietado .grieta {
+  stroke-dashoffset: 0;
+}
+
+.reduccion {
+  color: var(--rojo);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* El retrato del enemigo sobre un círculo de luz roja. */
+.retrato {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.retrato::before {
+  content: '';
+  position: absolute;
+  inset: -20% -35%;
+  z-index: -1;
+  background: radial-gradient(circle, rgb(239 68 68 / 0.22), transparent 62%);
+  pointer-events: none;
+}
+
+.carta-enemigo {
+  width: clamp(160px, 32vh, 250px);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.12),
+    0 0 48px 6px rgb(239 68 68 / 0.4),
+    0 18px 40px -10px rgb(0 0 0 / 0.6);
+  animation: llegar 600ms var(--curva);
+}
+
+.hueco {
+  aspect-ratio: 236 / 330;
+  border: 2px dashed var(--linea);
+  background: transparent;
+  box-shadow: none;
+}
+
+.nombre-enemigo {
+  margin: 0;
+  color: var(--texto-suave);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Bajo el enemigo: el castillo, la fase y los botones de confirmar. */
+
+.centro {
+  grid-area: centro;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+}
+
+.castillo {
+  display: flex;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.castillo li {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 30px;
+  border: 1px solid var(--linea);
+  border-radius: 6px;
+  background: var(--caja-fuerte);
+  color: var(--texto-suave);
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 800;
+  transition:
+    background 300ms,
+    color 300ms;
+}
+
+.castillo li:nth-child(4n) {
+  margin-right: 8px;
+}
+
+.castillo li:last-child {
+  margin-right: 0;
+}
+
+.castillo .caido {
+  border-color: transparent;
+  background: var(--rojo);
+  color: var(--negro);
+}
+
+/* Tachado en diagonal: el enemigo ya ha caído. */
+.castillo .caido::after {
+  content: '';
+  position: absolute;
+  inset: 50% 4px auto;
+  height: 2px;
+  background: var(--negro);
+  transform: rotate(-35deg);
+}
+
+.castillo .actual {
+  border-color: var(--rojo);
+  color: var(--texto);
+  animation: palpitar 1.4s ease-in-out infinite;
+}
+
+.fase {
+  margin: 0;
+  padding: 4px 12px;
+  border: 1px solid var(--linea);
+  border-radius: 999px;
+  background: var(--caja);
+  color: var(--texto-suave);
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.fase span:first-child {
+  margin-right: 6px;
+  color: var(--rojo);
+  font-weight: 700;
+}
+
+.cursor {
+  margin-left: 2px;
+  color: var(--rojo);
+  animation: parpadeo 1s steps(1) infinite;
+}
+
+.confirmar {
+  min-width: 260px;
+  min-height: 48px;
+  font-size: 15px;
+}
+
+/* Sin cartas elegidas, en contorno como el botón rojo secundario en vez de un relleno apagado. */
+.confirmar:disabled {
+  border-color: rgb(239 68 68 / 0.25);
+  background: rgb(239 68 68 / 0.06);
+  color: rgb(239 68 68 / 0.6);
+  opacity: 1;
+}
+
+.cuantas {
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+/* Comodines */
+
+.comodines {
+  position: relative;
+  grid-area: comodines;
+  justify-self: end;
+}
+
+.comodines .etiqueta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quedan {
+  padding: 0 6px;
+  border: 1px solid rgb(239 68 68 / 0.3);
+  border-radius: 3px;
+  background: rgb(239 68 68 / 0.06);
+  color: var(--rojo);
+  letter-spacing: 0.05em;
+}
+
+.comodines .fila {
+  gap: 14px;
+  padding: 4px 6px 0;
+}
+
+/* Las dos cartas algo torcidas, como dejadas sobre la mesa. */
+.comodines .carta:first-child {
+  rotate: -6deg;
+}
+
+.comodines .carta:last-child {
+  rotate: 5deg;
+}
+
+.comodines .carta:hover:not(:disabled) {
+  rotate: 0deg;
+  transform: translateY(-10px) scale(1.06);
+}
+
+.giro {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 600ms var(--curva);
+}
+
+.giro > * {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+}
+
+.dorso {
+  border: 1px solid var(--linea);
+  border-radius: 8px;
+  background:
+    repeating-linear-gradient(45deg, rgb(255 255 255 / 0.05) 0 6px, transparent 6px 12px),
+    #1a1a1a;
+  transform: rotateY(180deg);
+}
+
+.usado .giro {
+  transform: rotateY(180deg);
+}
+
+/* Lo que hace el comodín, al pasar el ratón por uno que se puede usar. */
+.pista {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  margin: 0;
+  padding: 6px 10px;
+  border: 1px solid rgb(239 68 68 / 0.3);
+  border-radius: 6px;
+  background: var(--negro);
+  color: var(--texto);
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0;
+  translate: 0 -4px;
+  pointer-events: none;
+  transition:
+    opacity 150ms,
+    translate 150ms;
+}
+
+.comodines:has(.carta:hover:not(:disabled), .carta:focus-visible) .pista {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.fila {
+  display: flex;
+  gap: 10px;
+}
+
+.carta {
+  position: relative;
+  flex: none;
+  width: 84px;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  cursor: pointer;
+  transition:
+    transform 180ms var(--curva),
+    translate 220ms var(--curva),
+    rotate 180ms var(--curva),
+    opacity 180ms;
+}
+
+.carta img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.5);
+}
+
+.carta:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.usado:disabled {
+  opacity: 1;
+}
+
+/* Mano */
+
+.mano {
+  grid-area: mano;
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.info {
+  /* Por encima de las cartas: una carta elegida o ampliada nunca tapa los botones. */
+  position: relative;
+  z-index: 30;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 16px;
+}
+
+.info .etiqueta {
+  margin: 0;
+  font-size: 13px;
+}
+
+.suma {
+  color: var(--rojo);
+}
+
+/* Abanico de verdad: cartas grandes solapadas que giran 5° y bajan en arco según lo lejos que estén del centro. */
+.abanico-mano {
+  --ancho: clamp(64px, min(16vh, 15vw), 150px);
+  display: flex;
+  justify-content: center;
+  /* Hueco arriba para lo que sube una carta elegida, con su número de orden. */
+  padding: calc(var(--ancho) * 0.18 + 6px) calc(var(--ancho) * 0.2) 12px;
+}
+
+.abanico-mano .carta {
+  width: var(--ancho);
+  margin-inline: calc(var(--ancho) * -0.2);
+  transform: translateY(var(--arco, 0px)) rotate(var(--giro, 0deg));
+  transform-origin: 50% 100%;
+  animation: repartir 420ms var(--curva) backwards;
+  animation-delay: calc(var(--i, 0) * 45ms);
+}
+
+/* La que está bajo el ratón se endereza, crece y pasa por encima; las vecinas se apartan para dejarla ver. */
+.abanico-mano .carta:hover:not(:disabled) {
+  z-index: 20;
+  transform: translateY(calc(var(--ancho) * -0.12)) scale(1.15);
+}
+
+.abanico-mano .carta:hover:not(:disabled) + .carta {
+  translate: calc(var(--ancho) * 0.18) 0;
+}
+
+.abanico-mano .carta:hover:not(:disabled) + .carta + .carta {
+  translate: calc(var(--ancho) * 0.08) 0;
+}
+
+.abanico-mano .carta:has(+ .carta:hover:not(:disabled)) {
+  translate: calc(var(--ancho) * -0.18) 0;
+}
+
+.abanico-mano .carta:has(+ .carta + .carta:hover:not(:disabled)) {
+  translate: calc(var(--ancho) * -0.08) 0;
+}
+
+.abanico-mano .carta:disabled {
+  opacity: 1;
+}
+
+.cara {
+  position: relative;
+  display: block;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.8);
+  transform: perspective(700px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition:
+    transform 120ms ease-out,
+    box-shadow 200ms,
+    filter 200ms;
+}
+
+/* Reflejo de luz que sigue al puntero. */
+.cara::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.45), transparent 55%);
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms;
+}
+
+.carta:hover:not(:disabled) .cara::after {
+  opacity: 1;
+}
+
+/* La carta elegida sube, se endereza y pasa por delante, con un borde rojo que late despacio
+   y el orden en que se eligió encima. Las demás se apagan para que la jugada destaque. */
+.abanico-mano .carta[aria-pressed='true'] {
+  z-index: 10;
+  transform: translateY(calc(var(--ancho) * -0.25));
+}
+
+.abanico-mano .carta[aria-pressed='true']:hover:not(:disabled) {
+  transform: translateY(calc(var(--ancho) * -0.25)) scale(1.05);
+}
+
+.carta[aria-pressed='true'] .cara {
+  animation: latir-eleccion 1.6s ease-in-out infinite;
+}
+
+.carta[aria-pressed='true']::after {
+  content: attr(data-orden);
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--rojo);
+  box-shadow: 0 2px 10px rgb(239 68 68 / 0.6);
+  color: var(--negro);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  translate: -50% 0;
+  animation: entrar 220ms var(--curva);
+}
+
+.abanico-mano:has([aria-pressed='true']) .carta:not([aria-pressed='true'], :hover) .cara {
+  filter: brightness(0.55);
+}
+
+@keyframes latir-eleccion {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 2px var(--rojo),
+      0 0 16px 2px rgb(239 68 68 / 0.35);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px var(--rojo),
+      0 0 34px 6px rgb(239 68 68 / 0.65);
+  }
+}
+
+/* Como el estilo sin-poder de v1: la carta no activa su poder contra un enemigo de su palo.
+   Se apaga casi a gris, sin tapar el dibujo, y una cinta dice por qué; al pasar el ratón recupera el color.
+   La cinta sale del borde izquierdo, la parte que no tapan la carta siguiente ni el borde de la pantalla. */
+.sin-poder app-carta {
+  filter: grayscale(0.85) brightness(0.7);
+  transition: filter 200ms;
+}
+
+.sin-poder:hover app-carta {
+  filter: none;
+}
+
+.cinta {
+  position: absolute;
+  top: 38%;
+  left: 0;
+  z-index: 1;
+  max-width: 100%;
+  padding: 4px 8px;
+  border: 1px solid rgb(239 68 68 / 0.5);
+  border-left: 0;
+  border-radius: 0 4px 4px 0;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.6);
+  background: rgb(11 11 11 / 0.88);
+  color: var(--rojo);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.motivo {
+  display: none;
+  color: var(--texto-suave);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.sin-poder:hover .motivo {
+  display: block;
+  white-space: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cara {
+    transform: none;
+  }
+}
+
+/* Avisos */
+
+.avisos {
+  position: fixed;
+  top: 88px;
+  right: 16px;
+  z-index: 35;
+  display: grid;
+  gap: 8px;
+  width: min(340px, calc(100vw - 32px));
+}
+
+.aviso {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 40px 14px 16px;
+  border: 1px solid var(--borde-caja);
+  border-left: 3px solid var(--rojo);
+  border-radius: 8px;
+  background: rgb(23 23 23 / 0.95);
+  box-shadow: var(--sombra);
+  backdrop-filter: blur(8px);
+  font-size: 14px;
+  animation: deslizar 260ms var(--curva);
+}
+
+.aviso p {
+  margin: 0;
+  color: var(--texto-suave);
+}
+
+.aviso .titulo-aviso {
+  color: var(--texto);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.aviso.error {
+  border-color: rgb(239 68 68 / 0.4);
+  border-left-color: var(--rojo);
+  background: rgb(40 12 12 / 0.95);
+}
+
+.aviso.error .titulo-aviso {
+  color: var(--rojo);
+}
+
+/* Lo que le queda antes de cerrarse solo. */
+.aviso::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: rgb(239 68 68 / 0.6);
+  transform-origin: left;
+  animation: agotar var(--duracion) linear forwards;
+}
+
+.cerrar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--texto-suave);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cerrar:hover {
+  background: var(--hover);
+  color: var(--texto);
+}
+
+@keyframes deslizar {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+@keyframes agotar {
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes repartir {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotate(-4deg);
+  }
+}
+
+@keyframes llegar {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.92) rotateY(70deg);
+  }
+}
+
+@keyframes entrar {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+
+@keyframes golpe {
+  from {
+    transform: scale(1.25);
+    text-shadow: 0 0 24px rgb(239 68 68 / 0.9);
+  }
+}
+
+@keyframes destello {
+  from {
+    color: var(--rojo);
+    transform: scale(1.2);
+  }
+}
+
+@keyframes sacudir {
+  40% {
+    transform: translateY(-3px) rotate(-4deg);
+  }
+}
+
+@keyframes palpitar {
+  50% {
+    box-shadow: 0 0 0 4px rgb(239 68 68 / 0.25);
+  }
+}
+
+@keyframes parpadeo {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes latido {
+  to {
+    opacity: 0.25;
+  }
+}
+
+/* En ordenador la partida cabe en la pantalla sin scroll: mesa y mano se centran juntas en el alto
+   y, si la pantalla es baja, lo que no cabe es el pie de las cartas de la mano. */
+@media (min-width: 1341px) {
+  :host {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .mesa {
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+    grid-template-areas:
+      '. . .'
+      'mazos enemigo comodines'
+      'mazos centro comodines'
+      'mano mano mano'
+      '. . .';
+    row-gap: clamp(8px, 1.6vh, 18px);
+    padding-bottom: 0;
+  }
+  .carta-enemigo {
+    width: clamp(110px, 20vh, 250px);
+  }
+}
+
+/* Por debajo del ancho de la ventana de v1, el enemigo y la mano arriba y las cajas debajo. */
+@media (max-width: 1340px) {
+  .mesa {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'enemigo enemigo'
+      'centro centro'
+      'mano mano'
+      'mazos comodines';
+    gap: 16px;
+  }
+  .mesa > * {
+    justify-self: center;
+  }
+  .enemigo {
+    gap: 12px;
+  }
+  .dato {
+    width: auto;
+    min-width: 80px;
+  }
+  .numero {
+    font-size: clamp(40px, 11vw, 76px);
+  }
+  .carta-enemigo {
+    width: clamp(120px, 32vw, 200px);
+  }
+  .carta {
+    width: clamp(58px, 18vw, 84px);
+  }
+}
+
+@media (max-width: 560px) {
+  .mesa {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'enemigo' 'centro' 'mano' 'comodines' 'mazos';
+  }
+  .castillo li {
+    width: min(20px, 5.6vw);
+    font-size: 11px;
+  }
+  /* Con 8 cartas de 64px, el solape normal no cabe en 360px. */
+  .abanico-mano .carta {
+    margin-inline: calc(var(--ancho) * -0.3);
+  }
+}

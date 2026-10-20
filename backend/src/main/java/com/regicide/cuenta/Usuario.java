@@ -22,6 +22,9 @@ public class Usuario {
 
     private Instant creadoEn;
 
+    // Solo los jugadores de ejemplo de la migración V3; nadie se registra como simulado.
+    private boolean simulado;
+
     protected Usuario() {
     }
 

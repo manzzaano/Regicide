@@ -217,7 +217,7 @@ public class Partida {
         boolean mismoNumero = cartas.stream().map(Carta::numero).distinct().count() == 1;
         int total = cartas.stream().mapToInt(Carta::valor).sum();
         if (!mismoNumero || total > 10) {
-            throw new JugadaNoValida("Solo puedes combinar cartas del mismo número que sumen 10 o menos");
+            throw new JugadaNoValida("Combina cartas del mismo número que sumen 10 o menos, o un as con otra carta");
         }
     }
 

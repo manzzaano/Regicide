@@ -57,6 +57,8 @@ flowchart LR
 | Con cuenta, la partida a medias se guarda en PostgreSQL tras cada jugada | v1 permitía guardar y cargar una partida (lo pedía la entrega 2); así el juego sigue siendo el mismo | Perder la partida al cerrar el navegador, o un botón de guardar que el jugador puede olvidar |
 | Esquema de base de datos con migraciones de Flyway | Cada cambio de tablas queda versionado | `ddl-auto: update` |
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
+| La interfaz solo tiene modo oscuro | Sigue la estética de mi portfolio y con un único tema es más fácil cuidar el contraste: el texto, el gris secundario y el rojo pasan de 4,5:1 (AA) sobre el fondo y las cajas | Un modo claro que habría que mantener y comprobar dos veces |
+| Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse; todos tienen 0 enemigos derrotados, así que cualquiera los supera, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
 
 ## Versiones
 
@@ -74,7 +76,7 @@ flowchart LR
 | 1 | Motor del juego en Java, con tests de cada regla | Terminada |
 | 2 | Backend: la partida por WebSocket | Terminada |
 | 3 | Cuentas y clasificación | Terminada |
-| 4 | Frontend en Angular | Pendiente |
+| 4 | Frontend en Angular | Terminada |
 | 5 | Docker Compose y CI | Pendiente |
 | 6 | Publicación | Pendiente |
 
@@ -133,10 +135,14 @@ Terminada cuando una partida jugada con sesión aparece en la clasificación y u
 3. Pantallas: inicio, partida, reglas, clasificación, registro e inicio de sesión.
 4. La partida solo pinta el estado y envía jugadas; no calcula ninguna regla.
 5. Las imágenes de las cartas de v1.
-6. Diseño adaptado a móvil, tablet y escritorio, con contraste alto en modo claro y oscuro.
+6. Diseño adaptado a móvil, tablet y escritorio, en modo oscuro con contraste AA.
 7. Tests de los servicios y de los componentes con lógica.
 
 Terminada cuando se juega una partida completa en el navegador, con cuenta y sin ella.
+
+**Resultado.** El frontend está en `frontend/`, en Angular 22 con componentes standalone, signals y sin zone.js. Las cinco pantallas (inicio, partida, reglas, estadísticas y entrar) se cargan en diferido. El servicio `Juego` mantiene la conexión STOMP y el último estado que manda el servidor; la partida solo lo pinta y envía las posiciones de las cartas elegidas, y la única cuenta que hace es sumar los puntos de la selección para mostrarlos antes de confirmar. Con sesión, al conectarse pide `retomar` y, si no hay partida guardada, empieza una nueva. `Sesion` guarda el JWT y lo descarta cuando caduca o el servidor lo rechaza. Las cartas son las ilustraciones de v1 en WebP. En escritorio, la partida, las estadísticas y la pantalla de entrar caben sin scroll. Se añade la migración `V3`, con los seis jugadores de ejemplo, y la clasificación los marca como simulados. El frontend tiene 45 tests con Vitest (servicios de sesión, juego y autorización, y las pantallas de partida y entrar).
+
+Además de los tests, revisé todas las fases contra un servidor arrancado: un cliente STOMP propio comprobó 35 casos (partidas aisladas entre dos conexiones, jugadas ilegales, tokens caducados o manipulados, retomar y abandonar), Chrome sin ventana jugó partidas completas pulsando la interfaz, con cuenta y sin ella, y medí cada pantalla de 320 a 1440 píxeles de ancho. Salieron dos fallos que ningún test veía. El CORS de la API no se aplicaba porque Spring Security solo usa la configuración si el bean se llama `corsConfigurationSource`; en desarrollo no se notaba porque `ng serve` hace de proxy, pero en producción la API habría fallado desde otro dominio. Ahora tiene un test. En móviles de 320 a 360 píxeles, el título de la portada y el abanico de la mano se salían de la pantalla. El backend suma 114 tests.
 
 ### Fase 5. Docker Compose y CI
 
