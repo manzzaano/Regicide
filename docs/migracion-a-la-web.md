@@ -58,7 +58,7 @@ flowchart LR
 | Esquema de base de datos con migraciones de Flyway | Cada cambio de tablas queda versionado | `ddl-auto: update` |
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
 | La interfaz solo tiene modo oscuro | Sigue la estética de mi portfolio y con un único tema es más fácil cuidar el contraste: el texto, el gris secundario y el rojo pasan de 4,5:1 (AA) sobre el fondo y las cajas | Un modo claro que habría que mantener y comprobar dos veces |
-| Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse; todos tienen 0 enemigos derrotados, así que cualquiera los supera, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
+| Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse. Su mejor partida va de 0 a 6 enemigos derrotados, sin victorias (migración `V4`), así que superarlos a todos pide pasar de la mitad del castillo, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
 | Todo en una máquina virtual gratuita de Oracle Cloud, con el mismo Docker Compose y Caddy delante | El servidor está siempre encendido, la base de datos no caduca y la web y la API comparten dominio, así que el WebSocket no cruza orígenes | Planes gratuitos que duermen el servidor sin visitas o borran la base de datos pasado un tiempo, y el frontend en Vercel con la API en otro dominio |
 
 ## Versiones
