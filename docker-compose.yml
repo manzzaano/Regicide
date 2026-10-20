@@ -1,0 +1,40 @@
+# docker compose up --build  →  http://localhost:8081
+# Copia .env.example a .env y cambia las contraseñas antes de arrancarlo.
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: regicide
+      POSTGRES_USER: regicide
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en .env}
+    volumes:
+      - datos:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "regicide", "-d", "regicide"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: backend
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/regicide
+      DB_USER: regicide
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en .env}
+      # El WebSocket comprueba el origen del navegador, que es el puerto del frontend.
+      REGICIDE_ORIGENESPERMITIDOS: http://localhost:8081
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build: frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  datos:

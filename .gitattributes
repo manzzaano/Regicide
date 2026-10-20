@@ -1,0 +1,2 @@
+# El script de Maven se ejecuta en Linux (Docker y CI): con CRLF falla.
+backend/mvnw text eol=lf
