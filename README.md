@@ -58,7 +58,7 @@ export JWT_SECRET=un-secreto-largo-de-al-menos-32-caracteres
 
 La API REST tiene `POST /api/auth/register` y `POST /api/auth/login` (`{"nombre", "contrasena"}`, responden `{"token"}`), `GET /api/leaderboard` (pública) y `GET /api/games/me` (con `Authorization: Bearer <token>`).
 
-La base de datos trae seis jugadores de ejemplo (migración `V3`) para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
+La base de datos trae seis jugadores de ejemplo (migraciones `V3` y `V4`), de principiante a nivel medio, para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
 
 Por WebSocket, el cliente envía sus jugadas a `/app/partida/empezar`, `atacar`, `defender`, `comodin`, `abandonar` y `retomar` (`atacar` y `defender` llevan `{"cartas": [posiciones en la mano]}`), y recibe el estado de su partida en `/user/queue/partida` y los errores en `/user/queue/errores`. Para jugar con cuenta, el token va en la cabecera `Authorization` del CONNECT; sin ella se juega como invitado y la partida no se guarda.
 
