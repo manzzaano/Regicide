@@ -16,9 +16,10 @@ interface PartidasJugadas extends JpaRepository<PartidaJugada, Long> {
                 p.usuario.nombre,
                 sum(case when p.resultado = com.regicide.juego.Fase.VICTORIA then 1 else 0 end),
                 count(p),
-                max(p.enemigosDerrotados))
+                max(p.enemigosDerrotados),
+                p.usuario.simulado)
             from PartidaJugada p
-            group by p.usuario.nombre
+            group by p.usuario.nombre, p.usuario.simulado
             order by sum(case when p.resultado = com.regicide.juego.Fase.VICTORIA then 1 else 0 end) desc,
                 max(p.enemigosDerrotados) desc,
                 count(p) asc

@@ -59,7 +59,12 @@ class PartidaConCuentaTest {
         assertThat(misPartidas.getFirst()).containsEntry("resultado", resultado.name());
 
         List<Map<String, Object>> clasificacion = lista(api.get("/api/leaderboard", null).cuerpo());
-        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto).containsEntry("nombre", ana.nombre()));
+        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto)
+                .containsEntry("nombre", ana.nombre())
+                .containsEntry("simulado", false));
+        assertThat(clasificacion).anySatisfy(puesto -> assertThat(puesto)
+                .containsEntry("nombre", "lucia_mtz")
+                .containsEntry("simulado", true));
     }
 
     @Test
