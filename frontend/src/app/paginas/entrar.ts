@@ -91,15 +91,21 @@ function mensajeDeError(error: unknown): string {
   `,
   styles: `
     /* El formulario solo, centrado en lo que deja el menú y con la escala de la portada. */
+    /* El main llena lo que deja el menú, sin restar su alto a mano, para que no aparezca scroll. */
+    :host {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+    }
     .entrar {
       display: grid;
+      flex: 1;
       place-items: center;
-      min-height: calc(100dvh - 72px);
       padding: clamp(24px, 4vh, 56px) 16px;
       font-size: clamp(15px, calc(0.55vw + 0.6vh + 4px), 24px);
     }
     .panel {
-      width: min(100%, 22em);
+      width: min(100%, 30em);
       padding: 1.4em;
       border: 1px solid var(--borde-caja);
       border-top: 2px solid var(--rojo);
