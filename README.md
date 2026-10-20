@@ -8,7 +8,7 @@ La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manz
 
 La migración va por fases y cada una llega a `master` con un pull request. El plan, las decisiones y el estado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
-En `master` está el backend: el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL.
+En `master` están el backend y el frontend. El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Falta empaquetarlo con Docker Compose y publicarlo.
 
 ## Cómo se juega
 
@@ -24,7 +24,7 @@ Si derrotas a un enemigo con la vida justa, pasa encima de la posada y lo puedes
 
 ## Cómo ejecutarlo
 
-Requisitos: JDK 21 y Docker (los tests levantan su propio PostgreSQL con Testcontainers).
+Requisitos: JDK 21, Node 22.22 o superior y Docker (los tests del backend levantan su propio PostgreSQL con Testcontainers).
 
 ```bash
 cd backend
@@ -43,13 +43,25 @@ export JWT_SECRET=un-secreto-largo-de-al-menos-32-caracteres
 
 La API REST tiene `POST /api/auth/register` y `POST /api/auth/login` (`{"nombre", "contrasena"}`, responden `{"token"}`), `GET /api/leaderboard` (pública) y `GET /api/games/me` (con `Authorization: Bearer <token>`).
 
+La base de datos trae seis jugadores de ejemplo (migración `V3`) para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
+
 Por WebSocket, el cliente envía sus jugadas a `/app/partida/empezar`, `atacar`, `defender`, `comodin`, `abandonar` y `retomar` (`atacar` y `defender` llevan `{"cartas": [posiciones en la mano]}`), y recibe el estado de su partida en `/user/queue/partida` y los errores en `/user/queue/errores`. Para jugar con cuenta, el token va en la cabecera `Authorization` del CONNECT; sin ella se juega como invitado y la partida no se guarda.
+
+Con el backend en marcha, el frontend se arranca en otra terminal:
+
+```bash
+cd frontend
+npm install
+npm test -- --watch=false   # tests con Vitest
+npx ng serve                # http://localhost:4200, redirige /api y /ws al backend en :8080
+```
 
 ## Estructura
 
 ```
 regicide/
 ├── backend/   Spring Boot: el motor del juego (com.regicide.juego), las cuentas (com.regicide.cuenta) y la partida por WebSocket (com.regicide.partida)
+├── frontend/  Angular: las pantallas y la conexión STOMP; no calcula ninguna regla
 └── docs/      caso de estudio de la migración
 ```
 
