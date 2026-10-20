@@ -2,10 +2,54 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Menu } from '../menu';
+import { Idioma } from '../idioma';
 import { DatosDeCuenta, Sesion } from '../sesion';
 import { mensajeDeError } from './entrar';
 
 type Accion = 'contrasena' | 'correo' | 'borrar';
+
+const es = {
+  cuenta: 'Tu cuenta',
+  cambiarContrasena: 'Cambiar la contraseña',
+  otrosDispositivos: 'Se cerrará la sesión en tus otros dispositivos.',
+  actual: 'Contraseña actual',
+  nueva: 'Contraseña nueva',
+  pistaContrasena: 'De 15 a 128 caracteres. Mejor una frase que recuerdes.',
+  contrasenaCambiada: 'Contraseña cambiada.',
+  botonContrasena: 'Cambiar contraseña',
+  correo: 'Correo de recuperación',
+  confirmado: 'Confirmado:',
+  sinConfirmar: 'Sin confirmar:',
+  abreElEnlace: 'Abre el enlace que te hemos enviado.',
+  sinCorreo: 'Solo sirve para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.',
+  correoNuevo: 'Correo nuevo',
+  pistaCorreo: 'Déjalo vacío para quitar el correo.',
+  botonCorreo: 'Guardar correo',
+  borrar: 'Borrar la cuenta',
+  avisoBorrar: 'Se borran tu cuenta, tu partida guardada y tus estadísticas. No se puede deshacer.',
+  botonBorrar: 'Borrar mi cuenta',
+};
+const en: typeof es = {
+  cuenta: 'Your account',
+  cambiarContrasena: 'Change your password',
+  otrosDispositivos: 'You will be signed out on your other devices.',
+  actual: 'Current password',
+  nueva: 'New password',
+  pistaContrasena: '15 to 128 characters. A sentence you remember works best.',
+  contrasenaCambiada: 'Password changed.',
+  botonContrasena: 'Change password',
+  correo: 'Recovery email',
+  confirmado: 'Confirmed:',
+  sinConfirmar: 'Not confirmed:',
+  abreElEnlace: 'Open the link we sent you.',
+  sinCorreo: 'Only used to recover your password. Without an email, a forgotten password cannot be recovered.',
+  correoNuevo: 'New email',
+  pistaCorreo: 'Leave it empty to remove the email.',
+  botonCorreo: 'Save email',
+  borrar: 'Delete your account',
+  avisoBorrar: 'Your account, saved game and stats are deleted. This cannot be undone.',
+  botonBorrar: 'Delete my account',
+};
 
 /** Cambiar la contraseña, el correo de recuperación o borrar la cuenta. Todo pide la contraseña actual. */
 @Component({
@@ -15,79 +59,79 @@ type Accion = 'contrasena' | 'correo' | 'borrar';
     <app-menu />
     <main class="cuenta">
       <header class="cabecera">
-        <p class="eyebrow">Tu cuenta</p>
+        <p class="eyebrow">{{ t().cuenta }}</p>
         <h1>{{ sesion.nombre() }}</h1>
       </header>
 
       <div class="columnas">
         <section class="panel" aria-labelledby="titulo-contrasena">
-          <h2 id="titulo-contrasena">Cambiar la contraseña</h2>
-          <p class="ayuda">Se cerrará la sesión en tus otros dispositivos.</p>
+          <h2 id="titulo-contrasena">{{ t().cambiarContrasena }}</h2>
+          <p class="ayuda">{{ t().otrosDispositivos }}</p>
           <form (submit)="cambiarContrasena($event)">
             <!-- Para que el gestor de contraseñas sepa de qué cuenta es. -->
             <input type="hidden" name="nombre" autocomplete="username" [value]="sesion.nombre()" />
             <label>
-              Contraseña actual
+              {{ t().actual }}
               <input class="campo" name="actual" type="password" autocomplete="current-password" required maxlength="128" (input)="actual.set($any($event.target).value)" [value]="actual()" />
             </label>
             <label>
-              Contraseña nueva
+              {{ t().nueva }}
               <input class="campo" name="nueva" type="password" autocomplete="new-password" required minlength="15" maxlength="128" (input)="nueva.set($any($event.target).value)" [value]="nueva()" />
             </label>
-            <p class="pista">De 15 a 128 caracteres. Mejor una frase que recuerdes.</p>
+            <p class="pista">{{ t().pistaContrasena }}</p>
             @if (resultado()?.accion === 'contrasena' && !errorDe('contrasena')) {
-              <p class="hecho" role="status">Contraseña cambiada.</p>
+              <p class="hecho" role="status">{{ t().contrasenaCambiada }}</p>
             }
             @if (errorDe('contrasena'); as error) {
               <p class="error" role="alert">{{ error }}</p>
             }
-            <button class="boton-principal" type="submit" [disabled]="enviando()">Cambiar contraseña</button>
+            <button class="boton-principal" type="submit" [disabled]="enviando()">{{ t().botonContrasena }}</button>
           </form>
         </section>
 
         <div class="lateral">
           <section class="panel" aria-labelledby="titulo-correo">
-            <h2 id="titulo-correo">Correo de recuperación</h2>
+            <h2 id="titulo-correo">{{ t().correo }}</h2>
             @if (datos(); as datos) {
               @if (datos.correo) {
-                <p class="ayuda">Confirmado: <strong>{{ datos.correo }}</strong></p>
+                <p class="ayuda">{{ t().confirmado }} <strong>{{ datos.correo }}</strong></p>
               }
               @if (datos.correoPendiente) {
-                <p class="ayuda">Sin confirmar: <strong>{{ datos.correoPendiente }}</strong>. Abre el enlace que te hemos enviado.</p>
+                <p class="ayuda">{{ t().sinConfirmar }} <strong>{{ datos.correoPendiente }}</strong>. {{ t().abreElEnlace }}</p>
               }
               @if (!datos.correo && !datos.correoPendiente) {
-                <p class="ayuda">Solo sirve para recuperar la contraseña. Sin correo, si la olvidas no se puede recuperar la cuenta.</p>
+                <p class="ayuda">{{ t().sinCorreo }}</p>
               }
             }
             <form (submit)="cambiarCorreo($event)">
               <label>
-                Correo nuevo
+                {{ t().correoNuevo }}
                 <input class="campo" name="correo" type="email" autocomplete="email" maxlength="254" (input)="correo.set($any($event.target).value)" [value]="correo()" />
               </label>
-              <p class="pista">Déjalo vacío para quitar el correo.</p>
+              <p class="pista">{{ t().pistaCorreo }}</p>
               <label>
-                Contraseña actual
+                {{ t().actual }}
                 <input class="campo" name="contrasena-correo" type="password" autocomplete="current-password" required maxlength="128" (input)="paraCorreo.set($any($event.target).value)" [value]="paraCorreo()" />
               </label>
               @if (errorDe('correo'); as error) {
                 <p class="error" role="alert">{{ error }}</p>
               }
-              <button class="boton" type="submit" [disabled]="enviando()">Guardar correo</button>
+              <button class="boton" type="submit" [disabled]="enviando()">{{ t().botonCorreo }}</button>
             </form>
           </section>
 
           <section class="panel peligro" aria-labelledby="titulo-borrar">
-            <h2 id="titulo-borrar">Borrar la cuenta</h2>
-            <p class="ayuda">Se borran tu cuenta, tu partida guardada y tus estadísticas. No se puede deshacer.</p>
+            <h2 id="titulo-borrar">{{ t().borrar }}</h2>
+            <p class="ayuda">{{ t().avisoBorrar }}</p>
             <form (submit)="borrar($event)">
               <label>
-                Contraseña actual
+                {{ t().actual }}
                 <input class="campo" name="contrasena-borrar" type="password" autocomplete="current-password" required maxlength="128" (input)="paraBorrar.set($any($event.target).value)" [value]="paraBorrar()" />
               </label>
               @if (errorDe('borrar'); as error) {
                 <p class="error" role="alert">{{ error }}</p>
               }
-              <button class="boton borrar" type="submit" [disabled]="enviando()">Borrar mi cuenta</button>
+              <button class="boton borrar" type="submit" [disabled]="enviando()">{{ t().botonBorrar }}</button>
             </form>
           </section>
         </div>
@@ -180,6 +224,8 @@ type Accion = 'contrasena' | 'correo' | 'borrar';
 export class Cuenta {
   protected readonly sesion = inject(Sesion);
   private readonly router = inject(Router);
+  private readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 
   protected readonly actual = signal('');
   protected readonly nueva = signal('');
@@ -229,7 +275,7 @@ export class Cuenta {
         this.enviando.set(false);
       },
       error: (error: unknown) => {
-        this.resultado.set({ accion, error: mensajeDeError(error) });
+        this.resultado.set({ accion, error: mensajeDeError(error, this.idioma.actual()) });
         this.enviando.set(false);
       },
     });

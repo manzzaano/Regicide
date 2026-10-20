@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Menu } from '../menu';
+import { Idioma } from '../idioma';
 import { Sesion } from '../sesion';
 import { mensajeDeError } from './entrar';
 
@@ -13,6 +14,31 @@ function leerEnlace(): string {
   history.replaceState(history.state, '', location.pathname);
   return enlace;
 }
+
+const es = {
+  nueva: 'Contraseña nueva',
+  cambiada: 'Contraseña cambiada. Se han cerrado todas las sesiones de la cuenta.',
+  entrar: 'Entrar',
+  pista: 'De 15 a 128 caracteres. Mejor una frase que recuerdes.',
+  cambiar: 'Cambiar contraseña',
+  confirmar: 'Confirmar el correo',
+  comprobando: 'Comprobando el enlace…',
+  confirmado: 'Correo confirmado. Ya puedes usarlo para recuperar la contraseña.',
+  portada: 'Volver a la portada',
+  cuenta: 'Ir a tu cuenta',
+};
+const en: typeof es = {
+  nueva: 'New password',
+  cambiada: 'Password changed. All sessions of the account have been closed.',
+  entrar: 'Sign in',
+  pista: '15 to 128 characters. A sentence you remember works best.',
+  cambiar: 'Change password',
+  confirmar: 'Confirm your email',
+  comprobando: 'Checking the link…',
+  confirmado: 'Email confirmed. You can now use it to recover your password.',
+  portada: 'Back to the home page',
+  cuenta: 'Go to your account',
+};
 
 const estilos = `
   :host {
@@ -69,14 +95,14 @@ const estilos = `
     <app-menu />
     <main>
       <section class="panel">
-        <h1>Contraseña nueva</h1>
+        <h1>{{ t().nueva }}</h1>
         @if (hecho()) {
-          <p role="status">Contraseña cambiada. Se han cerrado todas las sesiones de la cuenta.</p>
-          <a routerLink="/entrar">Entrar <span aria-hidden="true">→</span></a>
+          <p role="status">{{ t().cambiada }}</p>
+          <a routerLink="/entrar">{{ t().entrar }} <span aria-hidden="true">→</span></a>
         } @else {
           <form (submit)="enviar($event)">
             <label>
-              Contraseña nueva
+              {{ t().nueva }}
               <input
                 class="campo"
                 name="nueva"
@@ -89,11 +115,11 @@ const estilos = `
                 (input)="nueva.set($any($event.target).value)"
               />
             </label>
-            <p>De 15 a 128 caracteres. Mejor una frase que recuerdes.</p>
+            <p>{{ t().pista }}</p>
             @if (error(); as error) {
               <p class="error" role="alert">{{ error }}</p>
             }
-            <button class="boton-principal" type="submit" [disabled]="enviando()">Cambiar contraseña</button>
+            <button class="boton-principal" type="submit" [disabled]="enviando()">{{ t().cambiar }}</button>
           </form>
         }
       </section>
@@ -104,6 +130,8 @@ const estilos = `
 export class Restablecer {
   private readonly sesion = inject(Sesion);
   private readonly enlace = leerEnlace();
+  private readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 
   protected readonly nueva = signal('');
   protected readonly error = signal<string | null>(null);
@@ -117,7 +145,7 @@ export class Restablecer {
     this.sesion.restablecer(this.enlace, this.nueva()).subscribe({
       next: () => this.hecho.set(true),
       error: (error: unknown) => {
-        this.error.set(mensajeDeError(error));
+        this.error.set(mensajeDeError(error, this.idioma.actual()));
         this.enviando.set(false);
       },
     });
@@ -131,18 +159,18 @@ export class Restablecer {
     <app-menu />
     <main>
       <section class="panel">
-        <h1>Confirmar el correo</h1>
+        <h1>{{ t().confirmar }}</h1>
         @switch (estado()) {
           @case ('comprobando') {
-            <p role="status">Comprobando el enlace…</p>
+            <p role="status">{{ t().comprobando }}</p>
           }
           @case ('hecho') {
-            <p role="status">Correo confirmado. Ya puedes usarlo para recuperar la contraseña.</p>
-            <a routerLink="/">Volver a la portada <span aria-hidden="true">→</span></a>
+            <p role="status">{{ t().confirmado }}</p>
+            <a routerLink="/">{{ t().portada }} <span aria-hidden="true">→</span></a>
           }
           @default {
             <p class="error" role="alert">{{ estado() }}</p>
-            <a routerLink="/cuenta">Ir a tu cuenta <span aria-hidden="true">→</span></a>
+            <a routerLink="/cuenta">{{ t().cuenta }} <span aria-hidden="true">→</span></a>
           }
         }
       </section>
@@ -153,13 +181,15 @@ export class Restablecer {
 export class ConfirmarCorreo {
   /** 'comprobando', 'hecho' o el mensaje de error. */
   protected readonly estado = signal('comprobando');
+  private readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 
   constructor() {
     inject(Sesion)
       .confirmarCorreo(leerEnlace())
       .subscribe({
         next: () => this.estado.set('hecho'),
-        error: (error: unknown) => this.estado.set(mensajeDeError(error)),
+        error: (error: unknown) => this.estado.set(mensajeDeError(error, this.idioma.actual())),
       });
   }
 }

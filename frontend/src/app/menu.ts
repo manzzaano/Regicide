@@ -1,6 +1,30 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Idioma } from './idioma';
 import { Sesion } from './sesion';
+
+const es = {
+  inicio: 'Regicide, inicio',
+  menu: 'Menú',
+  reglas: '¿Cómo jugar?',
+  estadisticas: 'Estadísticas',
+  cuenta: 'Tu cuenta',
+  salir: 'Salir',
+  invitado: 'invitado',
+  entrar: 'Entrar',
+  otroIdioma: 'Read in English',
+};
+const en: typeof es = {
+  inicio: 'Regicide, home',
+  menu: 'Menu',
+  reglas: 'How to play',
+  estadisticas: 'Stats',
+  cuenta: 'Your account',
+  salir: 'Sign out',
+  invitado: 'guest',
+  entrar: 'Sign in',
+  otroIdioma: 'Leer en español',
+};
 
 /** La fila de botones de arriba de la ventana de juego de v1, como barra oscura al estilo de leosoftware.dev. */
 @Component({
@@ -9,20 +33,23 @@ import { Sesion } from './sesion';
   template: `
     <header>
       <div class="interior">
-        <a class="marca" routerLink="/" aria-label="Regicide, inicio">REGICIDE<span>/</span></a>
-        <nav aria-label="Menú">
-          <a routerLink="/reglas" routerLinkActive="activo" ariaCurrentWhenActive="page">¿Cómo jugar?</a>
-          <a routerLink="/clasificacion" routerLinkActive="activo" ariaCurrentWhenActive="page">Estadísticas</a>
+        <a class="marca" routerLink="/" [attr.aria-label]="t().inicio">REGICIDE<span>/</span></a>
+        <nav [attr.aria-label]="t().menu">
+          <a routerLink="/reglas" routerLinkActive="activo" ariaCurrentWhenActive="page">{{ t().reglas }}</a>
+          <a routerLink="/clasificacion" routerLinkActive="activo" ariaCurrentWhenActive="page">{{ t().estadisticas }}</a>
         </nav>
         <div class="acciones">
           <ng-content />
           @if (sesion.nombre(); as nombre) {
-            <a class="jugador" routerLink="/cuenta" title="Tu cuenta">{{ nombre }}</a>
-            <button type="button" class="enlace" (click)="sesion.salir()">Salir</button>
+            <a class="jugador" routerLink="/cuenta" [title]="t().cuenta">{{ nombre }}</a>
+            <button type="button" class="enlace" (click)="sesion.salir()">{{ t().salir }}</button>
           } @else {
-            <span class="jugador">invitado</span>
-            <a class="enlace" routerLink="/entrar" routerLinkActive="activo" ariaCurrentWhenActive="page">Entrar</a>
+            <span class="jugador">{{ t().invitado }}</span>
+            <a class="enlace" routerLink="/entrar" routerLinkActive="activo" ariaCurrentWhenActive="page">{{ t().entrar }}</a>
           }
+          <button type="button" class="enlace idioma" [attr.aria-label]="t().otroIdioma" [title]="t().otroIdioma" (click)="idioma.cambiar()">
+            {{ idioma.actual() === 'es' ? 'EN' : 'ES' }}
+          </button>
         </div>
       </div>
     </header>
@@ -108,6 +135,11 @@ import { Sesion } from './sesion';
       text-decoration: none;
       text-transform: uppercase;
     }
+    .idioma {
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+    }
     a.jugador:hover {
       border-color: var(--rojo);
     }
@@ -121,4 +153,6 @@ import { Sesion } from './sesion';
 })
 export class Menu {
   protected readonly sesion = inject(Sesion);
+  protected readonly idioma = inject(Idioma);
+  protected readonly t = this.idioma.textos({ es, en });
 }

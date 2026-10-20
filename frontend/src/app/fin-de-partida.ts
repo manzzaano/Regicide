@@ -1,5 +1,29 @@
 import { Component, ElementRef, afterNextRender, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Idioma } from './idioma';
+
+const es = {
+  fin: 'Fin de partida',
+  victoria: 'Victoria',
+  derrota: 'Derrota',
+  derrotados: (n: number) => `Has derrotado a ${n} de 12 enemigos.`,
+  crea: 'Crea una cuenta',
+  paraContar: 'para que tus partidas cuenten en las estadísticas.',
+  verMesa: 'Ver la mesa',
+  estadisticas: 'Estadísticas',
+  nueva: 'Nueva Partida',
+};
+const en: typeof es = {
+  fin: 'Game over',
+  victoria: 'Victory',
+  derrota: 'Defeat',
+  derrotados: (n: number) => `You defeated ${n} of 12 enemies.`,
+  crea: 'Create an account',
+  paraContar: 'so your games count in the stats.',
+  verMesa: 'See the table',
+  estadisticas: 'Stats',
+  nueva: 'New Game',
+};
 
 /** El Alert de fin de partida de v1, con el resultado en grande y lo que se puede hacer después. */
 @Component({
@@ -8,17 +32,17 @@ import { RouterLink } from '@angular/router';
   template: `
     <div class="fondo">
       <div class="dialogo" role="alertdialog" aria-modal="true" aria-labelledby="fin-titulo" aria-describedby="fin-texto">
-        <p class="etiqueta">Fin de partida</p>
-        <h2 class="resultado" id="fin-titulo" [class.victoria]="victoria()">{{ victoria() ? 'Victoria' : 'Derrota' }}</h2>
-        <p id="fin-texto">Has derrotado a {{ derrotados() }} de 12 enemigos.</p>
+        <p class="etiqueta">{{ t().fin }}</p>
+        <h2 class="resultado" id="fin-titulo" [class.victoria]="victoria()">{{ victoria() ? t().victoria : t().derrota }}</h2>
+        <p id="fin-texto">{{ t().derrotados(derrotados()) }}</p>
         <span class="progreso" aria-hidden="true"><span [style.width.%]="(derrotados() / 12) * 100"></span></span>
         @if (invitado()) {
-          <p class="nota"><a routerLink="/entrar">Crea una cuenta</a> para que tus partidas cuenten en las estadísticas.</p>
+          <p class="nota"><a routerLink="/entrar">{{ t().crea }}</a> {{ t().paraContar }}</p>
         }
         <div class="pie">
-          <button type="button" class="boton" (click)="cerrar.emit()">Ver la mesa</button>
-          <a class="boton" routerLink="/clasificacion">Estadísticas</a>
-          <button type="button" class="boton-principal" (click)="nuevaPartida.emit()">Nueva Partida</button>
+          <button type="button" class="boton" (click)="cerrar.emit()">{{ t().verMesa }}</button>
+          <a class="boton" routerLink="/clasificacion">{{ t().estadisticas }}</a>
+          <button type="button" class="boton-principal" (click)="nuevaPartida.emit()">{{ t().nueva }}</button>
         </div>
       </div>
     </div>
@@ -109,6 +133,7 @@ export class FinDePartida {
   readonly invitado = input.required<boolean>();
   readonly nuevaPartida = output<void>();
   readonly cerrar = output<void>();
+  protected readonly t = inject(Idioma).textos({ es, en });
 
   constructor() {
     const elemento = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

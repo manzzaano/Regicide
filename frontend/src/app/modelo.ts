@@ -1,5 +1,6 @@
-// Los mismos datos que envía el backend (EstadoPartida, PuestoEnClasificacion, ResumenPartida).
+import { Lengua } from './idioma';
 
+// Los mismos datos que envía el backend (EstadoPartida, PuestoEnClasificacion, ResumenPartida).
 export type Palo = 'PICAS' | 'CORAZONES' | 'TREBOLES' | 'DIAMANTES';
 
 export type Fase = 'ATAQUE' | 'DEFENSA' | 'VICTORIA' | 'DERROTA';
@@ -36,21 +37,23 @@ export interface ResumenPartida {
   terminadaEn: string;
 }
 
-const NOMBRES_PALO: Record<Palo, string> = {
-  PICAS: 'Picas',
-  CORAZONES: 'Corazones',
-  TREBOLES: 'Tréboles',
-  DIAMANTES: 'Diamantes',
+const NOMBRES_PALO: Record<Lengua, Record<Palo, string>> = {
+  es: { PICAS: 'Picas', CORAZONES: 'Corazones', TREBOLES: 'Tréboles', DIAMANTES: 'Diamantes' },
+  en: { PICAS: 'Spades', CORAZONES: 'Hearts', TREBOLES: 'Clubs', DIAMANTES: 'Diamonds' },
 };
 
-const FIGURAS: Record<number, string> = { 1: 'As', 11: 'Sota', 12: 'Reina', 13: 'Rey' };
+const FIGURAS: Record<Lengua, Record<number, string>> = {
+  es: { 1: 'As', 11: 'Sota', 12: 'Reina', 13: 'Rey' },
+  en: { 1: 'Ace', 11: 'Jack', 12: 'Queen', 13: 'King' },
+};
 
-export function nombrePalo(palo: Palo): string {
-  return NOMBRES_PALO[palo];
+export function nombrePalo(palo: Palo, lengua: Lengua = 'es'): string {
+  return NOMBRES_PALO[lengua][palo];
 }
 
-export function nombreCarta(carta: Carta): string {
-  return `${FIGURAS[carta.numero] ?? carta.numero} de ${nombrePalo(carta.palo)}`;
+export function nombreCarta(carta: Carta, lengua: Lengua = 'es'): string {
+  const numero = FIGURAS[lengua][carta.numero] ?? carta.numero;
+  return `${numero} ${lengua === 'es' ? 'de' : 'of'} ${nombrePalo(carta.palo, lengua)}`;
 }
 
 export function terminada(estado: EstadoPartida): boolean {

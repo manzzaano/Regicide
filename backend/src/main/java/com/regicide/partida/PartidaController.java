@@ -6,10 +6,13 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
+import org.springframework.context.MessageSource;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
+import java.util.Locale;
 
 /**
  * Las acciones del jugador llegan a /app/partida/*; el estado vuelve solo a su sesión. Sin
@@ -22,9 +25,11 @@ class PartidaController {
     private static final String SESION = "simpSessionId";
 
     private final PartidasEnCurso partidas;
+    private final MessageSource textos;
 
-    PartidaController(PartidasEnCurso partidas) {
+    PartidaController(PartidasEnCurso partidas, MessageSource textos) {
         this.partidas = partidas;
+        this.textos = textos;
     }
 
     @MessageMapping("/empezar")
@@ -68,13 +73,20 @@ class PartidaController {
 
     @MessageExceptionHandler
     @SendToUser(destinations = "/queue/errores", broadcast = false)
-    MensajeDeError jugadaNoValida(JugadaNoValida error) {
-        return new MensajeDeError(error.getMessage());
+    MensajeDeError jugadaNoValida(JugadaNoValida error, SimpMessageHeaderAccessor cabeceras) {
+        return error(error.getMessage(), cabeceras, error.argumentos());
     }
 
     @MessageExceptionHandler({MessageConversionException.class, MethodArgumentNotValidException.class})
     @SendToUser(destinations = "/queue/errores", broadcast = false)
-    MensajeDeError mensajeMalFormado() {
-        return new MensajeDeError("Mensaje no válido");
+    MensajeDeError mensajeMalFormado(SimpMessageHeaderAccessor cabeceras) {
+        return error("partida.mensaje-no-valido", cabeceras);
+    }
+
+    // El idioma lo fija AutenticacionStomp al conectar, con la cabecera Accept-Language.
+    private MensajeDeError error(String clave, SimpMessageHeaderAccessor cabeceras, Object... argumentos) {
+        Object idioma = cabeceras.getSessionAttributes() == null ? null : cabeceras.getSessionAttributes().get(AutenticacionStomp.IDIOMA);
+        Locale locale = idioma instanceof Locale elegido ? elegido : AutenticacionStomp.POR_DEFECTO;
+        return new MensajeDeError(clave, textos.getMessage(clave, argumentos, locale));
     }
 }
