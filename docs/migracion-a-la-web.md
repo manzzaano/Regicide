@@ -59,6 +59,7 @@ flowchart LR
 | Sin `JWT_SECRET` o sin base de datos, el backend no arranca | Un error de configuración se ve al momento | Valores por defecto inseguros |
 | La interfaz solo tiene modo oscuro | Sigue la estética de mi portfolio y con un único tema es más fácil cuidar el contraste: el texto, el gris secundario y el rojo pasan de 4,5:1 (AA) sobre el fondo y las cajas | Un modo claro que habría que mantener y comprobar dos veces |
 | Seis jugadores de ejemplo en la base de datos, marcados como simulados | El primer jugador ve una clasificación con quién medirse; todos tienen 0 enemigos derrotados, así que cualquiera los supera, y nadie puede entrar con sus cuentas | Una clasificación vacía al estrenar la web |
+| Todo en una máquina virtual gratuita de Oracle Cloud, con el mismo Docker Compose y Caddy delante | El servidor está siempre encendido, la base de datos no caduca y la web y la API comparten dominio, así que el WebSocket no cruza orígenes | Planes gratuitos que duermen el servidor sin visitas o borran la base de datos pasado un tiempo, y el frontend en Vercel con la API en otro dominio |
 
 ## Versiones
 
@@ -78,7 +79,7 @@ flowchart LR
 | 3 | Cuentas y clasificación | Terminada |
 | 4 | Frontend en Angular | Terminada |
 | 5 | Docker Compose y CI | Terminada |
-| 6 | Publicación | Pendiente |
+| 6 | Publicación | Terminada |
 
 Cada fase se desarrolla en la rama `dev` y llega a `master` con un pull request.
 
@@ -164,6 +165,8 @@ Terminada cuando `docker compose up --build` levanta el sistema desde cero y el 
 
 Terminada cuando se puede jugar desde la URL publicada.
 
+**Resultado.** Se juega en [regicide.leosoftware.dev](https://regicide.leosoftware.dev). Comparé Render, Koyeb, Railway, Fly.io, Cloud Run, Neon, Supabase y Oracle Cloud. Los planes gratuitos de plataforma o duermen el servidor tras unos minutos sin visitas, y la partida por WebSocket se corta y tarda en volver, o limitan la base de datos en tiempo o en horas, o son créditos de prueba. Me quedé con una máquina Always Free de Oracle Cloud en Frankfurt (ARM, 2 núcleos y 12 GB) que ejecuta el mismo Docker Compose de la fase 5. Por eso cambié el punto 2 del plan: con el frontend en Vercel, la API y el WebSocket habrían estado en otro dominio, con CORS y orígenes cruzados, mientras que así nginx sigue sirviendo todo desde un único origen. `docker-compose.prod.yml` añade Caddy, que pide y renueva el certificado HTTPS de Let's Encrypt y redirige HTTP a HTTPS; deja el frontend sin puerto propio, limita el origen permitido al dominio publicado y reinicia los contenedores si se caen o si se reinicia la máquina. Los secretos se generaron en el propio servidor y no salen de su `.env`. En producción, el cliente STOMP de la fase 4 pasó 34 de los 35 casos; el que falla es el origen `localhost:4200`, que en producción ya no se admite. Chrome sin ventana jugó una partida completa desde la interfaz, y tras reiniciar la máquina la web volvió sola en menos de un minuto. Al fusionar la fase 5, el CI de `master` encontró un test que fallaba según el reparto: si la primera carta era el 10 de Tréboles, mataba a la sota justo y vaciaba las cartas jugadas que el test esperaba. Ahora ataca con la carta más baja. El despliegue es manual (`git pull` y `docker compose up -d --build` en el servidor), y Oracle puede recuperar una máquina gratuita si pasa una semana casi sin uso.
+
 ## Reglas: cambios respecto a v1
 
 Las reglas del juego son las que fijé para el proyecto en clase: los enunciados de las cuatro entregas y el reglamento oficial de Regicide en español (Devir), que v1 abre desde el botón "¿Cómo jugar?". Al pasar v1 al motor encontré seis puntos en los que el código no cumplía ese reglamento. En la versión web se corrigen:
@@ -178,9 +181,3 @@ Las reglas del juego son las que fijé para el proyecto en clase: los enunciados
 | Figuras robadas de la posada | Valen su número: 11, 12 y 13 | La sota vale 10, la reina 15 y el rey 20 |
 
 Lo que el reglamento deja a elección o no aplica a una partida de un jugador se queda como en v1: no se puede pasar el turno y no hay niveles de victoria (oro, plata y bronce).
-
-## Pendiente de decidir
-
-| Tema | Cuándo |
-|---|---|
-| Alojamiento del backend | Fase 6 |

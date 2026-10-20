@@ -2,13 +2,15 @@
 
 Juego de cartas Regicide en modo solitario. Empezó como mi proyecto final de Programación en DAM, hecho en JavaFX, y lo llevo a la web: las reglas en un servidor Spring Boot, la partida en tiempo real por WebSocket y una interfaz en Angular.
 
+**Jugar:** [regicide.leosoftware.dev](https://regicide.leosoftware.dev)
+
 La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manzzaano/Regicide/tree/v1).
 
 ## Estado
 
-La migración va por fases y cada una llega a `master` con un pull request. El plan, las decisiones y el estado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+La migración está terminada: las seis fases llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
-En `master` están el backend y el frontend. El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Todo se levanta con Docker Compose y cada cambio pasa por GitHub Actions. Falta publicarlo.
+El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Todo se levanta con Docker Compose, cada cambio pasa por GitHub Actions y la web publicada corre en una máquina gratuita de Oracle Cloud con Caddy para el HTTPS.
 
 ## Cómo se juega
 
@@ -29,6 +31,12 @@ Con Docker, todo de una vez:
 ```bash
 cp .env.example .env      # cambia la contraseña y el secreto
 docker compose up --build  # http://localhost:8081
+```
+
+En el servidor, con el dominio en `DOMINIO` dentro de `.env` y los puertos 80 y 443 abiertos, el mismo Compose se arranca junto a `docker-compose.prod.yml`, que añade Caddy para el HTTPS:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 Para desarrollar, cada parte por separado. Requisitos: JDK 21, Node 22.22 o superior y Docker (los tests del backend levantan su propio PostgreSQL con Testcontainers).
