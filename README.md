@@ -8,7 +8,7 @@ La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manz
 
 ## Estado
 
-La migración está terminada: las seis fases llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+La migración está terminada: las seis fases, y una séptima de seguridad de las cuentas, llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
 
 El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar. Todo se levanta con Docker Compose, cada cambio pasa por GitHub Actions y la web publicada corre en una máquina gratuita de Oracle Cloud con Caddy para el HTTPS.
 
@@ -56,7 +56,7 @@ export JWT_SECRET=un-secreto-largo-de-al-menos-32-caracteres
 ./mvnw spring-boot:run   # http://localhost:8080, WebSocket en ws://localhost:8080/ws
 ```
 
-La API REST tiene `POST /api/auth/register` y `POST /api/auth/login` (`{"nombre", "contrasena"}`, responden `{"token"}`), `GET /api/leaderboard` (pública) y `GET /api/games/me` (con `Authorization: Bearer <token>`).
+La API REST tiene `POST /api/auth/register` (`{"nombre", "contrasena"}`, responde `{"token", "codigoRecuperacion"}`), `POST /api/auth/login` (responde `{"token"}`), `POST /api/auth/recuperar` (`{"nombre", "codigo", "nueva"}`) y `GET /api/leaderboard`, que son públicas. Con `Authorization: Bearer <token>`: `GET /api/games/me`, `POST /api/auth/salir` (cierra la sesión en todos los dispositivos), `POST /api/auth/contrasena` (`{"actual", "nueva"}`), `POST /api/auth/codigo` y `POST /api/auth/borrar` (`{"contrasena"}`). Las contraseñas van de 15 a 128 caracteres y no pueden estar en filtraciones conocidas; qué cubre cada medida está en la fase 7 del caso de estudio.
 
 La base de datos trae seis jugadores de ejemplo (migraciones `V3` y `V4`), de principiante a nivel medio, para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
 

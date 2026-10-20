@@ -1,4 +1,9 @@
 {$DOMINIO} {
 	encode zstd gzip
+	# El navegador recordará durante un año que esta web solo va por HTTPS.
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
 	reverse_proxy frontend:80
 }

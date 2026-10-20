@@ -34,11 +34,17 @@ public class ClienteHttp {
     }
 
     public Respuesta post(String ruta, String json) throws Exception {
-        HttpRequest peticion = HttpRequest.newBuilder(URI.create(base + ruta))
+        return post(ruta, json, null);
+    }
+
+    public Respuesta post(String ruta, String json, String token) throws Exception {
+        HttpRequest.Builder peticion = HttpRequest.newBuilder(URI.create(base + ruta))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-        return enviar(peticion);
+                .POST(HttpRequest.BodyPublishers.ofString(json));
+        if (token != null) {
+            peticion.header("Authorization", "Bearer " + token);
+        }
+        return enviar(peticion.build());
     }
 
     public Respuesta get(String ruta, String token) throws Exception {
@@ -49,15 +55,17 @@ public class ClienteHttp {
         return enviar(peticion.build());
     }
 
-    public record Jugador(String nombre, String token) {
+    public static final String CONTRASENA = "una frase de paso bastante larga";
+
+    public record Jugador(String nombre, String token, String codigoRecuperacion) {
     }
 
     /** Registra un jugador con un nombre que no se repite entre tests. */
     public Jugador registrarJugadorNuevo() throws Exception {
         String nombre = "j" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-        String token = post("/api/auth/register", "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"contrasena-segura\"}")
-                .campo("token");
-        return new Jugador(nombre, token);
+        Respuesta respuesta = post("/api/auth/register",
+                "{\"nombre\":\"" + nombre + "\",\"contrasena\":\"" + CONTRASENA + "\"}");
+        return new Jugador(nombre, respuesta.campo("token"), respuesta.campo("codigoRecuperacion"));
     }
 
     private Respuesta enviar(HttpRequest peticion) throws Exception {
