@@ -200,6 +200,8 @@ Terminada cuando cada punto tiene su test y la web funciona con la política de 
 | Avisar de los cambios (NIST) | Al cambiar o restablecer la contraseña, y al quitar o cambiar el correo, llega un aviso al correo confirmado, que en el último caso es el anterior |
 | Cabeceras de seguridad | nginx envía una política de contenido que solo admite scripts propios y prohíbe los iframes, `nosniff`, `no-referrer` y `Permissions-Policy`; Caddy añade HSTS. El build ya no mete en el HTML el script que cargaba el CSS crítico, que la política habría bloqueado |
 
+También hay una página de privacidad (`/privacidad`, RGPD art. 13). La web no necesita banner de cookies porque no tiene cookies, analítica ni publicidad: el token en `localStorage` es imprescindible para el servicio que pide el jugador (LSSI art. 22.2). En producción los logs de los contenedores, que llevan IPs, se limitan a 3 ficheros de 10 MB. Las vulnerabilidades se avisan en privado: `SECURITY.md`, `/.well-known/security.txt` (RFC 9116) y el aviso privado de GitHub.
+
 Lo que dejo fuera, a propósito:
 
 - **Correo obligatorio.** Sería pedir un dato personal a quien solo quiere jugar. Primero probé con un código de recuperación que se mostraba al registrarse, pero quien olvida la contraseña tampoco suele guardar el código. Los correos los envía Resend, como encargado del tratamiento; sin `RESEND_API_KEY` no se envía nada. Quien no pone correo y olvida la contraseña pierde la cuenta, y así se avisa al registrarse.
