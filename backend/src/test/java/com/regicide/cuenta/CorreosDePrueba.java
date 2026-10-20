@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 @TestConfiguration(proxyBeanMethods = false)
 class CorreosDePrueba {
 
-    record Enviado(String para, String asunto, String texto) {
+    record Enviado(String para, String asunto, String texto, String html) {
 
         String enlace() {
             Matcher enlace = Pattern.compile("#([A-Za-z0-9_-]{43})").matcher(texto);
@@ -33,8 +33,8 @@ class CorreosDePrueba {
         }
 
         @Override
-        void enviar(String para, String asunto, String texto) {
-            enviados.add(new Enviado(para, asunto, texto));
+        void enviar(String para, String asunto, String texto, String html) {
+            enviados.add(new Enviado(para, asunto, texto, html));
         }
 
         List<Enviado> para(String correo) {
