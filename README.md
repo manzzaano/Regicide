@@ -1,86 +1,140 @@
 # Regicide
 
-Juego de cartas Regicide en modo solitario. Empezó como mi proyecto final de Programación en DAM, hecho en JavaFX, y lo llevo a la web: las reglas en un servidor Spring Boot, la partida en tiempo real por WebSocket y una interfaz en Angular.
+[![CI](https://github.com/manzzaano/Regicide/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/manzzaano/Regicide/actions/workflows/ci.yml)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1-6DB33F?logo=springboot&logoColor=white)
+![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)
 
-**Jugar:** [regicide.leosoftware.dev](https://regicide.leosoftware.dev)
+El juego de cartas Regicide en modo solitario, en el navegador. Las reglas viven en un servidor Spring Boot, la partida va en tiempo real por WebSocket y la interfaz está hecha en Angular. Está en producción en **[regicide.leosoftware.dev](https://regicide.leosoftware.dev)**.
 
-La versión JavaFX que entregué está en la rama [`v1`](https://github.com/manzzaano/Regicide/tree/v1).
+![Regicide](frontend/public/og.png)
 
-## Estado
+Empezó como mi proyecto final de Programación en DAM, en JavaFX. Esta es su segunda versión: la misma partida llevada a la web, con cuentas, clasificación y despliegue propio. Cómo se hizo, fase a fase, está en el [caso de estudio](docs/migracion-a-la-web.md).
 
-La migración está terminada: las seis fases, una séptima de seguridad de las cuentas y una octava que añade el inglés llegaron a `master` con un pull request cada una. El plan, las decisiones y el resultado de cada fase están en [docs/migracion-a-la-web.md](docs/migracion-a-la-web.md).
+## Qué hace
 
-El backend tiene el motor del juego, con todas las reglas en Java y tests de cada una; la partida por WebSocket con STOMP, en la que cada jugador recibe solo su estado; y las cuentas con JWT, la clasificación y las partidas a medias guardadas en PostgreSQL. El frontend, en Angular, pinta la partida que le manda el servidor y tiene las pantallas de reglas, estadísticas y entrar, en español o en inglés. Todo se levanta con Docker Compose, cada cambio pasa por GitHub Actions y la web publicada corre en una máquina gratuita de Oracle Cloud con Caddy para el HTTPS.
+- **Partida completa contra los 12 enemigos del castillo**, con los poderes de los cuatro palos, los dos comodines y las reglas oficiales de Devir.
+- **Juega como invitado o con cuenta.** Con cuenta, la partida se guarda en cada jugada y se retoma desde cualquier dispositivo.
+- **Clasificación y estadísticas** de tus partidas, con seis jugadores de ejemplo para que nunca salga vacía.
+- **Recuperación de la contraseña** por un correo confirmado, que es opcional.
+- **Español e inglés**, en la interfaz, los mensajes del servidor y los correos.
+- **Adaptada al móvil**, de 320 px de ancho a pantallas de escritorio, sin scroll en ordenador.
 
 ## Cómo se juega
 
-El objetivo es derrotar a los 12 enemigos del castillo: 4 sotas (vida 20, ataque 10), 4 reinas (vida 30, ataque 15) y 4 reyes (vida 40, ataque 20).
+Hay que derrotar a 4 sotas (vida 20, ataque 10), 4 reinas (30, 15) y 4 reyes (40, 20). En cada turno atacas con una carta, con 2 a 4 del mismo número que sumen 10 como máximo, o con un as y otra carta. Cada palo tiene un poder: corazones recupera cartas del descarte, diamantes roba, picas baja el ataque del enemigo y tréboles dobla el daño; ninguno funciona contra un enemigo de su mismo palo. Si el enemigo sobrevive, te defiendes descartando cartas que sumen al menos su ataque. Ganas al caer el último rey y pierdes si no puedes atacar o cubrir un golpe.
 
-- **Atacar:** juegas una carta, de 2 a 4 cartas del mismo número que sumen 10 como máximo, o un as junto a una única carta.
-- **Poderes de los palos:** Corazones devuelve cartas del descarte debajo de la posada, Diamantes roba cartas, Picas baja el ataque del enemigo y Tréboles dobla el daño. Ningún poder funciona contra un enemigo de su mismo palo.
-- **Defenderse:** si el enemigo sobrevive, descartas cartas que sumen al menos su ataque.
-- **Comodines:** dos por partida. Cada uno descarta la mano y roba 8 cartas, antes de atacar o antes de defenderte.
-- **Final:** ganas al derrotar al último rey. Pierdes si, sin comodines, no puedes atacar o no puedes cubrir un ataque.
+Las reglas completas, con ejemplos, están en la propia web: [regicide.leosoftware.dev/reglas](https://regicide.leosoftware.dev/reglas).
 
-Si derrotas a un enemigo con la vida justa, pasa encima de la posada y lo puedes robar como carta.
+## Cómo está hecho
 
-## Cómo ejecutarlo
+- **El servidor manda.** El motor (`com.regicide.juego`) es Java sin dependencias de Spring: guarda todo el estado y valida cada jugada. El navegador solo pinta lo que recibe y nunca conoce el orden del mazo.
+- **Cada jugador recibe solo lo suyo.** La partida va por STOMP sobre WebSocket y las respuestas salen a la conexión que las pidió (`@SendToUser`), nunca a un tema compartido.
+- **Partidas reproducibles.** El reparto depende de un `Random` que se inyecta, así que los tests juegan partidas enteras con semilla fija y comprueban que las 52 cartas se conservan en cada turno.
+- **Cuentas con cuidado.** Argon2id, contraseñas de 15 a 128 caracteres comprobadas contra filtraciones conocidas (Have I Been Pwned), límite de intentos por IP, tokens JWT que se invalidan al cerrar sesión o cambiar la contraseña, y enlaces de recuperación que se guardan como hash y viajan en el fragmento de la URL.
+- **Esquema solo con Flyway.** Hibernate se limita a validar; cada cambio de la base de datos es una migración.
+- **Errores con código.** Los mensajes salen traducidos con `MessageSource` según `Accept-Language`, y los errores de la partida llevan un `codigo` estable para que el cliente no dependa del texto.
+- **Tests de verdad.** Más de 160 en el backend, con un PostgreSQL real por Testcontainers y un cliente STOMP que juega partidas completas contra el servidor arrancado, y 65 en el frontend con Vitest.
 
-Con Docker, todo de una vez:
+## Stack
+
+| | |
+|---|---|
+| Backend | Java 21, Spring Boot 4.1 (Web, WebSocket, Security, OAuth2 Resource Server, Data JPA), Flyway |
+| Base de datos | PostgreSQL 18 |
+| Frontend | Angular 22 (componentes standalone, signals, sin zone.js), STOMP.js, Vitest |
+| Correo | Resend |
+| Infraestructura | Docker Compose, nginx con CSP estricta, Caddy para el HTTPS |
+| CI | GitHub Actions: tests y `verify` del backend, tests, build y `npm audit` del frontend, revisión de dependencias y prueba del Compose completo |
+| Producción | Máquina gratuita de Oracle Cloud (ARM) |
+
+## En local
+
+Todo con Docker:
 
 ```bash
-cp .env.example .env      # cambia la contraseña y el secreto
-docker compose up --build  # http://localhost:8081
+git clone https://github.com/manzzaano/Regicide.git
+cd Regicide
+cp .env.example .env         # cambia la contraseña de la base de datos y el secreto JWT
+docker compose up --build    # http://localhost:8081
 ```
 
-En el servidor, con el dominio en `DOMINIO` dentro de `.env` y los puertos 80 y 443 abiertos, el mismo Compose se arranca junto a `docker-compose.prod.yml`, que añade Caddy para el HTTPS:
+Cada parte por separado necesita JDK 21, Node 22.22 o superior y Docker, que los tests del backend usan para levantar su propio PostgreSQL:
+
+```bash
+# backend: tests y servidor en http://localhost:8080
+cd backend
+./mvnw test
+docker run -d --name regicide-db -p 5432:5432 -e POSTGRES_DB=regicide -e POSTGRES_USER=regicide -e POSTGRES_PASSWORD=regicide postgres:18-alpine
+DB_URL=jdbc:postgresql://localhost:5432/regicide DB_USER=regicide DB_PASSWORD=regicide \
+JWT_SECRET=un-secreto-de-al-menos-32-caracteres ./mvnw spring-boot:run
+
+# frontend, en otra terminal: http://localhost:4200, redirige /api y /ws al backend
+cd frontend
+npm install
+npm test -- --watch=false
+npx ng serve
+```
+
+Sin `RESEND_API_KEY` los correos no se envían: se escriben en el log.
+
+## Despliegue
+
+En el servidor, con el dominio en `DOMINIO` dentro de `.env` y los puertos 80 y 443 abiertos, el mismo Compose se arranca junto a `docker-compose.prod.yml`, que añade Caddy y el certificado HTTPS:
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
-Para desarrollar, cada parte por separado. Requisitos: JDK 21, Node 22.22 o superior y Docker (los tests del backend levantan su propio PostgreSQL con Testcontainers).
+## API
 
-```bash
-cd backend
-./mvnw test
-```
+Rutas públicas:
 
-Para arrancar el servidor hace falta un PostgreSQL y un secreto de al menos 32 caracteres para firmar los tokens; sin ellos no arranca:
+| Método | Ruta | Cuerpo |
+|---|---|---|
+| `POST` | `/api/auth/register` | `{"nombre", "contrasena", "correo"}` (correo opcional), responde `{"token"}` |
+| `POST` | `/api/auth/login` | `{"nombre", "contrasena"}`, responde `{"token"}` |
+| `POST` | `/api/auth/olvide` | `{"nombre"}` |
+| `POST` | `/api/auth/restablecer` | `{"enlace", "nueva"}` |
+| `POST` | `/api/auth/correo/confirmar` | `{"enlace"}` |
+| `GET` | `/api/leaderboard` | |
 
-```bash
-docker run -d --name regicide-db -p 5432:5432 -e POSTGRES_DB=regicide -e POSTGRES_USER=regicide -e POSTGRES_PASSWORD=regicide postgres:18-alpine
+Con `Authorization: Bearer <token>`:
 
-export DB_URL=jdbc:postgresql://localhost:5432/regicide DB_USER=regicide DB_PASSWORD=regicide
-export JWT_SECRET=un-secreto-largo-de-al-menos-32-caracteres
-./mvnw spring-boot:run   # http://localhost:8080, WebSocket en ws://localhost:8080/ws
-```
+| Método | Ruta | Cuerpo |
+|---|---|---|
+| `GET` | `/api/games/me` | |
+| `GET` | `/api/auth/cuenta` | |
+| `POST` | `/api/auth/salir` | cierra la sesión en todos los dispositivos |
+| `POST` | `/api/auth/contrasena` | `{"actual", "nueva"}` |
+| `POST` | `/api/auth/correo` | `{"correo", "contrasena"}`; vacío, quita el correo |
+| `POST` | `/api/auth/borrar` | `{"contrasena"}` |
 
-La API REST tiene `POST /api/auth/register` (`{"nombre", "contrasena", "correo"}`, el correo es opcional; responde `{"token"}`), `POST /api/auth/login` (responde `{"token"}`), `POST /api/auth/olvide` (`{"nombre"}`), `POST /api/auth/restablecer` (`{"enlace", "nueva"}`), `POST /api/auth/correo/confirmar` (`{"enlace"}`) y `GET /api/leaderboard`, que son públicas. Con `Authorization: Bearer <token>`: `GET /api/games/me`, `GET /api/auth/cuenta`, `POST /api/auth/salir` (cierra la sesión en todos los dispositivos), `POST /api/auth/contrasena` (`{"actual", "nueva"}`), `POST /api/auth/correo` (`{"correo", "contrasena"}`, vacío lo quita) y `POST /api/auth/borrar` (`{"contrasena"}`). Las contraseñas van de 15 a 128 caracteres y no pueden estar en filtraciones conocidas; qué cubre cada medida está en la fase 7 del caso de estudio. Los mensajes de error y los correos salen en inglés con `Accept-Language: en` y en español en cualquier otro caso; los errores de la partida por STOMP llevan además un `codigo` estable (`{"codigo", "mensaje"}`).
-
-La base de datos trae seis jugadores de ejemplo (migraciones `V3` y `V4`), de principiante a nivel medio, para que la clasificación no salga vacía; la API los marca con `"simulado": true` y no se puede entrar con sus cuentas.
-
-Por WebSocket, el cliente envía sus jugadas a `/app/partida/empezar`, `atacar`, `defender`, `comodin`, `abandonar` y `retomar` (`atacar` y `defender` llevan `{"cartas": [posiciones en la mano]}`), y recibe el estado de su partida en `/user/queue/partida` y los errores en `/user/queue/errores`. Para jugar con cuenta, el token va en la cabecera `Authorization` del CONNECT; sin ella se juega como invitado y la partida no se guarda.
-
-Con el backend en marcha, el frontend se arranca en otra terminal:
-
-```bash
-cd frontend
-npm install
-npm test -- --watch=false   # tests con Vitest
-npx ng serve                # http://localhost:4200, redirige /api y /ws al backend en :8080
-```
+La partida va por WebSocket en `/ws`. El cliente envía a `/app/partida/{empezar,retomar,atacar,defender,comodin,abandonar}`; `atacar` y `defender` llevan `{"cartas": [posiciones en la mano]}`. El estado llega a `/user/queue/partida` y los errores, como `{"codigo", "mensaje"}`, a `/user/queue/errores`. Con cuenta, el token va en la cabecera `Authorization` del CONNECT; sin ella se juega como invitado y no se guarda nada.
 
 ## Estructura
 
 ```
-regicide/
-├── backend/   Spring Boot: el motor del juego (com.regicide.juego), las cuentas (com.regicide.cuenta) y la partida por WebSocket (com.regicide.partida)
-├── frontend/  Angular: las pantallas y la conexión STOMP; no calcula ninguna regla
-├── .github/   CI con GitHub Actions y Dependabot
-└── docs/      caso de estudio de la migración
+Regicide/
+├── backend/     Spring Boot
+│   └── src/main/java/com/regicide/
+│       ├── juego/     el motor: reglas y estado, sin Spring
+│       ├── partida/   la partida por STOMP, su guardado y la clasificación
+│       └── cuenta/    registro, sesiones y correo
+├── frontend/    Angular: las pantallas y la conexión STOMP, sin reglas
+├── docs/        caso de estudio de la migración
+└── .github/     CI y Dependabot
 ```
+
+## Versiones
+
+| | |
+|---|---|
+| [`v2.0.0`](https://github.com/manzzaano/Regicide/releases/tag/v2.0.0) | La versión web, la que está en producción. |
+| [`v1`](https://github.com/manzzaano/Regicide/tree/v1) | La versión JavaFX, tal como la entregué en DAM. |
+| [`archivo/web-old`](https://github.com/manzzaano/Regicide/tree/archivo/web-old) | Un primer intento web, archivado por sus fallos. |
 
 ---
 
-Hecho por [Ismael Manzano León](https://leosoftware.dev).
+Hecho por [Ismael Manzano León](https://leosoftware.dev) · [LinkedIn](https://www.linkedin.com/in/ismael-manzano-leon/)
