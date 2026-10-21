@@ -105,6 +105,7 @@ Con `Authorization: Bearer <token>`:
 | Método | Ruta | Cuerpo |
 |---|---|---|
 | `GET` | `/api/games/me` | |
+| `POST` | `/api/games/reclamar` | `{"codigo"}`: guarda en la cuenta la partida que se acaba de terminar como invitado |
 | `GET` | `/api/auth/cuenta` | |
 | `POST` | `/api/auth/salir` | cierra la sesión en todos los dispositivos |
 | `POST` | `/api/auth/contrasena` | `{"actual", "nueva"}` |

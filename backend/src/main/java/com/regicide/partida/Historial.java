@@ -51,6 +51,12 @@ class Historial {
         guardadas.deleteById(usuario.getId());
     }
 
+    /** Una partida que el jugador terminó como invitado, antes de entrar. */
+    void registrarReclamada(String nombre, PartidasPorReclamar.Resultado resultado) {
+        jugadas.save(new PartidaJugada(usuario(nombre), resultado.fase(), resultado.enemigosDerrotados(),
+                resultado.comodinesUsados()));
+    }
+
     private Usuario usuario(String nombre) {
         return usuarios.findByNombre(nombre)
                 .orElseThrow(() -> new IllegalStateException("Token de un usuario que no existe: " + nombre));

@@ -21,9 +21,11 @@ class PartidasEnCurso {
 
     private final Map<String, Partida> porSesion = new ConcurrentHashMap<>();
     private final Historial historial;
+    private final PartidasPorReclamar porReclamar;
 
-    PartidasEnCurso(Historial historial) {
+    PartidasEnCurso(Historial historial, PartidasPorReclamar porReclamar) {
         this.historial = historial;
+        this.porReclamar = porReclamar;
     }
 
     EstadoPartida empezar(String sesion, String nombre) {
@@ -54,13 +56,14 @@ class PartidasEnCurso {
             throw new JugadaNoValida("partida.sin-empezar");
         }
         accion.accept(partida);
-        if (nombre != null) {
-            boolean terminada = partida.fase() == Fase.VICTORIA || partida.fase() == Fase.DERROTA;
-            if (terminada) {
-                historial.registrarFin(nombre, partida);
-            } else {
-                historial.guardar(nombre, partida);
-            }
+        boolean terminada = partida.fase() == Fase.VICTORIA || partida.fase() == Fase.DERROTA;
+        if (nombre == null) {
+            return EstadoPartida.de(partida, terminada ? porReclamar.apartar(partida) : null);
+        }
+        if (terminada) {
+            historial.registrarFin(nombre, partida);
+        } else {
+            historial.guardar(nombre, partida);
         }
         return EstadoPartida.de(partida);
     }
