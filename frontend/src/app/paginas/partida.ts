@@ -1,5 +1,6 @@
 import { Component, OnInit, effect, inject, linkedSignal, signal } from '@angular/core';
 import { Carta } from '../carta';
+import { Confirmacion } from '../confirmacion';
 import { FinDePartida } from '../fin-de-partida';
 import { Idioma } from '../idioma';
 import { Juego } from '../juego';
@@ -92,7 +93,7 @@ interface Mensaje {
 /** VistaJuego.fxml de v1. Solo pinta el estado y envía jugadas: las reglas las aplica el servidor. */
 @Component({
   selector: 'app-partida',
-  imports: [Carta, FinDePartida, Menu],
+  imports: [Carta, Confirmacion, FinDePartida, Menu],
   templateUrl: './partida.html',
   styleUrl: './partida.css',
 })
@@ -110,6 +111,7 @@ export class Partida implements OnInit {
 
   /** Avisos de la esquina: no paran la partida y se cierran solos, a diferencia de los Alert de v1. */
   protected readonly avisos = signal<Mensaje[]>([]);
+  protected readonly preguntando = signal(false);
   private siguienteAviso = 0;
 
   /** El diálogo de fin de partida se puede cerrar para ver la mesa; vuelve con cada estado nuevo. */
@@ -216,8 +218,18 @@ export class Partida implements OnInit {
     this.juego.defender([...this.elegidas()].sort((a, b) => a - b));
   }
 
+  // Con la partida en juego, antes se pregunta.
   protected nuevaPartida(estado: EstadoPartida | null): void {
-    if (!estado || terminada(estado) || confirm(this.t().abandonar)) {
+    if (!estado || terminada(estado)) {
+      this.juego.nuevaPartida();
+    } else {
+      this.preguntando.set(true);
+    }
+  }
+
+  protected abandonar(confirmado: boolean): void {
+    this.preguntando.set(false);
+    if (confirmado) {
       this.juego.nuevaPartida();
     }
   }

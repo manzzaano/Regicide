@@ -9,7 +9,8 @@ import java.util.List;
 
 /**
  * Lo que el jugador puede ver de su partida. De la posada y el descarte solo se envía cuántas
- * cartas hay, para que el navegador no pueda saber qué carta viene.
+ * cartas hay, para que el navegador no pueda saber qué carta viene. {@code reclamo} solo llega
+ * cuando un invitado termina: es el código para guardar esa partida en una cuenta si después entra.
  */
 record EstadoPartida(
         Fase fase,
@@ -19,12 +20,17 @@ record EstadoPartida(
         int cartasEnPosada,
         int cartasEnDescarte,
         List<Carta> cartasJugadas,
-        int comodines) {
+        int comodines,
+        String reclamo) {
 
     record EnemigoVisible(Carta carta, int vida, int ataque) {
     }
 
     static EstadoPartida de(Partida partida) {
+        return de(partida, null);
+    }
+
+    static EstadoPartida de(Partida partida, String reclamo) {
         Enemigo enemigo = partida.enemigo();
         return new EstadoPartida(
                 partida.fase(),
@@ -34,6 +40,7 @@ record EstadoPartida(
                 partida.cartasEnPosada(),
                 partida.cartasEnDescarte(),
                 partida.cartasJugadas(),
-                partida.comodines());
+                partida.comodines(),
+                reclamo);
     }
 }

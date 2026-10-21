@@ -13,7 +13,10 @@ describe('Sesion', () => {
     return TestBed.inject(Sesion);
   }
 
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   afterEach(() => http.verify());
 
@@ -46,6 +49,22 @@ describe('Sesion', () => {
     peticion.flush({ token: tokenDePrueba('ana') }, { status: 201, statusText: 'Created' });
 
     expect(sesion.nombre()).toBe('ana');
+  });
+
+  it('al entrar reclama la partida que terminó como invitado, una sola vez', () => {
+    const sesion = crear();
+    sesion.apartarPartida('codigo-1');
+    let entrado = false;
+
+    sesion.entrar('ana', 'una frase de paso larga').subscribe(() => (entrado = true));
+    http.expectOne('/api/auth/login').flush({ token: tokenDePrueba('ana') });
+    const reclamo = http.expectOne('/api/games/reclamar');
+    expect(reclamo.request.body).toEqual({ codigo: 'codigo-1' });
+    expect(entrado).toBe(false);
+    reclamo.flush(null, { status: 404, statusText: 'Not Found' });
+
+    expect(entrado).toBe(true);
+    expect(sessionStorage.getItem('partida-por-reclamar')).toBeNull();
   });
 
   it('el correo solo se envía si se ha escrito', () => {

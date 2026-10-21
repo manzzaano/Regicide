@@ -40,18 +40,9 @@ class PartidaConCuentaTest {
         Jugador ana = api.registrarJugadorNuevo();
         Fase resultado;
         try (ClienteStomp jugador = new ClienteStomp(puerto, ana.token())) {
-            jugador.enviar("empezar");
-            EstadoPartida estado = jugador.estado();
-            for (int turno = 0; turno < 500 && !terminada(estado); turno++) {
-                int ataque = estado.fase() == Fase.DEFENSA ? estado.enemigo().ataque() : 0;
-                switch (JugadorSencillo.decidir(estado.fase(), estado.mano(), ataque)) {
-                    case Atacar atacar -> jugador.enviar("atacar", "{\"cartas\":" + atacar.cartas() + "}");
-                    case Defender defender -> jugador.enviar("defender", "{\"cartas\":" + defender.cartas() + "}");
-                    case UsarComodin ignorada -> jugador.enviar("comodin");
-                }
-                estado = jugador.estado();
-            }
-            resultado = estado.fase();
+            EstadoPartida final_ = jugarHastaElFinal(jugador);
+            resultado = final_.fase();
+            assertThat(final_.reclamo()).isNull();
         }
 
         List<Map<String, Object>> misPartidas = lista(api.get("/api/games/me", ana.token()).cuerpo());
@@ -145,6 +136,49 @@ class PartidaConCuentaTest {
 
             assertThat(jugador.cerradaPorElServidor()).isTrue();
         }
+    }
+
+    @Test
+    void laPartidaDeUnInvitadoPasaASuCuentaAlRegistrarseYSoloUnaVez() throws Exception {
+        EstadoPartida final_;
+        try (ClienteStomp invitado = new ClienteStomp(puerto)) {
+            final_ = jugarHastaElFinal(invitado);
+        }
+        assertThat(final_.reclamo()).isNotBlank();
+
+        Jugador ana = api.registrarJugadorNuevo();
+        String reclamo = "{\"codigo\":\"" + final_.reclamo() + "\"}";
+        assertThat(api.post("/api/games/reclamar", reclamo, ana.token()).estado()).isEqualTo(204);
+        assertThat(api.post("/api/games/reclamar", reclamo, ana.token()).estado()).isEqualTo(404);
+
+        List<Map<String, Object>> misPartidas = lista(api.get("/api/games/me", ana.token()).cuerpo());
+        assertThat(misPartidas).hasSize(1);
+        assertThat(misPartidas.getFirst())
+                .containsEntry("resultado", final_.fase().name())
+                .containsEntry("enemigosDerrotados", 12 - final_.enemigosRestantes());
+    }
+
+    @Test
+    void sinCuentaNoSeReclamaNada() throws Exception {
+        assertThat(api.post("/api/games/reclamar", "{\"codigo\":\"x\"}").estado()).isEqualTo(401);
+    }
+
+    // Juega con JugadorSencillo; mientras la partida sigue, nunca llega código para reclamarla.
+    private static EstadoPartida jugarHastaElFinal(ClienteStomp jugador) throws Exception {
+        jugador.enviar("empezar");
+        EstadoPartida estado = jugador.estado();
+        for (int turno = 0; turno < 500 && !terminada(estado); turno++) {
+            assertThat(estado.reclamo()).isNull();
+            int ataque = estado.fase() == Fase.DEFENSA ? estado.enemigo().ataque() : 0;
+            switch (JugadorSencillo.decidir(estado.fase(), estado.mano(), ataque)) {
+                case Atacar atacar -> jugador.enviar("atacar", "{\"cartas\":" + atacar.cartas() + "}");
+                case Defender defender -> jugador.enviar("defender", "{\"cartas\":" + defender.cartas() + "}");
+                case UsarComodin ignorada -> jugador.enviar("comodin");
+            }
+            estado = jugador.estado();
+        }
+        assertThat(terminada(estado)).isTrue();
+        return estado;
     }
 
     private static boolean terminada(EstadoPartida estado) {

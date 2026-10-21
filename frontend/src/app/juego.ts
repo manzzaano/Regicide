@@ -113,7 +113,11 @@ export class Juego {
     this.conectado.set(true);
     this.cliente!.subscribe('/user/queue/partida', (mensaje) => {
       this.retomando = false;
-      this.estado.set(JSON.parse(mensaje.body) as EstadoPartida);
+      const estado = JSON.parse(mensaje.body) as EstadoPartida;
+      if (estado.reclamo) {
+        this.sesion.apartarPartida(estado.reclamo);
+      }
+      this.estado.set(estado);
     });
     this.cliente!.subscribe('/user/queue/errores', (mensaje) => this.alFallar(JSON.parse(mensaje.body) as MensajeDeError));
 

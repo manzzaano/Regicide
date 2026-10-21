@@ -242,4 +242,21 @@ describe('Partida', () => {
 
     expect(juego.nuevaPartida).toHaveBeenCalled();
   });
+
+  it('a media partida, Nueva Partida pregunta antes en su propio diálogo', async () => {
+    await mostrar(EN_ATAQUE);
+
+    boton('Nueva Partida').click();
+    await mostrar(EN_ATAQUE);
+    const dialogo = pantalla.querySelector('dialog')!;
+    expect(dialogo.textContent).toContain('¿Abandonar esta partida');
+    [...dialogo.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Cancelar')!.click();
+    expect(juego.nuevaPartida).not.toHaveBeenCalled();
+
+    await mostrar(EN_ATAQUE);
+    boton('Nueva Partida').click();
+    await mostrar(EN_ATAQUE);
+    [...pantalla.querySelector('dialog')!.querySelectorAll('button')].find((b) => b.textContent!.trim() === 'Nueva Partida')!.click();
+    expect(juego.nuevaPartida).toHaveBeenCalled();
+  });
 });

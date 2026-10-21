@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
+import { Confirmacion } from '../confirmacion';
 import { Idioma } from '../idioma';
 import { Sesion } from '../sesion';
 
@@ -27,8 +28,12 @@ const es = {
   guarda: 'Guarda tu partida y entra en la clasificación.',
   entrar: 'Entrar o crear cuenta',
   privacidad: 'Privacidad · sin cookies',
-  hechoPor: 'Hecho por',
+  desarrolladoPor: 'Desarrollado por',
   codigo: 'Código en GitHub',
+  noOficial: 'Versión no oficial y sin ánimo de lucro. Regicide es un juego de Badgers From Mars, publicado en España por Devir, que no tiene relación con este sitio.',
+  webOficial: 'Web oficial del juego',
+  linkedin: 'Ismael en LinkedIn',
+  oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'English',
 };
 const en: typeof es = {
@@ -54,15 +59,19 @@ const en: typeof es = {
   guarda: 'Save your game and get on the leaderboard.',
   entrar: 'Sign in or create an account',
   privacidad: 'Privacy · no cookies',
-  hechoPor: 'Made by',
+  desarrolladoPor: 'Developed by',
   codigo: 'Code on GitHub',
+  noOficial: 'Unofficial, non-profit version. Regicide is a game by Badgers From Mars, published in Spain by Devir, who are not affiliated with this site.',
+  webOficial: 'Official game website',
+  linkedin: 'Ismael on LinkedIn',
+  oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'Español',
 };
 
 /** VistaInicio.fxml de v1 (título, quién juega y los botones) con la portada de leosoftware.dev. */
 @Component({
   selector: 'app-inicio',
-  imports: [Carta, RouterLink],
+  imports: [Carta, Confirmacion, RouterLink],
   template: `
     <main class="inicio">
       <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
@@ -85,6 +94,10 @@ const en: typeof es = {
             </li>
           }
         </ul>
+        <p class="no-oficial">
+          {{ t().noOficial }}
+          <a href="https://www.regicidegame.com" target="_blank" rel="noopener">{{ t().webOficial }} <span aria-hidden="true">↗</span></a>
+        </p>
       </div>
 
 <section class="panel" aria-labelledby="titulo-panel">
@@ -103,7 +116,7 @@ const en: typeof es = {
         <div class="pie">
           @if (sesion.nombre()) {
             <a class="enlace" routerLink="/cuenta">{{ t().cuenta }} <span aria-hidden="true">→</span></a>
-            <button type="button" class="enlace" (click)="salir()">{{ t().salir }} <span aria-hidden="true">→</span></button>
+            <button type="button" class="enlace" (click)="preguntando.set(true)">{{ t().salir }} <span aria-hidden="true">→</span></button>
           } @else {
             <p>{{ t().guarda }}</p>
             <a class="enlace" routerLink="/entrar">{{ t().entrar }} <span aria-hidden="true">→</span></a>
@@ -114,13 +127,28 @@ const en: typeof es = {
               {{ t().otroIdioma }}
             </button>
           </span>
-          <p class="autoria">
-            {{ t().hechoPor }} <a href="https://leosoftware.dev">Ismael Manzano León</a> ·
-            <a href="https://github.com/manzzaano/Regicide">{{ t().codigo }}</a>
-          </p>
         </div>
+        <footer class="firma">
+          <a class="autor" href="https://leosoftware.dev">
+            <span class="sello" aria-hidden="true">leo<span>/</span></span>
+            <span class="quien">
+              <span class="desarrollado-por">{{ t().desarrolladoPor }}</span>
+              <strong>Ismael Manzano León</strong>
+              <span class="oficio">{{ t().oficio }}</span>
+            </span>
+          </a>
+          <a class="icono" href="https://github.com/manzzaano/Regicide" [attr.aria-label]="t().codigo" [title]="t().codigo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3" /></svg>
+          </a>
+          <a class="icono" href="https://www.linkedin.com/in/ismael-manzano-leon/" [attr.aria-label]="t().linkedin" [title]="t().linkedin">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" /></svg>
+          </a>
+        </footer>
       </section>
     </main>
+    @if (preguntando()) {
+      <app-confirmacion [pregunta]="t().seguroSalir" [aceptar]="t().salir" (respuesta)="salir($event)" />
+    }
   `,
   styles: `
     /* Todo se mide en em sobre un tamaño base que crece con el ancho y el alto de la pantalla:
@@ -219,6 +247,18 @@ const en: typeof es = {
     .palos li:hover {
       border-color: rgb(239 68 68 / 0.5);
       transform: translateY(-3px);
+    }
+    /* Aviso de que el juego es de sus autores y esto es un proyecto personal. */
+    .no-oficial {
+      max-width: 34em;
+      margin: 1.2em 0 0;
+      color: var(--texto-suave);
+      font-size: 0.7em;
+      line-height: 1.5;
+    }
+    .no-oficial a {
+      color: var(--texto);
+      white-space: nowrap;
     }
     .simbolo {
       color: var(--texto);
@@ -329,9 +369,93 @@ const en: typeof es = {
       justify-content: space-between;
       gap: 1em;
     }
-    .panel .autoria a {
-      color: inherit;
-      font-size: inherit;
+    /* La firma: el sello de leosoftware.dev, el nombre y los enlaces al código y a LinkedIn. */
+    .firma {
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      margin: 0.2em -1.4em -1.4em;
+      padding: 1em 1.4em;
+      border-top: 1px solid var(--linea);
+      border-radius: 0 0 0.7em 0.7em;
+      background: rgb(239 68 68 / 0.05);
+    }
+    .panel .autor {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: 0.8em;
+      min-width: 0;
+      color: var(--texto);
+      font-size: 1em;
+      text-decoration: none;
+    }
+    .sello {
+      display: flex;
+      flex: none;
+      align-items: center;
+      justify-content: center;
+      height: 2.9em;
+      padding: 0 0.6em;
+      border: 1px solid rgb(239 68 68 / 0.4);
+      border-radius: 0.5em;
+      background: var(--negro);
+      font: 800 0.9em var(--display);
+      letter-spacing: -0.02em;
+      transition: border-color 150ms;
+    }
+    .sello span {
+      color: var(--rojo);
+    }
+    .quien {
+      display: grid;
+      min-width: 0;
+    }
+    .desarrollado-por {
+      color: var(--texto-suave);
+      font: 0.62em var(--mono);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .quien strong {
+      font: 700 1em var(--display);
+      transition: color 150ms;
+    }
+    .oficio {
+      overflow: hidden;
+      color: var(--texto-suave);
+      font-size: 0.7em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .autor:hover .sello {
+      border-color: var(--rojo);
+    }
+    .autor:hover strong {
+      color: var(--rojo);
+    }
+    .panel .icono {
+      display: grid;
+      flex: none;
+      place-items: center;
+      width: 2.4em;
+      height: 2.4em;
+      border: 1px solid var(--linea);
+      border-radius: 0.5em;
+      color: var(--texto-suave);
+      transition:
+        color 150ms,
+        border-color 150ms;
+    }
+    .panel .icono:hover {
+      border-color: var(--rojo);
+      color: var(--texto);
+    }
+    .icono svg {
+      width: 1.1em;
+      height: 1.1em;
+      fill: currentColor;
     }
     .privacidad {
       padding: 0;
@@ -376,6 +500,9 @@ const en: typeof es = {
         justify-self: stretch;
         margin-top: 2em;
       }
+      .no-oficial {
+        order: 1;
+      }
       .panel {
         justify-self: stretch;
         margin-top: 2em;
@@ -397,8 +524,11 @@ export class Inicio {
   protected readonly idioma = inject(Idioma);
   protected readonly t = this.idioma.textos({ es, en });
 
-  protected salir(): void {
-    if (confirm(this.t().seguroSalir)) {
+  protected readonly preguntando = signal(false);
+
+  protected salir(confirmado: boolean): void {
+    this.preguntando.set(false);
+    if (confirmado) {
       this.sesion.salir();
     }
   }

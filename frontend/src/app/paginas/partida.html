@@ -197,3 +197,6 @@
     />
   }
 }
+@if (preguntando()) {
+  <app-confirmacion [pregunta]="t().abandonar" [aceptar]="t().nueva" (respuesta)="abandonar($event)" />
+}

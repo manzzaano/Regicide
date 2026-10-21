@@ -1,8 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, finalize, map } from 'rxjs';
+import { Observable, catchError, finalize, map, of, switchMap } from 'rxjs';
 
 const CLAVE = 'token';
+const POR_RECLAMAR = 'partida-por-reclamar';
 
 interface DatosDelToken {
   sub: string;
@@ -46,14 +47,19 @@ export class Sesion {
   entrar(nombre: string, contrasena: string): Observable<void> {
     return this.http
       .post<{ token: string }>('/api/auth/login', { nombre, contrasena })
-      .pipe(map(({ token }) => this.guardar(token)));
+      .pipe(switchMap(({ token }) => this.guardarYReclamar(token)));
   }
 
   /** Crea la cuenta y deja la sesión iniciada. Con correo, el servidor envía el enlace para confirmarlo. */
   registrarse(nombre: string, contrasena: string, correo = ''): Observable<void> {
     return this.http
       .post<{ token: string }>('/api/auth/register', { nombre, contrasena, ...(correo ? { correo } : {}) })
-      .pipe(map(({ token }) => this.guardar(token)));
+      .pipe(switchMap(({ token }) => this.guardarYReclamar(token)));
+  }
+
+  /** Guarda el código de la partida que un invitado acaba de terminar, por si entra en esta pestaña. */
+  apartarPartida(codigo: string): void {
+    sessionStorage.setItem(POR_RECLAMAR, codigo);
   }
 
   /** Pide el enlace para restablecer la contraseña; devuelve el mensaje del servidor, que es siempre el mismo. */
@@ -102,6 +108,20 @@ export class Sesion {
   olvidar(): void {
     localStorage.removeItem(CLAVE);
     this.token.set(null);
+  }
+
+  // Si no se puede reclamar (caducado, ya usado), se entra igual: la partida solo se pierde.
+  private guardarYReclamar(token: string): Observable<void> {
+    this.guardar(token);
+    const codigo = sessionStorage.getItem(POR_RECLAMAR);
+    sessionStorage.removeItem(POR_RECLAMAR);
+    if (!codigo) {
+      return of(undefined);
+    }
+    return this.http.post<void>('/api/games/reclamar', { codigo }).pipe(
+      map(() => undefined),
+      catchError(() => of(undefined)),
+    );
   }
 
   private guardar(token: string): void {

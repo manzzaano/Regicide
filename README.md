@@ -105,6 +105,7 @@ Con `Authorization: Bearer <token>`:
 | Método | Ruta | Cuerpo |
 |---|---|---|
 | `GET` | `/api/games/me` | |
+| `POST` | `/api/games/reclamar` | `{"codigo"}`: guarda en la cuenta la partida que se acaba de terminar como invitado |
 | `GET` | `/api/auth/cuenta` | |
 | `POST` | `/api/auth/salir` | cierra la sesión en todos los dispositivos |
 | `POST` | `/api/auth/contrasena` | `{"actual", "nueva"}` |
@@ -134,6 +135,10 @@ Regicide/
 | [`v2.0.0`](https://github.com/manzzaano/Regicide/releases/tag/v2.0.0) | La versión web, la que está en producción. |
 | [`v1`](https://github.com/manzzaano/Regicide/tree/v1) | La versión JavaFX, tal como la entregué en DAM. |
 | [`archivo/web-old`](https://github.com/manzzaano/Regicide/tree/archivo/web-old) | Un primer intento web, archivado por sus fallos. |
+
+## Aviso
+
+Proyecto personal no oficial y sin ánimo de lucro. Regicide es un juego de [Badgers From Mars](https://www.regicidegame.com) (Paul Abrahams, Luke Badger y Andy Richdale), publicado en España por Devir, que no tiene relación con este proyecto. Si te gusta, [cómpralo](https://badgersfrommars.com/products/regicide-2nd-edition): se juega con una baraja y es mejor en la mesa.
 
 ---
 
