@@ -19,19 +19,30 @@ describe('Menu', () => {
     salir = [...(fixture.nativeElement as HTMLElement).querySelectorAll('button')].find((b) => b.textContent!.includes('Salir'))!;
   });
 
-  it('pide confirmación y lleva a la portada al salir', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
+  // Pulsa Salir y responde en el diálogo propio, que sustituye al confirm() del navegador.
+  async function responder(boton: string): Promise<void> {
     salir.click();
-    expect(window.confirm).toHaveBeenCalledWith('¿Cerrar la sesión?');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const dialogo = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    expect(dialogo.open).toBe(true);
+    expect(dialogo.textContent).toContain('¿Cerrar la sesión?');
+    [...dialogo.querySelectorAll('button')].find((b) => b.textContent!.trim() === boton)!.click();
+    fixture.detectChanges();
+  }
+
+  it('pide confirmación y lleva a la portada al salir', async () => {
+    await responder('Salir');
     expect(sesion.salir).toHaveBeenCalled();
     expect(navegar).toHaveBeenCalledWith('/');
+    expect((fixture.nativeElement as HTMLElement).querySelector('dialog')).toBeNull();
   });
 
-  it('no sale si se cancela', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
-    salir.click();
+  it('no sale si se cancela', async () => {
+    await responder('Cancelar');
     expect(sesion.salir).not.toHaveBeenCalled();
     expect(navegar).not.toHaveBeenCalled();
+    expect((fixture.nativeElement as HTMLElement).querySelector('dialog')).toBeNull();
   });
 
   it('el botón del menú lo abre y elegir algo lo cierra', () => {
@@ -41,7 +52,6 @@ describe('Menu', () => {
     expect(alternar.getAttribute('aria-expanded')).toBe('true');
     expect(alternar.textContent!.trim()).toBe('Cerrar');
 
-    vi.spyOn(window, 'confirm').mockReturnValue(false);
     salir.click();
     fixture.detectChanges();
     expect(alternar.getAttribute('aria-expanded')).toBe('false');

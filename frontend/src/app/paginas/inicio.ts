@@ -1,6 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Carta } from '../carta';
+import { Confirmacion } from '../confirmacion';
 import { Idioma } from '../idioma';
 import { Sesion } from '../sesion';
 
@@ -66,7 +67,7 @@ const en: typeof es = {
 /** VistaInicio.fxml de v1 (título, quién juega y los botones) con la portada de leosoftware.dev. */
 @Component({
   selector: 'app-inicio',
-  imports: [Carta, RouterLink],
+  imports: [Carta, Confirmacion, RouterLink],
   template: `
     <main class="inicio">
       <img class="fondo-castillo" src="castillo.svg" alt="" width="1000" height="1000" />
@@ -107,7 +108,7 @@ const en: typeof es = {
         <div class="pie">
           @if (sesion.nombre()) {
             <a class="enlace" routerLink="/cuenta">{{ t().cuenta }} <span aria-hidden="true">→</span></a>
-            <button type="button" class="enlace" (click)="salir()">{{ t().salir }} <span aria-hidden="true">→</span></button>
+            <button type="button" class="enlace" (click)="preguntando.set(true)">{{ t().salir }} <span aria-hidden="true">→</span></button>
           } @else {
             <p>{{ t().guarda }}</p>
             <a class="enlace" routerLink="/entrar">{{ t().entrar }} <span aria-hidden="true">→</span></a>
@@ -137,6 +138,9 @@ const en: typeof es = {
         </footer>
       </section>
     </main>
+    @if (preguntando()) {
+      <app-confirmacion [pregunta]="t().seguroSalir" [aceptar]="t().salir" (respuesta)="salir($event)" />
+    }
   `,
   styles: `
     /* Todo se mide en em sobre un tamaño base que crece con el ancho y el alto de la pantalla:
@@ -497,8 +501,11 @@ export class Inicio {
   protected readonly idioma = inject(Idioma);
   protected readonly t = this.idioma.textos({ es, en });
 
-  protected salir(): void {
-    if (confirm(this.t().seguroSalir)) {
+  protected readonly preguntando = signal(false);
+
+  protected salir(confirmado: boolean): void {
+    this.preguntando.set(false);
+    if (confirmado) {
       this.sesion.salir();
     }
   }

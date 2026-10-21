@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Confirmacion } from './confirmacion';
 import { Idioma } from './idioma';
 import { Sesion } from './sesion';
 
@@ -33,7 +34,7 @@ const en: typeof es = {
 /** La fila de botones de arriba de la ventana de juego de v1, como barra oscura al estilo de leosoftware.dev. */
 @Component({
   selector: 'app-menu',
-  imports: [RouterLink, RouterLinkActive],
+  imports: [Confirmacion, RouterLink, RouterLinkActive],
   template: `
     <header>
       <div class="interior" [class.abierto]="abierto()">
@@ -51,7 +52,7 @@ const en: typeof es = {
             <ng-content />
             @if (sesion.nombre(); as nombre) {
               <a class="jugador" routerLink="/cuenta" [title]="t().cuenta">{{ nombre }}</a>
-              <button type="button" class="enlace" (click)="salir()">{{ t().salir }}</button>
+              <button type="button" class="enlace" (click)="preguntando.set(true)">{{ t().salir }}</button>
             } @else {
               <span class="jugador">{{ t().invitado }}</span>
               <a class="enlace" routerLink="/entrar" routerLinkActive="activo" ariaCurrentWhenActive="page">{{ t().entrar }}</a>
@@ -63,6 +64,9 @@ const en: typeof es = {
         </div>
       </div>
     </header>
+    @if (preguntando()) {
+      <app-confirmacion [pregunta]="t().seguroSalir" [aceptar]="t().salir" (respuesta)="salir($event)" />
+    }
   `,
   styles: `
     header {
@@ -229,6 +233,7 @@ export class Menu {
   protected readonly idioma = inject(Idioma);
   protected readonly t = this.idioma.textos({ es, en });
   protected readonly abierto = signal(false);
+  protected readonly preguntando = signal(false);
   private readonly router = inject(Router);
 
   protected cerrarAlElegir(evento: Event): void {
@@ -238,8 +243,9 @@ export class Menu {
   }
 
   // A la portada: la página de la cuenta y la partida guardada ya no son de nadie.
-  protected salir(): void {
-    if (confirm(this.t().seguroSalir)) {
+  protected salir(confirmado: boolean): void {
+    this.preguntando.set(false);
+    if (confirmado) {
       this.sesion.salir();
       void this.router.navigateByUrl('/');
     }
