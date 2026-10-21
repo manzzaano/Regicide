@@ -44,6 +44,8 @@ const es = {
   manoVacia: 'Mano vacía',
   sinCartas: 'No te quedan cartas en la mano.',
   abandonar: '¿Abandonar esta partida y empezar otra?',
+  usarComodin: '¿Usar un comodín? Descartas tu mano y robas 8 cartas.',
+  aceptarComodin: 'Usar comodín',
 };
 const en: typeof es = {
   nueva: 'New Game',
@@ -81,6 +83,8 @@ const en: typeof es = {
   manoVacia: 'Empty hand',
   sinCartas: 'You have no cards left in your hand.',
   abandonar: 'Abandon this game and start another one?',
+  usarComodin: 'Use a joker? You discard your hand and draw 8 cards.',
+  aceptarComodin: 'Use joker',
 };
 
 interface Mensaje {
@@ -111,7 +115,8 @@ export class Partida implements OnInit {
 
   /** Avisos de la esquina: no paran la partida y se cierran solos, a diferencia de los Alert de v1. */
   protected readonly avisos = signal<Mensaje[]>([]);
-  protected readonly preguntando = signal(false);
+  /** Lo que no se deshace se pregunta antes: abandonar la partida o gastar un comodín. */
+  protected readonly preguntando = signal<'abandonar' | 'comodin' | null>(null);
   private siguienteAviso = 0;
 
   /** El diálogo de fin de partida se puede cerrar para ver la mesa; vuelve con cada estado nuevo. */
@@ -223,14 +228,20 @@ export class Partida implements OnInit {
     if (!estado || terminada(estado)) {
       this.juego.nuevaPartida();
     } else {
-      this.preguntando.set(true);
+      this.preguntando.set('abandonar');
     }
   }
 
-  protected abandonar(confirmado: boolean): void {
-    this.preguntando.set(false);
-    if (confirmado) {
+  protected responder(confirmado: boolean): void {
+    const pregunta = this.preguntando();
+    this.preguntando.set(null);
+    if (!confirmado) {
+      return;
+    }
+    if (pregunta === 'abandonar') {
       this.juego.nuevaPartida();
+    } else {
+      this.juego.usarComodin();
     }
   }
 
