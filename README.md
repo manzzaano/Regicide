@@ -35,7 +35,7 @@ Las reglas completas, con ejemplos, están en la propia web: [regicide.leosoftwa
 - **Cuentas con cuidado.** Argon2id, contraseñas de 15 a 128 caracteres comprobadas contra filtraciones conocidas (Have I Been Pwned), límite de intentos por IP, tokens JWT que se invalidan al cerrar sesión o cambiar la contraseña, y enlaces de recuperación que se guardan como hash y viajan en el fragmento de la URL.
 - **Esquema solo con Flyway.** Hibernate se limita a validar; cada cambio de la base de datos es una migración.
 - **Errores con código.** Los mensajes salen traducidos con `MessageSource` según `Accept-Language`, y los errores de la partida llevan un `codigo` estable para que el cliente no dependa del texto.
-- **Tests de verdad.** Más de 160 en el backend, con un PostgreSQL real por Testcontainers y un cliente STOMP que juega partidas completas contra el servidor arrancado, y 65 en el frontend con Vitest.
+- **Tests de verdad.** Más de 160 en el backend, con un PostgreSQL real por Testcontainers y un cliente STOMP que juega partidas completas contra el servidor arrancado, y más de 60 en el frontend con Vitest.
 
 ## Stack
 
