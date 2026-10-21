@@ -30,6 +30,8 @@ const es = {
   privacidad: 'Privacidad · sin cookies',
   desarrolladoPor: 'Desarrollado por',
   codigo: 'Código en GitHub',
+  noOficial: 'Versión no oficial y sin ánimo de lucro. Regicide es un juego de Badgers From Mars, publicado en España por Devir, que no tiene relación con este sitio.',
+  webOficial: 'Web oficial del juego',
   linkedin: 'Ismael en LinkedIn',
   oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'English',
@@ -59,6 +61,8 @@ const en: typeof es = {
   privacidad: 'Privacy · no cookies',
   desarrolladoPor: 'Developed by',
   codigo: 'Code on GitHub',
+  noOficial: 'Unofficial, non-profit version. Regicide is a game by Badgers From Mars, published in Spain by Devir, who are not affiliated with this site.',
+  webOficial: 'Official game website',
   linkedin: 'Ismael on LinkedIn',
   oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'Español',
@@ -90,6 +94,10 @@ const en: typeof es = {
             </li>
           }
         </ul>
+        <p class="no-oficial">
+          {{ t().noOficial }}
+          <a href="https://www.regicidegame.com" target="_blank" rel="noopener">{{ t().webOficial }} <span aria-hidden="true">↗</span></a>
+        </p>
       </div>
 
 <section class="panel" aria-labelledby="titulo-panel">
@@ -239,6 +247,18 @@ const en: typeof es = {
     .palos li:hover {
       border-color: rgb(239 68 68 / 0.5);
       transform: translateY(-3px);
+    }
+    /* Aviso de que el juego es de sus autores y esto es un proyecto personal. */
+    .no-oficial {
+      max-width: 34em;
+      margin: 1.2em 0 0;
+      color: var(--texto-suave);
+      font-size: 0.7em;
+      line-height: 1.5;
+    }
+    .no-oficial a {
+      color: var(--texto);
+      white-space: nowrap;
     }
     .simbolo {
       color: var(--texto);
@@ -479,6 +499,9 @@ const en: typeof es = {
         order: 1;
         justify-self: stretch;
         margin-top: 2em;
+      }
+      .no-oficial {
+        order: 1;
       }
       .panel {
         justify-self: stretch;
