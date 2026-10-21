@@ -186,6 +186,15 @@ describe('Partida', () => {
     expect(posada.nextElementSibling!.textContent).toBe('40');
   });
 
+  it('un as elegido suma 1 punto, en singular', async () => {
+    await mostrar({ ...EN_ATAQUE, mano: [{ numero: 1, palo: 'CORAZONES' }] });
+
+    cartaDeLaMano(0).click();
+    fixture.detectChanges();
+
+    expect(pantalla.querySelector('.suma')!.textContent!.trim()).toBe('· 1 punto');
+  });
+
   it('los comodines usados quedan desactivados y el otro se usa después de confirmarlo', async () => {
     await mostrar({ ...EN_ATAQUE, comodines: 1 });
     const [usado, libre] = pantalla.querySelectorAll<HTMLButtonElement>('.comodines button');
