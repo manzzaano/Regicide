@@ -10,7 +10,7 @@ El juego de cartas Regicide en modo solitario, en el navegador. Las reglas viven
 
 ![Regicide](frontend/public/og.png)
 
-Empezó como mi proyecto final de Programación en DAM, en JavaFX. Esta es su segunda versión: la misma partida llevada a la web, con cuentas, clasificación y despliegue propio. Cómo se hizo, fase a fase, está en el [caso de estudio](docs/migracion-a-la-web.md).
+Empezó como mi proyecto final de Programación en DAM, hecho en JavaFX en cuatro días. Esta es su segunda versión: la misma partida llevada a la web, con cuentas, clasificación y despliegue propio. Cómo se hizo, fase a fase, está en el [caso de estudio](docs/migracion-a-la-web.md).
 
 ## Qué hace
 
