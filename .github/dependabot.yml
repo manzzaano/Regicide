@@ -1,29 +1,51 @@
 version: 2
+# Una pull request por ecosistema y semana. Salvo en las acciones de GitHub, sin versiones mayores:
+# esas (Java, Node, Angular, TypeScript) se suben a mano, cuando se prueban juntas.
 updates:
   - package-ecosystem: maven
     directory: /backend
     schedule:
       interval: weekly
     target-branch: dev
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      maven:
+        patterns: ["*"]
 
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
     target-branch: dev
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     # Angular se actualiza entero o se rompe: un solo pull request para todos sus paquetes.
     groups:
       angular:
         patterns: ["@angular/*"]
+      npm:
+        patterns: ["*"]
 
   - package-ecosystem: docker
     directories: [/backend, /frontend]
     schedule:
       interval: weekly
     target-branch: dev
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      docker:
+        patterns: ["*"]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     target-branch: dev
+    groups:
+      actions:
+        patterns: ["*"]
