@@ -19,6 +19,8 @@ export interface EstadoPartida {
   cartasEnDescarte: number;
   cartasJugadas: Carta[];
   comodines: number;
+  /** Solo cuando un invitado termina: el código para guardar la partida en su cuenta si después entra. */
+  reclamo?: string | null;
 }
 
 export interface PuestoEnClasificacion {
