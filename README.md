@@ -136,6 +136,10 @@ Regicide/
 | [`v1`](https://github.com/manzzaano/Regicide/tree/v1) | La versión JavaFX, tal como la entregué en DAM. |
 | [`archivo/web-old`](https://github.com/manzzaano/Regicide/tree/archivo/web-old) | Un primer intento web, archivado por sus fallos. |
 
+## Aviso
+
+Proyecto personal no oficial y sin ánimo de lucro. Regicide es un juego de [Badgers From Mars](https://www.regicidegame.com) (Paul Abrahams, Luke Badger y Andy Richdale), publicado en España por Devir, que no tiene relación con este proyecto. Si te gusta, [cómpralo](https://badgersfrommars.com/products/regicide-2nd-edition): se juega con una baraja y es mejor en la mesa.
+
 ---
 
 Hecho por [Ismael Manzano León](https://leosoftware.dev) · [LinkedIn](https://www.linkedin.com/in/ismael-manzano-leon/)

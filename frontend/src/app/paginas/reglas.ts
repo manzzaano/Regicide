@@ -68,6 +68,8 @@ const es = {
   listo: '¿Listo?',
   llamada: 'El castillo te espera.',
   jugar: 'Jugar',
+  noOficial: 'Versión no oficial y sin ánimo de lucro. Regicide es un juego de Badgers From Mars, publicado en España por Devir, que no tiene relación con este sitio.',
+  webOficial: 'Web oficial del juego',
 };
 const en: typeof es = {
   terminal: 'rules',
@@ -131,6 +133,8 @@ const en: typeof es = {
   listo: 'Ready?',
   llamada: 'The castle awaits.',
   jugar: 'Play',
+  noOficial: 'Unofficial, non-profit version. Regicide is a game by Badgers From Mars, published in Spain by Devir, who are not affiliated with this site.',
+  webOficial: 'Official game website',
 };
 
 @Component({
@@ -245,6 +249,10 @@ const en: typeof es = {
           </div>
           <a class="boton-principal" routerLink="/partida">{{ t().jugar }} <span aria-hidden="true">→</span></a>
         </section>
+        <p class="no-oficial">
+          {{ t().noOficial }}
+          <a href="https://www.regicidegame.com" target="_blank" rel="noopener">{{ t().webOficial }} <span aria-hidden="true">↗</span></a>
+        </p>
       </div>
     </main>
   `,
@@ -596,6 +604,19 @@ const en: typeof es = {
       color: var(--rojo);
     }
 
+    /* Aviso de que el juego es de sus autores y esto es un proyecto personal. */
+    .no-oficial {
+      max-width: 46em;
+      text-align: center;
+      margin: 0 auto;
+      color: var(--texto-suave);
+      font-size: 0.7em;
+      line-height: 1.5;
+    }
+    .no-oficial a {
+      color: var(--texto);
+      white-space: nowrap;
+    }
     .listo {
       display: flex;
       flex-wrap: wrap;
