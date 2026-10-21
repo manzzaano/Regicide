@@ -940,11 +940,17 @@ dd {
   }
 }
 
+/* Móvil: todo en una pantalla, con la mano pegada abajo y los botones al alcance del pulgar.
+   El hueco flexible entre la fase y la mano es lo que se encoge si la pantalla es baja. */
 @media (max-width: 560px) {
   .mesa {
-    grid-template-columns: 1fr;
-    grid-template-areas: 'enemigo' 'centro' 'mano' 'comodines' 'mazos';
-    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas: 'enemigo enemigo' 'centro centro' '. .' 'mazos comodines' 'mano mano';
+    gap: 10px 12px;
+  }
+  .carta-enemigo {
+    width: clamp(88px, min(34vw, 20dvh - 28px), 150px);
   }
   /* La vida ya está en grande al lado. */
   .vida-base {
@@ -958,12 +964,18 @@ dd {
     order: 1;
   }
   /* Ocho cartas, con su giro, caben en el ancho sin quedar tan tapadas que no se puedan tocar. */
+  /* Abajo, sitio para lo que bajan en arco las cartas de los extremos: si no, los botones las pisan. */
   .abanico-mano {
     --ancho: clamp(46px, calc((100vw - 32px) / 6), 84px);
+    padding-bottom: calc(var(--ancho) * 0.5);
   }
-  /* En cartas tan estrechas la cinta se queda en el palo; el gris ya dice que no tiene poder. */
+  /* En cartas tan estrechas la cinta se queda en el palo y baja al pie, sin tapar la figura;
+     el gris ya dice que no tiene poder. */
   .cinta {
-    padding: 2px 6px;
+    top: auto;
+    bottom: 10%;
+    padding: 1px 5px;
+    font-size: 10px;
   }
   /* Fuera de la vista, pero el lector de pantalla lo sigue leyendo. */
   .texto-cinta {
@@ -974,44 +986,66 @@ dd {
     clip-path: inset(50%);
     white-space: nowrap;
   }
-  .mesa > .comodines,
-  .mesa > .mazos {
-    justify-self: stretch;
-    min-width: 0;
-  }
-  .comodines .fila {
-    justify-content: center;
-  }
-  /* Sin ratón no hay pista al pasar por encima: se queda siempre a la vista. */
-  .pista {
-    position: static;
-    margin-top: 10px;
+  /* Mazos y comodines dejan de ser cajas: una línea con la posada y los descartes, y los dos comodines
+     pequeños a su lado. El castillo ya se ve en la fila de figuras y las jugadas en la suma de puntos. */
+  .mesa > .mazos,
+  .mesa > .comodines {
+    align-self: center;
     padding: 0;
     border: 0;
     background: none;
-    color: var(--texto-suave);
-    text-align: center;
-    white-space: normal;
-    opacity: 1;
-    translate: 0 0;
+    box-shadow: none;
+  }
+  .mesa > .mazos {
+    justify-self: start;
+    min-width: 0;
+  }
+  .mesa > .comodines {
+    justify-self: end;
+  }
+  .mazos .etiqueta,
+  .comodines .etiqueta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .mazos dl {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 8px;
+    display: flex;
+    gap: 16px;
   }
   .mazo {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    row-gap: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
   }
+  .mazo:nth-child(1),
+  .mazo:nth-child(3),
   .pila,
   .progreso,
   dt .barra {
     display: none;
   }
   dt {
+    color: var(--texto-suave);
     font-size: 10px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.08em;
+  }
+  .mazos .cuenta {
+    font-size: 18px;
+  }
+  .comodines .fila {
+    gap: 8px;
+    padding: 0;
+  }
+  .comodines .carta {
+    width: 42px;
+  }
+  /* Lo explica el diálogo de confirmación al tocarlo. */
+  .pista {
+    display: none;
   }
   .castillo li {
     width: min(20px, 5.6vw);
@@ -1026,8 +1060,5 @@ dd {
   }
   .dato {
     min-width: 64px;
-  }
-  .carta-enemigo {
-    width: 104px;
   }
 }

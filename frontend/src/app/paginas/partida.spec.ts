@@ -186,12 +186,18 @@ describe('Partida', () => {
     expect(posada.nextElementSibling!.textContent).toBe('40');
   });
 
-  it('los comodines usados quedan desactivados y el otro se puede usar', async () => {
+  it('los comodines usados quedan desactivados y el otro se usa después de confirmarlo', async () => {
     await mostrar({ ...EN_ATAQUE, comodines: 1 });
     const [usado, libre] = pantalla.querySelectorAll<HTMLButtonElement>('.comodines button');
 
     expect(usado.disabled).toBe(true);
     libre.click();
+    fixture.detectChanges();
+    expect(juego.usarComodin).not.toHaveBeenCalled();
+
+    const dialogo = pantalla.querySelector('app-confirmacion dialog') as HTMLDialogElement;
+    dialogo.returnValue = 'si';
+    dialogo.dispatchEvent(new Event('close'));
 
     expect(juego.usarComodin).toHaveBeenCalled();
   });
