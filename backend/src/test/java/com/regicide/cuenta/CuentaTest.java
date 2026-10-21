@@ -18,7 +18,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import static com.regicide.ClienteHttp.CONTRASENA;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +44,7 @@ class CuentaTest {
     @BeforeEach
     void preparar() {
         api = new ClienteHttp(puerto);
-        nombre = "ana_" + UUID.randomUUID().toString().substring(0, 8);
+        nombre = ClienteHttp.nombreAlAzar("ana_", 10);
         correo = nombre + "@example.com";
     }
 
@@ -163,7 +162,7 @@ class CuentaTest {
 
     @Test
     void laContrasenaNoPuedeSerElNombre() throws Exception {
-        String largo = "ana_" + UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+        String largo = ClienteHttp.nombreAlAzar("ana_", 14);
 
         assertThat(registrar(largo, largo.toUpperCase()).campo("mensaje")).isEqualTo("La contraseña no puede ser tu nombre");
     }
