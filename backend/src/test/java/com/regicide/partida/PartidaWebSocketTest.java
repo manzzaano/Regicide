@@ -187,6 +187,10 @@ class PartidaWebSocketTest {
 
     @Test
     void alDesconectarseSeBorraLaPartida() throws Exception {
+        // La partida del test anterior se borra en segundo plano al cerrarse su cliente.
+        for (int intento = 0; intento < 50 && partidas.enCurso() > 0; intento++) {
+            Thread.sleep(100);
+        }
         int antes = partidas.enCurso();
         ClienteStomp jugador = new ClienteStomp(puerto);
         jugador.enviar("empezar");
