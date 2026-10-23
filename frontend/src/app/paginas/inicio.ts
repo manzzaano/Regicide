@@ -31,7 +31,6 @@ const es = {
   desarrolladoPor: 'Desarrollado por',
   codigo: 'Código en GitHub',
   noOficial: 'Versión no oficial y sin ánimo de lucro. Regicide es un juego de Badgers From Mars, publicado en España por Devir, que no tiene relación con este sitio.',
-  webOficial: 'Web oficial del juego',
   linkedin: 'Ismael en LinkedIn',
   oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'English',
@@ -62,7 +61,6 @@ const en: typeof es = {
   desarrolladoPor: 'Developed by',
   codigo: 'Code on GitHub',
   noOficial: 'Unofficial, non-profit version. Regicide is a game by Badgers From Mars, published in Spain by Devir, who are not affiliated with this site.',
-  webOficial: 'Official game website',
   linkedin: 'Ismael on LinkedIn',
   oficio: 'Full stack · leosoftware.dev',
   otroIdioma: 'Español',
@@ -96,7 +94,7 @@ const en: typeof es = {
         </ul>
         <p class="no-oficial">
           {{ t().noOficial }}
-          <a href="https://www.regicidegame.com" target="_blank" rel="noopener">{{ t().webOficial }} <span aria-hidden="true">↗</span></a>
+          <a href="https://www.badgersfrommars.com" target="_blank" rel="noopener">www.badgersfrommars.com <span aria-hidden="true">↗</span></a>
         </p>
       </div>
 
