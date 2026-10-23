@@ -138,7 +138,7 @@ Regicide/
 
 ## Aviso
 
-Proyecto personal no oficial y sin ánimo de lucro. Regicide es un juego de [Badgers From Mars](https://www.regicidegame.com) (Paul Abrahams, Luke Badger y Andy Richdale), publicado en España por Devir, que no tiene relación con este proyecto. Si te gusta, [cómpralo](https://badgersfrommars.com/products/regicide-2nd-edition): se juega con una baraja y es mejor en la mesa.
+Proyecto personal no oficial y sin ánimo de lucro. Regicide es un juego de [Badgers From Mars](https://www.badgersfrommars.com) (Paul Abrahams, Luke Badger y Andy Richdale), publicado en España por Devir, que no tiene relación con este proyecto. Si te gusta, [cómpralo](https://badgersfrommars.com/products/regicide-2nd-edition): se juega con una baraja y es mejor en la mesa.
 
 ---
 
